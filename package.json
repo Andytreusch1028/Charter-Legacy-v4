@@ -1,0 +1,23 @@
+{
+  "name": "charter-legacy-v4",
+  "version": "1.0.0",
+  "description": "> Premium business formation and estate planning with privacy-first approach",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/charter-legacy-v4.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/your-username/charter-legacy-v4/issues"
+  },
+  "homepage": "https://github.com/your-username/charter-legacy-v4#readme",
+  "dependencies": {
+    "playwright": "^1.58.0"
+  }
+}

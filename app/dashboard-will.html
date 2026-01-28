@@ -19,6 +19,42 @@
     <link rel="apple-touch-icon" href="/assets/icon-192.png">
 </head>
 <body class="dashboard-page">
+    <!-- Inline SVG Sprite for 100% Reliability -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <!-- Custom Hexagon Vault -->
+      <symbol id="icon-vault" viewBox="0 0 24 24">
+        <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M12 12L14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </symbol>
+      
+      <!-- Custom Sealed Document -->
+      <symbol id="icon-documents" viewBox="0 0 24 24">
+        <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M12 18L10 17L10 15L12 14L14 15V17L12 18Z" fill="currentColor" stroke="none"/> <!-- Hex Seal -->
+        <line x1="8" y1="6" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="8" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </symbol>
+      
+      <!-- Charter Hex-Shield -->
+      <symbol id="icon-shield" viewBox="0 0 24 24">
+        <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M12 8L15 10V14L12 16L9 14V10L12 8Z" fill="currentColor" opacity="0.5"/>
+      </symbol>
+      
+      <!-- Founder's Playbook -->
+      <symbol id="icon-playbook" viewBox="0 0 24 24">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M6.5 2H20V22H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M12 8L14 9V11L12 12L10 11V9L12 8Z" fill="currentColor"/> <!-- Hex on cover -->
+      </symbol>
+
+      <symbol id="icon-menu" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="3" y1="6" x2="21" y2="6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="3" y1="18" x2="21" y2="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="icon-check-gold" viewBox="0 0 24 24"><path d="M20 6L9 17L4 12" stroke="var(--gold-leaf)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+      <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="12 6 12 12 16 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="icon-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    </svg>
     <!-- Navigation -->
     <nav class="dashboard-nav">
         <a href="/app/" class="nav-logo">
@@ -64,7 +100,9 @@
             
             <!-- Legacy Timer Hero Feature -->
             <div class="hero-feature">
-                <div class="hero-feature-icon">⏱️</div>
+                <div class="hero-feature-icon">
+                    <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-clock"></use></svg>
+                </div>
                 <div class="hero-feature-content">
                     <h4 class="hero-feature-title">Legacy Timer Active</h4>
                     <p class="hero-feature-text">Your successors will receive automatic access after 15 days of inactivity. You'll get alerts before activation.</p>
@@ -77,25 +115,33 @@
             <h3 class="actions-title">Quick Actions</h3>
             <div class="actions-grid">
                 <a href="/app/successors" class="action-card action-primary">
-                    <div class="action-icon">👥</div>
+                    <div class="action-icon">
+                        <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-users"></use></svg>
+                    </div>
                     <h4 class="action-title">Update Successors</h4>
                     <p class="action-description">Manage who gets access</p>
                 </a>
                 
                 <a href="/app/test-dms" class="action-card action-primary">
-                    <div class="action-icon">🧪</div>
+                    <div class="action-icon">
+                        <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-clock"></use></svg>
+                    </div>
                     <h4 class="action-title">Test Legacy Timer</h4>
                     <p class="action-description">See how it works (safe test mode)</p>
                 </a>
                 
                 <a href="/app/will" class="action-card">
-                    <div class="action-icon">📜</div>
+                    <div class="action-icon">
+                        <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-documents"></use></svg>
+                    </div>
                     <h4 class="action-title">View Will</h4>
                     <p class="action-description">Access your executed will</p>
                 </a>
                 
                 <a href="/app/vault" class="action-card">
-                    <div class="action-icon">🗄️</div>
+                    <div class="action-icon">
+                        <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-vault"></use></svg>
+                    </div>
                     <h4 class="action-title">Legacy Vault</h4>
                     <p class="action-description">Tier 4 secure storage</p>
                 </a>
@@ -121,21 +167,27 @@
             <h3 class="activity-title">Recent Activity</h3>
             <div class="activity-list">
                 <div class="activity-item">
-                    <div class="activity-icon">✓</div>
+                    <div class="activity-icon">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check-gold"></use></svg>
+                    </div>
                     <div class="activity-content">
                         <p class="activity-text">Will executed with self-proving affidavit</p>
                         <span class="activity-date">January 20, 2026</span>
                     </div>
                 </div>
                 <div class="activity-item">
-                    <div class="activity-icon">👥</div>
+                    <div class="activity-icon">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-users"></use></svg>
+                    </div>
                     <div class="activity-content">
                         <p class="activity-text">2 successors designated</p>
                         <span class="activity-date">January 20, 2026</span>
                     </div>
                 </div>
                 <div class="activity-item">
-                    <div class="activity-icon">⏱️</div>
+                    <div class="activity-icon">
+                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clock"></use></svg>
+                    </div>
                     <div class="activity-content">
                         <p class="activity-text">Legacy Timer activated</p>
                         <span class="activity-date">January 20, 2026</span>

@@ -27,6 +27,20 @@
     />
   </head>
   <body>
+    <!-- Inline SVG Sprite for Reliability (Learning-007) -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <symbol id="icon-check-gold" viewBox="0 0 24 24">
+        <path
+          d="M20 6L9 17L4 12"
+          stroke="currentColor"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+        />
+      </symbol>
+    </svg>
+
     <!-- Navigation -->
     <nav class="nav">
       <div class="nav-container">
@@ -157,10 +171,22 @@
               Your LLC. Your privacy. Not your home address on Google.
             </p>
             <ul class="product-features">
-              <li>Privacy Shield (Florida Hub)</li>
-              <li>Registered Agent included</li>
-              <li>Founder's Playbook (10-page guide)</li>
-              <li>Legacy Vault storage</li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Privacy Shield (Florida Hub)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Registered Agent included</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Founder's Playbook (10-page guide)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Legacy Vault storage</span>
+              </li>
             </ul>
             <button class="cta-secondary" data-product="founders-shield">
               Start My LLC
@@ -175,10 +201,22 @@
               Medical PLLC or Trade Professional LLC
             </p>
             <ul class="product-features">
-              <li>Board License Monitor (Medical)</li>
-              <li>DBPR Integration (Contractor)</li>
-              <li>Priority 24hr support</li>
-              <li>License Dashboard</li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Board License Monitor (Medical)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>DBPR Integration (Contractor)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Priority 24hr support</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>License Dashboard</span>
+              </li>
             </ul>
             <button class="cta-secondary" data-product="professional">
               Choose Your License Type
@@ -194,10 +232,22 @@
               Your family gets access automatically. No probate lawyer needed.
             </p>
             <ul class="product-features">
-              <li>Legacy Timer (hero feature)</li>
-              <li>Self-proving affidavit (saves $1,500+)</li>
-              <li>Successor Test Run</li>
-              <li>Will Completion Checker</li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Legacy Timer (hero feature)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Self-proving affidavit (saves $1,500+)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Successor Test Run</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Will Completion Checker</span>
+              </li>
             </ul>
             <button class="cta-primary" data-product="legacy-will">
               Protect My Legacy

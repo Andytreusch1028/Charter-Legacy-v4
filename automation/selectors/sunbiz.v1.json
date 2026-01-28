@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-01-27",
+  "fields": {
+    "entityName": "input[name='P01']",
+    "principalAddress": "input[name='P02']",
+    "principalCity": "input[name='P03']",
+    "principalZip": "input[name='P04']",
+    "registeredAgentName": "input[name='P10']",
+    "registeredAgentAddress": "input[name='P11']",
+    "organizerName": "input[name='P20']",
+    "submitButton": "input[type='submit'][value*='Submit']",
+    "confirmationNumber": ".confirmation-number, #tracking-num"
+  },
+  "fallbacks": {
+    "entityName": "input[aria-label*='Entity Name'], input[placeholder*='LLC Name']",
+    "submit": "button:has-text('Submit'), input:has-text('Submit')"
+  }
+}

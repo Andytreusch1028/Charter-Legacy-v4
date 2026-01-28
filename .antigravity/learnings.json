@@ -17,7 +17,32 @@
     },
     "design_inconsistencies": {
       "description": "Cases where generated code didn't match standards.style tokens",
-      "entries": []
+      "entries": [
+        {
+          "id": "learning-007",
+          "date": "2026-01-27",
+          "mistake": "External SVG sprite references (assets/icons.svg#id) failed to render in local environment due to path variance. Also, <symbol> tags did not inherit stroke attributes to children.",
+          "correction": "Switched to INLINE SVG Sprite injected into <body>. Moved all presentation attributes (stroke, stroke-width) directly to child <path>/<circle> elements.",
+          "impact": "High - Broken UI icons",
+          "prevention_rule": "For Obsidian Aesthetic icons: 1. Always use INLINE SVG sprites. 2. Define stroke attrs on the child elements, never the container. 3. Use local href='#id'."
+        },
+        {
+          "id": "learning-008",
+          "date": "2026-01-27",
+          "mistake": "CSS Layout Regression: `.status-header` defaulted to block display, causing title and badge to stack unexpectedly.",
+          "correction": "Explicitly added `display: flex`, `justify-content: space-between`, and `align-items: center` to `.status-header`.",
+          "impact": "Medium - Visual misalignment",
+          "prevention_rule": "Explicitly define `display: flex` on all container headers (status cards, nav bars) in standard.style to prevent block-stacking defaults."
+        },
+        {
+          "id": "learning-009",
+          "date": "2026-01-27",
+          "mistake": "Auth UI felt 'off balance' because it relied on generic global styles instead of a dedicated CSS architecture.",
+          "correction": "Created a dedicated 'Authentication Styles' section in app.css defining specific widths, centering logic, and font tracking for the Auth domain.",
+          "impact": "Medium - Visual polish degradation",
+          "prevention_rule": "Every major domain (Marketing, App, Auth) must have its own dedicated CSS section or file. Do not rely on shared 'global' styles for domain-specific layouts."
+        }
+      ]
     },
     "privacy_failures": {
       "description": "Times when DeLand Hub defaults weren't applied or P.O. Box validation failed",

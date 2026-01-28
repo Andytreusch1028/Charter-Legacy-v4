@@ -481,16 +481,16 @@ body {
 
 .product-features li {
   padding: var(--spacing-xs) 0;
-  padding-left: 1.5rem;
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.product-features li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
+.icon-check {
+  width: 20px;
+  height: 20px;
   color: var(--gold-leaf);
-  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .cta-secondary {
