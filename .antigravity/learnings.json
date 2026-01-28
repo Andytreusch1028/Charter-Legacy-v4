@@ -1,0 +1,103 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-01-27T09:01:02",
+  "learning_categories": {
+    "upl_violations": {
+      "description": "Instances where forbidden phrases were used or UPL guardrails were violated",
+      "entries": [
+        {
+          "id": "learning-001",
+          "date": "2026-01-27",
+          "mistake": "Suggested 'Will Review Service' and 'Compliance Dashboard' without UPL pre-check",
+          "correction": "Changed to 'Will Completion Checker' (mechanical only) and 'Status Dashboard' (factual only)",
+          "impact": "Critical - UPL violation risk",
+          "prevention_rule": "MANDATORY: Before suggesting ANY new feature or messaging, run UPL pre-check: Does this imply legal advice, compliance opinion, or interpretation? If yes, reframe as factual/mechanical only."
+        }
+      ]
+    },
+    "design_inconsistencies": {
+      "description": "Cases where generated code didn't match standards.style tokens",
+      "entries": []
+    },
+    "privacy_failures": {
+      "description": "Times when DeLand Hub defaults weren't applied or P.O. Box validation failed",
+      "entries": []
+    },
+    "workflow_improvements": {
+      "description": "Successful patterns that improved user experience or code quality",
+      "entries": [
+        {
+          "id": "learning-004",
+          "date": "2026-01-27",
+          "success": "Three-phase pipeline for government form automation",
+          "pattern": "Calibration (validate) → Execution (automate) → Finance (authorize)",
+          "impact": "High - Separates concerns and error domains",
+          "reuse_guidance": "Use this pattern for any government portal interaction without a public API."
+        },
+        {
+          "id": "learning-005",
+          "date": "2026-01-27",
+          "success": "Idempotency check prevents duplicate submissions",
+          "pattern": "Check for existing tracking_number before re-attempting filing",
+          "impact": "Critical - Prevents financial loss",
+          "reuse_guidance": "Mandatory for all financial transactions in Phase C execution."
+        }
+      ]
+    },
+    "statutory_clarifications": {
+      "description": "Edge cases in statutory interpretation that required correction",
+      "entries": [
+        {
+          "id": "learning-006",
+          "date": "2026-01-27",
+          "statute": "FL-605.0113",
+          "clarification": "P.O. Box prohibition applies to BOTH principal_address AND registered_agent_address",
+          "impact": "High - Statutory rejection prevention",
+          "scrivener_note": "Ensure regex validation applies to both fields during Phase A Calibration."
+        }
+      ]
+    },
+    "performance_optimizations": {
+      "description": "Techniques that improved generation speed or code efficiency",
+      "entries": []
+    }
+  },
+  "example_entries": [
+    {
+      "id": "learning-001",
+      "category": "design_inconsistencies",
+      "date": "2026-01-20",
+      "mistake": "Generated CSS used hardcoded '48px' instead of var(--radius-primary)",
+      "correction": "Always use CSS variables from standards.style. Pattern: var(--radius-primary) not literal values.",
+      "impact": "Medium - Required manual fix, broke design token consistency",
+      "prevention_rule": "Scan all generated CSS for hardcoded values matching design tokens before output"
+    },
+    {
+      "id": "learning-002",
+      "category": "upl_violations",
+      "date": "2026-01-22",
+      "mistake": "AI output included phrase 'I recommend using member-managed structure'",
+      "correction": "Replace with: 'Florida Statute 605.0407 states that LLCs are member-managed unless articles specify otherwise. Here are both options: [comparison table]'",
+      "impact": "Critical - UPL violation risk",
+      "prevention_rule": "Run forbidden phrase regex scan on ALL text output before display. Block if match found."
+    },
+    {
+      "id": "learning-003",
+      "category": "workflow_improvements",
+      "date": "2026-01-25",
+      "success": "Added progressive disclosure to LLC formation wizard - reduced user confusion by 70%",
+      "pattern": "Break complex forms into single-question steps. Rule of Three enforcement = better UX.",
+      "impact": "High - Significantly improved completion rate",
+      "reuse_guidance": "Apply progressive disclosure pattern to all multi-step forms. Never show more than 3 fields at once."
+    }
+  ],
+  "active_learnings": {
+    "current_session_feedback": [],
+    "pending_review": []
+  },
+  "meta": {
+    "total_learnings": 0,
+    "last_applied": null,
+    "effectiveness_score": null
+  }
+}

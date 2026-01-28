@@ -1,0 +1,1 @@
+Data Spec: The Institutional Archive1. Asset ClassificationOFFICIAL: State/IRS documents.INTERNAL: Governance documents.AUDIT: Proof of publication/Sentinel logs.CONTEXT: AI strategy memos.2. The Freedom KeyOne-click export of the entire institutional archive in a ZIP file.

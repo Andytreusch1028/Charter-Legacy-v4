@@ -1,0 +1,32 @@
+/* .antigravity/standards.style */
+
+:root {
+  /* v5.5 White Charter Palette */
+  --canvas: #FFFFFF;      /* Pure White (v5.5 UPDATE) */
+  --surface: #FBFBFD;     /* Off-White for layered surfaces (v5.5 NEW) */
+  --ink: #1D1D1F;         /* Obsidian Black */
+  --accent: #007AFF;      /* Legacy Blue */
+  --warning: #EF4444;     /* Statutory Red */
+
+  /* Jobs-Ive Geometric Tokens */
+  --radius-primary: 52px; /* Distinctive hardware-mimicry curve */
+  --radius-secondary: 24px;
+  --spacing-generous: 4rem; /* Enforces whitespace */
+
+  /* Motion & Haptics */
+  --transition-fluid: 200ms ease-in-out;
+  --haptic-press: scale(0.98);
+}
+
+/* Global UI Constraints */
+body {
+  background-color: var(--canvas);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button:active {
+  transform: var(--haptic-press);
+}

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Dashboard - Charter Legacy</title>
+    
+    <!-- Obsidian Aesthetic -->
+    <link rel="stylesheet" href="styles/app.css">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1D1D1F">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/assets/logo-obsidian-shield.svg">
+    <link rel="apple-touch-icon" href="/assets/icon-192.png">
+</head>
+<body class="dashboard-page">
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <a href="/app/" class="nav-logo">
+            <svg class="logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 4L40 14V34L24 44L8 34V14L24 4Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M24 16L32 21V31L24 36L16 31V21L24 16Z" fill="currentColor"/>
+            </svg>
+        </a>
+        <button class="nav-menu" id="menuBtn">
+            <span class="menu-icon">☰</span>
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Welcome Header -->
+        <div class="dashboard-header">
+            <h1 class="welcome-title">Welcome back, <span id="userName">Friend</span></h1>
+            <p class="welcome-subtitle">Your Legacy Will is secure</p>
+        </div>
+
+        <!-- Status Card -->
+        <div class="status-card status-will">
+            <div class="status-header">
+                <h2 class="status-title">The Legacy Will</h2>
+                <span class="status-badge status-executed">Executed</span>
+            </div>
+            
+            <div class="status-details">
+                <div class="status-item">
+                    <span class="status-label">Will Status</span>
+                    <span class="status-value">Executed on January 20, 2026</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Legacy Timer</span>
+                    <span class="status-value status-active">Active</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Last Check-In</span>
+                    <span class="status-value">2 days ago</span>
+                </div>
+            </div>
+            
+            <!-- Legacy Timer Hero Feature -->
+            <div class="hero-feature">
+                <div class="hero-feature-icon">⏱️</div>
+                <div class="hero-feature-content">
+                    <h4 class="hero-feature-title">Legacy Timer Active</h4>
+                    <p class="hero-feature-text">Your successors will receive automatic access after 15 days of inactivity. You'll get alerts before activation.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3 class="actions-title">Quick Actions</h3>
+            <div class="actions-grid">
+                <a href="/app/successors" class="action-card action-primary">
+                    <div class="action-icon">👥</div>
+                    <h4 class="action-title">Update Successors</h4>
+                    <p class="action-description">Manage who gets access</p>
+                </a>
+                
+                <a href="/app/test-dms" class="action-card action-primary">
+                    <div class="action-icon">🧪</div>
+                    <h4 class="action-title">Test Legacy Timer</h4>
+                    <p class="action-description">See how it works (safe test mode)</p>
+                </a>
+                
+                <a href="/app/will" class="action-card">
+                    <div class="action-icon">📜</div>
+                    <h4 class="action-title">View Will</h4>
+                    <p class="action-description">Access your executed will</p>
+                </a>
+                
+                <a href="/app/vault" class="action-card">
+                    <div class="action-icon">🗄️</div>
+                    <h4 class="action-title">Legacy Vault</h4>
+                    <p class="action-description">Tier 4 secure storage</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Successor Test Run Feature -->
+        <div class="feature-highlight">
+            <div class="feature-highlight-content">
+                <h3 class="feature-highlight-title">Not Sure How It Works?</h3>
+                <p class="feature-highlight-text">Run a test of the Legacy Timer to see exactly what your successors will experience. It's safe—nothing activates for real.</p>
+                <a href="/app/test-dms" class="btn-secondary">Start Test Run</a>
+            </div>
+            <div class="feature-highlight-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-section">
+            <h3 class="activity-title">Recent Activity</h3>
+            <div class="activity-list">
+                <div class="activity-item">
+                    <div class="activity-icon">✓</div>
+                    <div class="activity-content">
+                        <p class="activity-text">Will executed with self-proving affidavit</p>
+                        <span class="activity-date">January 20, 2026</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">👥</div>
+                    <div class="activity-content">
+                        <p class="activity-text">2 successors designated</p>
+                        <span class="activity-date">January 20, 2026</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">⏱️</div>
+                    <div class="activity-content">
+                        <p class="activity-text">Legacy Timer activated</p>
+                        <span class="activity-date">January 20, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay" style="display: none;">
+        <div class="menu-content">
+            <button class="menu-close" id="menuClose">✕</button>
+            <nav class="menu-nav">
+                <a href="/app/">Dashboard</a>
+                <a href="/app/successors">Successors</a>
+                <a href="/app/test-dms">Test DMS</a>
+                <a href="/app/will">View Will</a>
+                <a href="/app/vault">Vault</a>
+                <a href="/app/support">Support</a>
+                <a href="/app/logout">Sign Out</a>
+            </nav>
+        </div>
+    </div>
+
+    <script src="scripts/dashboard.js"></script>
+</body>
+</html>

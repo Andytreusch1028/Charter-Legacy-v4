@@ -1,0 +1,17 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Wax Seal Accent Dot -->
+  <circle cx="50" cy="15" r="4" fill="#1D1D1F"/>
+  
+  <!-- C - Left letter -->
+  <path d="M30 50 Q20 50 20 60 Q20 75 30 75 Q40 75 45 70 L45 65 Q40 70 30 70 Q25 70 25 60 Q25 55 30 55 Q35 55 40 57 L40 52 Q35 50 30 50 Z" fill="#D4AF37"/>
+  <path d="M30 35 Q15 35 15 50 Q15 65 30 80 Q45 80 55 70 L55 60 Q45 75 30 75 Q20 65 20 50 Q20 40 30 40 Q40 40 50 45 L50 35 Q40 35 30 35 Z" fill="#D4AF37"/>
+  
+  <!-- I vertical through center -->
+  <rect x="48" y="35" width="8" height="45" fill="#D4AF37"/>
+  <rect x="45" y="32" width="14" height="6" fill="#D4AF37"/>
+  <rect x="45" y="77" width="14" height="6" fill="#D4AF37"/>
+  
+  <!-- L - Right letter -->
+  <rect x="64" y="35" width="8" height="45" fill="#D4AF37"/>
+  <rect x="64" y="75" width="20" height="8" fill="#D4AF37"/>
+</svg>

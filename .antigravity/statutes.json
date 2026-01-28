@@ -1,0 +1,42 @@
+{
+  "statutes": {
+    "605.0113": {
+      "title": "Registered office and registered agent",
+      "summary": "A limited liability company shall designate and continuously maintain in this state a registered office, which may be the same as its place of business, and a registered agent.",
+      "critical_constraint": "The registered office MUST be a physical street address. P.O. Boxes are strictly prohibited for service of process."
+    },
+    "605.0210": {
+      "title": "Annual report for Department of State",
+      "summary": "Each domestic and foreign limited liability company shall deliver to the department for filing an annual report.",
+      "deadline": "May 1st of each year",
+      "late_fee_trigger": "Post-May 1st"
+    },
+    "621.02": {
+      "title": "Professional limited liability companies",
+      "summary": "A professional limited liability company may be organized to render professional services, including but not limited to medical, dental, nursing, and pharmaceutical services.",
+      "critical_constraint": "The entity name MUST include 'PLLC' or 'Professional Limited Liability Company'. Standard 'LLC' suffix is prohibited for professional service entities.",
+      "licensing_requirement": "All members must be licensed by the appropriate Florida board (e.g., Board of Medicine, Board of Nursing, Board of Dentistry).",
+      "scrivener_note": "Strictly enforce 'PLLC' suffix. Reject articles using 'LLC', 'Inc.', or 'Corp.' for professional service entities."
+    },
+    "489.105": {
+      "title": "Contractor licensing and registration",
+      "summary": "Requires contractors to be licensed or registered with the Department of Business and Professional Regulation (DBPR) before engaging in contracting work in Florida.",
+      "critical_constraint": "Contractor LLCs must link to valid DBPR contractor license. Form DBPR-01 (Qualifying Agent) must be filed if the qualifier is not the sole owner.",
+      "compliance_integration": "Automated handshake with DBPR database to verify active contractor license status.",
+      "scrivener_note": "DBPR-01 Qualification form is separate from Articles of Organization but required for contractor entities."
+    },
+    "732.502": {
+      "title": "Execution of wills",
+      "summary": "Every will must be in writing and executed with the following formalities: signed at the end by the testator or in the testator's name by some other person in the testator's presence and by the testator's direction, and signed by at least two attesting witnesses in the presence of the testator and in the presence of each other.",
+      "critical_constraint": "Minimum of 2 attesting witnesses required. Witnesses must sign in the presence of the testator AND in the presence of each other.",
+      "prohibitions": [
+        "Holographic wills (handwritten, unwitnessed) are NOT valid in Florida",
+        "Oral/nuncupative wills are NOT valid in Florida",
+        "Electronic wills require additional compliance per FL-732.521"
+      ],
+      "self_proving_affidavit": "FL-732.503 allows a self-proving affidavit to be attached, eliminating the need for witness testimony during probate.",
+      "scrivener_note": "Requires two attesting witnesses in the presence of the testator. Generate self-proving affidavit per FL-732.503 to streamline probate process."
+    }
+  }
+}
+

@@ -1,0 +1,25 @@
+# .antigravity/permissions.yaml
+
+version: 1.0
+project: Charter-Legacy
+
+access_control:
+  - path: "/src/ui/**"
+    permission: "AUTO_HEAL"
+    description: "AI can autonomously fix layout and CSS issues following standards.style."
+
+  - path: "/src/legal/statutes/**"
+    permission: "READ_ONLY"
+    description: "Librarian Node. AI can read but never modify statutory text."
+
+  - path: "/src/logic/compliance/**"
+    permission: "REVIEW_REQUIRED"
+    description: "Requires Andy's sign-off. Any change to LLC filing logic is critical."
+
+  - path: "/src/auth/**"
+    permission: "DENIED"
+    description: "Zero-Trust Zone. AI cannot view or edit security and encryption logic."
+
+  - path: ".antigravity/**"
+    permission: "IMMUTABLE"
+    description: "The AI cannot change its own rules or the PBP manifest."

@@ -1,0 +1,262 @@
+{
+  "version": "5.5",
+  "catalog_type": "Statutory Service Nodes",
+  "products": [
+    {
+      "node_id": "standard-llc",
+      "name": "Founder's Shield",
+      "tagline": "Your LLC. Your privacy. Not your home address on Google.",
+      "price": 249,
+      "statute": "FL-605",
+      "description": "Privacy-first LLC formation with Florida Hub protection",
+      "value_proposition": "The only LLC service that protects your home address by default",
+      "includes": [
+        "Articles of Organization (FL-605 compliant)",
+        "Privacy Shield Year 1 (Florida Hub default - your home stays private)",
+        "Registered Agent service included",
+        "Legacy Vault Tier 2 storage",
+        "Sunbiz direct filing",
+        "Founder's Playbook PDF (10-page guide: banking, taxes, compliance 101)"
+      ],
+      "suffix_requirement": null,
+      "compliance_level": "baseline",
+      "premium_features": {
+        "founders_playbook": {
+          "format": "PDF download",
+          "pages": 10,
+          "topics": ["Opening business banking", "Tax filing basics", "Annual report compliance", "Operating agreement templates", "Hiring your first employee"],
+          "value": "Saves 2-3 hours of Google research"
+        }
+      },
+      "target_customer": "Solo founders, family businesses, general commerce",
+      "key_differentiator": "Privacy by default - competitors expose your home address, we don't"
+    },
+    {
+      "node_id": "medical-pllc",
+      "name": "Medical PLLC Node",
+      "price": 499,
+      "statute": "FL-621",
+      "description": "Never think about LLC paperwork again - Professional LLC for licensed medical practitioners",
+      "value_proposition": "Saves you 3+ hours of confusion navigating FL-621 compliance requirements",
+      "includes": [
+        "PLLC Articles of Organization (FL-621 compliant)",
+        "Mandatory 'PLLC' suffix enforcement (zero filing errors)",
+        "Professional service scrivening",
+        "Board of Medicine/Nursing/Dentistry compliance tracking",
+        "Enhanced liability protection documentation",
+        "Privacy Shield Year 1 (Florida Hub default)",
+        "Legacy Vault Tier 2 storage",
+        "Annual Report Reminder Service (60-day deadline alerts per FL-605.0210)",
+        "Priority support (24hr response time, not 48hr)",
+        "Medical Professional Package badge (VIP designation)"
+      ],
+      "suffix_requirement": "PLLC",
+      "suffix_validation": "reject_llc_inc_corp",
+      "compliance_level": "professional",
+      "licensing_verification": ["Board of Medicine", "Board of Nursing", "Board of Dentistry", "Board of Pharmacy"],
+      "premium_features": {
+        "annual_report_reminder": {
+          "name": "Annual Report Reminder Service",
+          "frequency": "First year included, then annual",
+          "includes": ["Automated email 60 days before May 1 deadline (FL-605.0210)", "Sunbiz status verification (active/inactive - factual only)", "Deadline calendar with statutory filing dates"],
+          "upl_safe": "Factual reminders only - no legal advice on compliance"
+        },
+        "board_license_monitor": {
+          "name": "Board License Status Monitor",
+          "data_source": "FL Board of Medicine/Nursing/Dentistry/Pharmacy public databases",
+          "displays": [
+            "License status (active/inactive - factual only)",
+            "License number verification",
+            "Renewal date from state records",
+            "60-day renewal deadline alert"
+          ],
+          "value": "Doctor losing medical license due to missed renewal = $200K+ problem. Monitor solves this for $499.",
+          "upl_safe": "Displays factual license status from public database only - no compliance opinion. Example: 'Your FL medical license #12345 expires on [date].'"
+        },
+        "priority_support": {
+          "response_time": "24 hours (vs 48hr standard)",
+          "channels": ["Email", "In-app chat"],
+          "dedicated_specialist": true
+        },
+        "vip_badge": {
+          "display": "Medical Professional Package",
+          "benefits": ["Premium dashboard theme", "Early access to new features", "Quarterly statutory update webinars (factual changes only)"]
+        }
+      },
+      "target_customer": "Physicians, dentists, nurses, pharmacists, licensed healthcare providers",
+      "time_savings": "3+ hours of FL-621 research and compliance navigation",
+      "roi_justification": "At $200-400/hr physician rate, $499 saves $600-1200 in avoided mistakes and time"
+    },
+    {
+      "node_id": "contractor-llc",
+      "name": "Trade Professional LLC",
+      "tagline": "Your license. Your business. Zero state headaches.",
+      "price": 599,
+      "statute": "FL-489",
+      "description": "Never worry about DBPR deadlines or losing your license to paperwork",
+      "value_proposition": "The only LLC service with DBPR integration and automated compliance tracking",
+      "includes": [
+        "Articles of Organization (FL-605 + FL-489 compliant)",
+        "Automated DBPR-01 Qualification handshake",
+        "Contractor license verification linkage",
+        "Workers' compensation verification helper",
+        "Department of Business and Professional Regulation integration",
+        "Privacy Shield Year 1 (Florida Hub default)",
+        "Legacy Vault Tier 2 storage",
+        "Construction industry statutory audit",
+        "License Dashboard (factual deadline tracking)",
+        "Priority support (24hr response time)"
+      ],
+      "suffix_requirement": null,
+      "compliance_level": "trade",
+      "dbpr_integration": {
+        "form": "DBPR-01",
+        "purpose": "Contractor Qualification",
+        "auto_handshake": true,
+        "verification_endpoint": "https://www.myfloridalicense.com/dbpr/contractors/"
+      },
+      "premium_features": {
+        "license_dashboard": {
+          "name": "License Dashboard",
+          "features": [
+            "DBPR license status display (active/expired/suspended - pulled from state database)",
+            "Workers' comp filing status (filed/not filed - factual only)",
+            "Annual report filing status (filed/not filed per FL-605.0210)",
+            "Upcoming statutory deadlines (May 1 annual report, license renewal dates)",
+            "Automated deadline alerts 60 days before due dates"
+          ],
+          "value": "Never miss a statutory deadline - worth $200+",
+          "upl_safe": "Displays facts from public records only - no compliance opinions"
+        },
+        "workers_comp_helper": {
+          "name": "Workers' Comp Verification Helper",
+          "statute": "FL-440.107",
+          "checks": [
+            "Employee count threshold (1+ employees requires workers' comp per statute)",
+            "Current filing status from state database (filed/not filed - factual only)",
+            "Renewal date display",
+            "Statutory requirement citation"
+          ],
+          "display_example": "FL statute 440.107 requires workers' comp if you have 1+ employees. Your filing status: [filed/not filed].",
+          "value": "Automatic workers' comp requirement verification - prevents state penalties",
+          "upl_safe": "Factual only - displays statutory requirement and filing status from public records. No compliance advice."
+        },
+        "priority_support": {
+          "response_time": "24 hours",
+          "specialist": "Construction industry expert"
+        }
+      },
+      "target_customer": "General contractors, electrical contractors, plumbing contractors, roofing contractors",
+      "time_savings": "5+ hours annually on compliance paperwork",
+      "roi_justification": "At $75-150/hr contractor rate, $599 saves $1,500-3,000 vs hiring lawyer + avoids license suspension risk"
+    },
+    {
+      "node_id": "succession-soul",
+      "name": "The Legacy Will",
+      "tagline": "Your family gets access automatically. No probate lawyer needed.",
+      "hero_feature": "Legacy Timer + Self-proving affidavit = your legacy protected, zero court drama",
+      "price": 399,
+      "statute": "FL-732",
+      "description": "The only will service with automatic successor access via Legacy Timer",
+      "value_proposition": "Peace of mind: your family won't fight, and probate court fees are eliminated",
+      "includes": [
+        "Legacy Timer - automatic successor access (15-day In Extremis buffer with veto protection)",
+        "FL-732 compliant Statutory Will",
+        "2-witness attestation requirement (FL-732.502)",
+        "Successor PIN Multi-signature system",
+        "Legacy Vault Tier 4 integration",
+        "Testator identity verification",
+        "Holographic will prohibition enforcement",
+        "Self-proving affidavit (FL-732.503 - saves $1,500+ in probate court testimony fees)",
+        "Notarization guidance",
+        "Will Completion Checker - verifies mechanical requirements before signing",
+        "Successor Test Run - test Legacy Timer flow before activation"
+      ],
+      "suffix_requirement": null,
+      "compliance_level": "estate",
+      "witness_requirement": {
+        "count": 2,
+        "statute": "FL-732.502",
+        "presence": "in_presence_of_testator",
+        "attestation": "signature_required"
+      },
+      "prohibitions": ["holographic_wills", "oral_wills", "nuncupative_wills"],
+      "vault_tier": "TIER_4_PERSONAL",
+      "succession_buffer": "360_hours",
+      "premium_features": {
+        "dead_mans_switch": {
+          "name": "Legacy Timer",
+          "description": "Your successors get automatic vault access after 15-day In Extremis buffer",
+          "hero_feature": true,
+          "workflow": [
+            "You designate successors with PIN codes",
+            "If no activity for 360 hours (15 days), system initiates In Extremis mode",
+            "Email/SMS alerts sent to you for veto",
+            "If no veto, successors get automatic access to Tier 4 vault (will, documents)",
+            "Multi-signature requirement prevents single-successor abuse"
+          ],
+          "value": "No probate lawyer needed to access your will - automatic, instant, secure",
+          "upl_safe": "Technical workflow only - no legal advice on estate planning"
+        },
+        "successor_test_run": {
+          "name": "Successor Test Run",
+          "description": "Test the Legacy Timer flow in non-activated mode",
+          "workflow": [
+            "Designate test successors",
+            "Simulate In Extremis trigger (non-real)",
+            "See exactly what successors will receive",
+            "Verify PIN codes work",
+            "Confirm email/SMS alerts function properly"
+          ],
+          "value": "Builds trust - see how it works BEFORE you die",
+          "upl_safe": "Pure technical workflow test - no legal validation of will contents"
+        },
+        "will_completion_checker": {
+          "name": "Will Completion Checker",
+          "checks": [
+            "Missing signature fields (testator, witnesses)",
+            "Witness count verification (FL-732.502 requires exactly 2)",
+            "Blank required fields detection",
+            "Page numbering sequence check",
+            "FL-732 statutory requirement checklist (mechanical requirements only)"
+          ],
+          "value": "Catches missing mechanical requirements before notarization",
+          "upl_safe": "Checks for missing mechanical requirements only - NOT legal sufficiency or quality of will provisions"
+        },
+        "self_proving_affidavit": {
+          "statute": "FL-732.503",
+          "benefit": "Eliminates need for witness testimony during probate (per statute)",
+          "savings": "$1,500-3,000 in court costs and attorney fees (typical probate)", 
+          "upl_safe": "Factual statement of statutory benefit - not legal advice"
+        }
+      },
+      "target_customer": "Estate planning, succession planning, will execution, legacy preservation, founders with family",
+      "roi_justification": "Probate attorney charges $3,000-8,000 to fix broken DIY will. Self-proving affidavit alone saves $1,500+ in court fees. 4-10x ROI on $399."
+    }
+  ],
+  "pricing_breakdown": {
+    "standard_llc": {
+      "total": 249,
+      "state_fees_escrow": 125,
+      "platform_revenue": 124
+    },
+    "medical_pllc": {
+      "total": 499,
+      "state_fees_escrow": 125,
+      "platform_revenue": 374,
+      "notes": "Premium tier - includes compliance checkup, priority support, VIP badge"
+    },
+    "contractor_llc": {
+      "total": 599,
+      "state_fees_escrow": 155,
+      "platform_revenue": 444,
+      "notes": "Trade professional tier - includes DBPR-01, Compliance Dashboard, priority support"
+    },
+    "succession_soul": {
+      "total": 399,
+      "state_fees_escrow": 0,
+      "platform_revenue": 399,
+      "notes": "No state filing fee (private document, not public record)"
+    }
+  }
+}

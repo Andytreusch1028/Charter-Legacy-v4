@@ -1,0 +1,1 @@
+Strategy: The Operating Agreement Scrivener1. The Librarian ModelWe provide a curated Statutory Template matching the user's chosen structure (Member vs. Manager).2. Letta MemoryThe Engine remembers if the user mentioned a partner and flags the "Successor Member" section in the template.3. Legacy ExportDelivered as a high-fidelity, obsidian-branded PDF in the Vault.

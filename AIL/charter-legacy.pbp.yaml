@@ -1,0 +1,783 @@
+# =====================================================
+# CHARTER LEGACY - PLAY-BY-PLAY (PBP) SPECIFICATION
+# =====================================================
+# Version: 5.5
+# Purpose: AI Intent Language for Charter Legacy Platform
+# Usage: Present this PBP to Google Antigravity to generate production-ready code
+# =====================================================
+
+@IDENTITY {
+  name: "Charter Legacy - LLC Simplification Engine";
+  statutory_compliance: "FL-605 (LLC), FL-621 (PLLC), FL-489 (Contractor), FL-732 (Succession)";
+  tone: "High-Tech Scrivener (Professional/Hardware-Mimicry)";
+  upl_mode: "STRICT_NON_DISCRETIONARY";
+  philosophy: "Extreme Clerical Excellence - We provide the map, not the destination";
+}
+
+@ANTIGRAVITY {
+  // Configuration files that govern AI behavior
+  config_root: ".antigravity/";
+  
+  standards: {
+    source: ".antigravity/standards.style",
+    usage: "Apply these CSS variables to ALL generated UI components",
+    enforcement: "AUTO - AI must use var(--canvas), var(--radius-primary), etc."
+  };
+
+  statutes: {
+    source: ".antigravity/statutes.json",
+    usage: "Reference these when surfacing statutory facts to users",
+    enforcement: "MANDATORY - Always cite statute number and critical_constraint",
+    example: "User asks about RA → AI responds: 'Florida Statute 605.0113 requires... [cite critical_constraint]'"
+  };
+
+  products: {
+    source: ".antigravity/product-nodes.json",
+    usage: "Reference when generating product selection, pricing, or statutory compliance logic",
+    enforcement: "MANDATORY - Use exact pricing, suffix validation, and compliance rules from catalog"
+  };
+
+  permissions: {
+    source: ".antigravity/permissions.yaml",
+    usage: "Respect access control for file modifications",
+    enforcement: "STRICT - Reject requests that violate DENIED or IMMUTABLE paths",
+    auto_heal: "UI files can be autonomously fixed following standards.style",
+    review_required: "Compliance logic changes must notify user for Andy's review"
+  };
+
+  learnings: {
+    source: ".antigravity/learnings.json",
+    usage: "Reference past mistakes and successes to improve future generations",
+    enforcement: "MANDATORY - Check learnings before generating code, apply prevention_rules",
+    feedback_loop: "Capture new learnings when user identifies errors or improvements"
+  };
+
+  mentor: {
+    source: ".antigravity/steve-jobs-mentor.yaml",
+    usage: "Invoke for product philosophy, design critique, and strategic guidance",
+    invocation: "Ask Steve:, Steve review this:, Steve decide:",
+    enforcement: "Apply decision framework and communication style when mentor is invoked"
+  };
+}
+
+@LEARNING {
+  // Self-improvement mechanism for continuous learning
+  philosophy: "Every mistake is a lesson. Every success is a pattern. Store both.";
+
+  capture_triggers: [
+    "User identifies UPL violation in generated output",
+    "Design token inconsistency detected",
+    "Privacy default not applied (Florida Hub missing)",
+    "Successful pattern that improved code quality",
+    "Statutory interpretation edge case discovered",
+    "Performance optimization technique validated"
+  ];
+
+  learning_process: {
+    step_1_detect: "Identify when generated output deviates from PBP specifications";
+    step_2_categorize: "Classify as upl_violations, design_inconsistencies, privacy_failures, workflow_improvements, statutory_clarifications, or performance_optimizations";
+    step_3_document: {
+      mistake: "What went wrong (if applicable)",
+      correction: "How it was fixed",
+      success: "What worked well (if applicable)",
+      pattern: "Reusable technique",
+      impact: "Critical/High/Medium/Low severity",
+      prevention_rule: "Specific check to avoid repetition"
+    };
+    step_4_store: "Append to .antigravity/learnings.json under appropriate category";
+    step_5_apply: "Reference learnings.json before each code generation session"
+  };
+
+  pre_generation_checklist: {
+    upl_scan: "Review upl_violations entries → ensure forbidden phrases blocked",
+    design_check: "Review design_inconsistencies → verify var(--token) usage, not literals",
+    privacy_audit: "Review privacy_failures → confirm Florida Hub defaults applied",
+    pattern_reuse: "Review workflow_improvements → apply successful patterns to new code",
+    statute_reference: "Review statutory_clarifications → avoid past interpretation errors"
+  };
+
+  feedback_integration: {
+    user_correction: "When user says 'that's wrong' or provides fix → capture as learning entry",
+    validation_failure: "When generated code fails UPL/design/privacy validation → auto-log to learnings.json",
+    success_confirmation: "When user says 'perfect' or accepts without edits → capture successful pattern"
+  };
+
+  meta_learning: {
+    pattern_recognition: "Analyze learnings.json monthly to identify recurring mistake types",
+    rule_synthesis: "Convert frequent mistakes into automated pre-checks (add to @UPL_GUARDRAILS or @STYLE)",
+    effectiveness_tracking: "Measure reduction in errors over time → update meta.effectiveness_score"
+  };
+
+  example_learning_cycle: {
+    mistake: "Generated 'I recommend member-managed LLC'",
+    detection: "User flagged as UPL violation",
+    learning_entry: {
+      id: "learning-004",
+      category: "upl_violations",
+      mistake: "Used forbidden phrase 'I recommend'",
+      correction: "Florida Statute 605.0407 states... [comparison table]",
+      prevention_rule: "Run regex scan on output: /I recommend|You should|In my legal opinion/ → block if match"
+    },
+    storage: "Appended to learnings.json → upl_violations.entries[]",
+    future_application: "Before generating LLC advice, check learnings.json → apply prevention_rule → avoid phrase"
+  };
+
+  audit: {
+    pre_generation_check: "MANDATORY: Before suggesting ANY feature/messaging change, run UPL pre-check first",
+    validation_workflow: {
+      step_1: "Identify proposed feature or messaging change",
+      step_2: "Ask: Does this imply legal advice, compliance determination, or statutory interpretation?",
+      step_3_if_yes: "HALT. Reframe as factual/mechanical only. Document violation in learnings.json",
+      step_4_if_no: "Proceed with feature, include upl_safe field documenting limitations"
+    },
+    forbidden_patterns: [
+      "Review (implies legal judgment)",
+      "Advise (legal advice)",
+      "Recommend (legal recommendation)",
+      "Compliance Opinion (legal determination)",
+      "Legal Interpretation (requires bar license)",
+      "Error Detection (legal sufficiency)",
+      "Ambiguous language analysis (legal interpretation)"
+    ],
+    safe_patterns: [
+      "Display facts from public records",
+      "Check mechanical requirements (signatures, witness count)",
+      "Send deadline reminders (cite statute)",
+      "Cite statutory text (verbatim)",
+      "Compare options (factual table)",
+      "Verify blank fields (mechanical check)"
+    ],
+    examples: {
+      forbidden: [
+        "Will Review Service - implies legal judgment ❌",
+        "Compliance Dashboard - implies legal opinion ❌",
+        "We'll handle your compliance - taking legal responsibility ❌",
+        "AI detects legal errors - legal sufficiency check ❌",
+        "Ambiguous beneficiary language detection - legal interpretation ❌"
+      ],
+      safe: [
+        "Will Completion Checker - mechanical requirements only ✅",
+        "Status Dashboard - factual public record display ✅",
+        "Automated deadline reminders - factual dates from statutes ✅",
+        "Missing signature detection - mechanical check ✅",
+        "Blank field detection - mechanical check ✅"
+      ]
+    },
+    mandatory_disclaimer: "When displaying statutory facts, always cite statute number and mark as 'factual only - not legal advice'"
+  };
+}
+
+@PRODUCTS {
+  // v5.5 Statutory Service Catalog
+  source: ".antigravity/product-nodes.json";
+  
+  standard_llc: {
+    price: 249,
+    statute: "FL-605",
+    name: "Founder's Shield",
+    tagline: "Your LLC. Your privacy. Not your home address on Google.",
+    description: "Privacy-first LLC formation with Florida Hub protection",
+    value_proposition: "The only LLC service that protects your home address by default",
+    suffix_requirement: null,
+    premium_bundle: {
+      founders_playbook: "10-page PDF guide covering banking, taxes, compliance 101",
+      value: "Saves 2-3 hours of Google research"
+    },
+    key_differentiator: "Privacy by default - competitors expose your home address, we don't",
+    compliance_level: "baseline"
+  };
+
+  medical_pllc: {
+    price: 499,
+    statute: "FL-621.02",
+    name: "Medical PLLC",
+    description: "Automated paperwork handling per FL-621 requirements",
+    value_proposition: "Professional LLC for licensed medical practitioners with premium support",
+    suffix_requirement: "PLLC (mandatory)",
+    suffix_validation: {
+      enforce: "PLLC or Professional Limited Liability Company",
+      reject: ["LLC", "Inc.", "Corp.", "Corporation"],
+      error_message: "Florida Statute 621.02 requires 'PLLC' suffix for professional service entities"
+    },
+    licensing_verification: {
+      boards: ["Board of Medicine", "Board of Nursing", "Board of Dentistry", "Board of Pharmacy"],
+      requirement: "All members must be licensed by appropriate Florida board"
+    },
+    premium_bundle: {
+      annual_report_reminder: "Automated 60-day deadline alerts per FL-605.0210 (factual reminders only)",
+      board_license_monitor: "FL Board of Medicine/Nursing/Dentistry/Pharmacy license status monitor - displays renewal dates from public database (factual only)",
+      priority_support: "24hr response time (vs 48hr standard)",
+      vip_badge: "Medical Professional Package designation with premium dashboard",
+      upl_safe: "Factual deadline reminders and license status only - no legal advice or compliance opinions"
+    },
+    compliance_level: "professional"
+  };
+
+  contractor_llc: {
+    price: 599,
+    statute: "FL-489.105",
+    name: "Trade Professional LLC",
+    tagline: "Your license. Your business. Zero state headaches.",
+    description: "Never worry about DBPR deadlines or losing your license to paperwork",
+    value_proposition: "The only LLC service with DBPR integration and automated compliance tracking",
+    suffix_requirement: null,
+    dbpr_integration: {
+      form: "DBPR-01 Qualification",
+      handshake: "Automated contractor license verification",
+      endpoint: "DBPR database API",
+      requirement: "Valid FL contractor license required"
+    },
+    premium_bundle: {
+      license_dashboard: "License Dashboard - displays DBPR license status, workers' comp filing status, annual report status from public records (factual only)",
+      workers_comp_helper: "Workers' Comp Verification Helper - displays FL-440.107 requirement (1+ employees) and filing status from state database (factual only)",
+      priority_support: "24hr response from construction industry expert",
+      automated_alerts: "60-day statutory deadline reminders - May 1 annual report, license renewals",
+      upl_safe: "Displays facts from public records only - no compliance opinions or advice"
+    },
+    time_savings: "5+ hours annually on compliance paperwork",
+    roi_justification: "At $75-150/hr rate, saves $1,500-3,000 vs lawyer + avoids license suspension",
+    compliance_level: "trade"
+  };
+
+  succession_soul: {
+    price: 399,
+    statute: "FL-732.502",
+    name: "The Legacy Will",
+    tagline: "Your family gets access automatically. No probate lawyer needed.",
+    hero_feature: "Legacy Timer + Self-proving affidavit = your legacy protected, zero court drama",
+    description: "The only will service with automatic successor access via Legacy Timer",
+    value_proposition: "Peace of mind: your family won't fight, and probate court fees are eliminated",
+    suffix_requirement: null,
+    witness_requirement: {
+      count: 2,
+      presence: "in_presence_of_testator_and_each_other",
+      statute_reference: "FL-732.502"
+    },
+    prohibitions: ["holographic_wills", "oral_wills", "nuncupative_wills"],
+    premium_bundle: {
+      dead_mans_switch: "HERO FEATURE - Automatic successor access after 15-day In Extremis buffer with veto protection. No probate lawyer needed.",
+      successor_test_run: "Test Legacy Timer flow before activation - build trust by seeing how it works",
+      will_completion_checker: "Verifies mechanical requirements before signing - missing signatures, witness count per FL-732.502, blank fields (NOT legal sufficiency)",
+      self_proving_affidavit: "FL-732.503 - statutory benefit eliminates witness testimony in probate (typical savings $1,500-3,000)",
+      upl_safe: "Technical workflow and mechanical checks only - NOT legal advice on will quality, estate planning, or provisions"
+    },
+    roi_justification: "Probate attorney charges $3,000-8,000 to fix broken DIY will. 4-10x ROI on $399",
+    vault_tier: "TIER_4_PERSONAL",
+    succession_buffer: "360 hours (15 days In Extremis)",
+    compliance_level: "estate"
+  };
+}
+
+@STYLE {
+  layout: "Obsidian Aesthetic - High Whitespace";
+  rule_of_three: "Maximum 3 interactive fields per screen";
+  interaction: "Tactile, physics-based transitions; Progressive Disclosure";
+  audit: "Jobs-Ive 'Essence' check required before UI generation";
+  
+  // v5.5 White Charter UI
+  white_charter: {
+    philosophy: "Pure minimalism - Obsidian Sentinel Shield logo as sole navigation anchor",
+    navigation: "Remove 'Home' menu item - logo handles all root navigation",
+    authentication: "Identity Pulse (Magic Link passwordless)",
+    palette_enforcement: "STRICT - No gradients, no grays, only defined tokens"
+  };
+  
+  design_tokens: {
+    canvas: "#FFFFFF (Pure White)",        // v5.5 UPDATE: Changed from #FBFBFD
+    surface: "#FBFBFD (Off-White)",        // v5.5 NEW: Secondary layered surfaces
+    ink: "#1D1D1F (Obsidian Black)",
+    accent: "#007AFF (Legacy Blue)",
+    warning: "#EF4444 (Statutory Red)",
+    corner_radius_primary: "48px-56px",
+    corner_radius_secondary: "24px",
+    haptic: "active:scale-[0.98]",
+    transition: "200ms ease-in-out",
+    typography: "High-legibility Sans-Serif (System stack), Black/Bold for authority"
+  };
+  
+  principles: [
+    "Hardware-like precision (Apple/Tesla feel, not government website)",
+    "Generous whitespace (breathing room reduces cognitive load)",
+    "Micro-animations for engagement (subtle, not distracting)",
+    "One primary action per view (clear next step)",
+    "Pure white backgrounds (#FFFFFF) with off-white layering (#FBFBFD)"
+  ];
+}
+
+@FEDERAL_GATE {
+  // v5.5 IRS Statutory Window Enforcement
+  philosophy: "100% EIN procurement success via intelligent scheduling";
+  
+  irs_window: {
+    active_hours: "7:00 AM - 10:00 PM ET",
+    timezone: "America/New_York",
+    enforcement: "Tasks created outside window auto-schedule for next 7:00 AM"
+  };
+
+  status_logic: {
+    during_hours: "PROCESSING (immediate submission)",
+    outside_hours: "FEDERAL_PENDING (scheduled for next window)",
+    scheduled_time: "7:00 AM ET next business day"
+  };
+
+  retry_strategy: {
+    attempts: 3,
+    backoff: "exponential (1s, 2s, 4s)",
+    jitter: "full",
+    failure_action: "Escalate to Staff Control Tower for manual review"
+  };
+
+  success_metrics: {
+    target: "100% procurement rate",
+    tracking: "Log all submissions, measure success vs. failure",
+    optimization: "Adjust window timing if federal systems show patterns"
+  };
+}
+
+@LEDGER {
+  // v5.5 Radical Financial Transparency
+  philosophy: "Dual-entry accounting - users see exactly where money goes";
+
+  partitioning: {
+    state_fees_escrow: "Held until statutory filing complete (not revenue)",
+    platform_revenue: "Net after state fees deducted (actual earnings)",
+    transparency: "Both visible in Founder's Sovereign Ledger"
+  };
+
+  breakdown_by_product: {
+    standard_llc: {
+      total: 249,
+      state_escrow: 125,
+      platform: 124
+    },
+    medical_pllc: {
+      total: 499,
+      state_escrow: 125,
+      platform: 374
+    },
+    contractor_llc: {
+      total: 599,
+      state_escrow: 155,
+      platform: 444
+    },
+    succession_soul: {
+      total: 399,
+      state_escrow: 0,
+      platform: 399,
+      note: "No state filing fee (private document)"
+    }
+  };
+
+  audit_trail: {
+    cryptographic_signing: "All ledger entries immutably signed",
+    timestamp: "ISO 8601 with microsecond precision",
+    export: "CSV download available (Freedom Key philosophy)",
+    retention: "Permanent - ledger is part of institutional record"
+  };
+
+  sovereign_ledger_display: {
+    columns: ["Date", "Service Type", "Total Paid", "State Fees", "Platform Revenue"],
+    transparency_message: "Charter Legacy practices radical financial transparency. This ledger shows exactly how your payment was partitioned: state statutory fees (held in escrow until filing) vs. platform service fees.",
+    download: "Single-click CSV export with audit trail signatures"
+  };
+}
+
+@DATA {
+  object 'Entity' {
+    fields: [
+      llc_name: str,
+      principal_address: address, // Must be physical (No P.O. Box)
+      mailing_address: address,   // P.O. Box permitted
+      registered_agent: str,
+      statutory_purpose: text,
+      effective_date: date,
+      management_type: enum(MEMBER_MANAGED, MANAGER_MANAGED),
+      organizer: {
+        name: str,
+        address: address,
+        role: enum(AMBR, MGR)
+      }
+    ];
+    validation: "FL-605.0113 Enforcement: Registered Agent address MUST be a physical Florida street address. No P.O. Box permitted for principal_address or registered_agent.";
+    privacy: {
+      default_hub: "Florida Hub - 123 Innovation Way, Ste 400, DeLand, FL 32720"
+    };
+  }
+
+  object 'VaultArtifact' {
+    fields: [
+      document_type: enum(ARTICLES, EIN, OPERATING_AGREEMENT, PROOF_PUB, ANNUAL_REPORT),
+      encryption: str,
+      tier: enum(TIER_1_MEDICAL, TIER_2_BUSINESS, TIER_3_GOVERNANCE, TIER_4_PERSONAL),
+      succession_buffer: int,
+      created_at: timestamp,
+      access_log: array<AccessEvent>
+    ];
+    storage: "AES-256-GCM encrypted vault";
+    retention: "Lifetime + 20 years (Institutional Standard, FL 7-year minimum)";
+  }
+
+  object 'AccessEvent' {
+    fields: [
+      user_id: str,
+      action: enum(VIEW, DOWNLOAD, UPLOAD, DELETE),
+      timestamp: timestamp,
+      signature: str,
+      ip_address: str
+    ];
+    audit: "Cryptographically signed, immutable";
+  }
+
+  object 'SuccessionProfile' {
+    fields: [
+      successor_name: str,
+      successor_email: str,
+      verification_method: enum(ID_CHECK, HARDWARE_KEY),
+      veto_buffer_hours: int,
+      tier_access: array<enum(TIER_1, TIER_2, TIER_3, TIER_4)>,
+      vacation_override_until: date // Inhibit Legacy Timer during travel
+    ];
+    dead_mans_switch: "Active unless current_date < vacation_override_until";
+  }
+}
+
+@LOGIC {
+  trigger 'OnSunbizIntegration' {
+    policy: "Exponential Backoff";
+    retry_strategy: {
+      initial_delay: "1s",
+      multiplier: 2.0,
+      max_attempts: 5,
+      jitter: "full"
+    };
+    action: "Handle Sunbiz maintenance windows (429/503 errors) without session loss";
+  }
+
+  trigger 'OnAddress_Verification' {
+    condition: "is_po_box(registered_agent_address)";
+    action: "REJECT - Notify user of FL-605.0113 physical address requirement";
+    message: "Florida Statute 605.0113 requires the Registered Agent address to be a physical Florida street address. P.O. Boxes are not permitted for this field.";
+  }
+
+  trigger 'OnUserIntent_DescribesBusiness' {
+    action: "Scrive statutory purpose with catch-all clause";
+    template: "{user_dream}, including any and all lawful business permitted under Chapter 605, Florida Statutes";
+    upl_safeguard: "NO discretionary language ('I recommend', 'You should')";
+    example: "User says 'hardware shop' → 'Retail distribution of hardware and specialized tools, including any and all lawful business permitted under Chapter 605, Florida Statutes'";
+  }
+
+  trigger 'OnFormation_NovemberDecember' {
+    condition: "filing_date BETWEEN Nov-1 AND Dec-31";
+    action: "Surface Tax Optimization Option (not recommendation)";
+    display: "Florida Statute 605 allows setting effective_date to January 1 of following year";
+    reasoning: "Prevents unnecessary tax filing for <30 days of operation in prior year";
+    upl_mode: "Present statute, let user decide";
+  }
+
+  trigger 'OnAddress_UserEntersHome' {
+    action: "Display Privacy Warning Modal";
+    message: "Florida public records law will make this address searchable. Charter Legacy defaults to our Florida Hub for privacy.";
+    options: [
+      "Use Florida Hub (Recommended for Privacy)",
+      "Use My Address (I understand the privacy implications)"
+    ];
+  }
+
+  trigger 'OnArticlesComplete' {
+    action: [
+      "Generate PDF from XML mapping (Article II, III, IV, VI)",
+      "Vault document as TIER_2_BUSINESS",
+      "Create Letta memory SessionArtifact.json with founder intent",
+      "Submit to Sunbiz API",
+      "Send confirmation email (non-discretionary tone)"
+    ];
+    next_step: "Display 'Next Steps' dashboard (EIN application, Operating Agreement)";
+  }
+
+  trigger 'OnSuccessionEvent_VetoBufferExpires' {
+    condition: "Legacy Timer triggered AND current_date > vacation_override_until AND veto_buffer_hours elapsed";
+    action: [
+      "Verify successor identity (Tier 1: instant post-ID, Tier 2+: veto buffer)",
+      "Cryptographically sign access event to audit log",
+      "Roll decrypt assets by tier (TIER_2: 240hrs, TIER_4: 360hrs)",
+      "Send notification to all stakeholders"
+    ];
+  }
+
+  trigger 'OnAnnualReport_60DaysBeforeDue' {
+    action: "Send compliance reminder email";
+    message: "Florida Statute 605.0210 requires annual report filing by May 1. Access your filing tool here.";
+    upl_mode: "Factual reminder, not legal advice";
+  }
+}
+
+@FLOW {
+  view 'Discovery_Onboarding' {
+    display: "Conversational intake (Gemini 2.5 Flash in Librarian Persona)";
+    capture: "Business dream, not bureaucratic data";
+    action: "Map intent → Sunbiz Article fields";
+    progressive_disclosure: "One question at a time (Rule of Three)";
+    example_questions: [
+      "What's the dream? (Business description)",
+      "Who's leading this journey? (Organizer)",
+      "Where should we send official documents? (Address with privacy logic)"
+    ];
+  }
+
+  view 'LLC_Builder_Identity' {
+    display: "Step-by-step formation wizard (Max 3 fields per step)";
+    steps: [
+      "Step 1: LLC Name",
+      "Step 2: Leadership (Member vs Manager-Managed)",
+      "Step 3: Address (Privacy-First Default)",
+      "Step 4: Statutory Purpose (Scrivening Engine)",
+      "Step 5: Effective Date (Tax Optimization Check)"
+    ];
+    defaults: {
+      management_type: "MEMBER_MANAGED (Solo-Founder Standard)",
+      addresses: "Florida Hub (privacy-first logic)",
+      registered_agent: "Charter Legacy RA Node"
+    };
+    expert_mode: "Toggle for MANAGER_MANAGED if explicitly requested";
+    action: "Generate Articles of Organization → Submit to state";
+    essence_check: "Hardware-like precision, not government form";
+  }
+
+  view 'Privacy_Shield_Dashboard' {
+    display: "Audit log grid with high whitespace (Obsidian aesthetic)";
+    sections: [
+      "Recent Access Events (Last 30 days)",
+      "Encryption Status (AES-256 badge per document)",
+      "Succession Settings (Veto buffer countdown if active)"
+    ];
+    action: [
+      "Freedom Key: Single-click export (ZIP with PDFs + JSON + Letta logs)",
+      "Download encrypted backup (local hardware storage)",
+      "View full audit log (cryptographically signed trail)"
+    ];
+    physics: "Smooth card hover transitions, tactile button feedback";
+  }
+
+  view 'Legacy_Vault' {
+    display: "Tiered document grid (Card layout with tier color badges)";
+    tiers: {
+      TIER_1: "Medical (Instant release, post-ID) - Red badge",
+      TIER_2: "Business (10-day veto buffer) - Blue badge",
+      TIER_3: "Governance (10-day veto, hardware key) - Purple badge",
+      TIER_4: "Personal (15-day In Extremis, hardware key) - Gray badge"
+    };
+    action: "Floating '+' button to upload new artifacts";
+    whitespace: "Generous padding between cards (Jobs-Ive simplicity)";
+    interaction: "Drag-and-drop upload, physics-based card animations";
+  }
+
+  view 'Compliance_Heartbeat' {
+    display: "Real-time status indicators (Minimal, focused)";
+    monitoring: [
+      "Entity Status: Active (Sunbiz verified 24hrs ago)",
+      "Annual Report: Due May 1, 2026 (X days remaining)",
+      "DBA Publication: Pending e-POP from FPA"
+    ];
+    action: "Auto-vault proof of publication when detected";
+    visual_feedback: "Pulse animation on active monitoring, green checkmarks for completed";
+  }
+
+  view 'Successor_Entry_Portal' {
+    display: "Identity verification flow with veto buffer countdown";
+    steps: [
+      "Step 1: Verify identity (ID upload + selfie)",
+      "Step 2: Veto buffer initiated (240hr countdown for TIER_2)",
+      "Step 3: Access granted (tiered document release)"
+    ];
+    security: "All access events cryptographically signed to audit log";
+    display_timer: "Live countdown with explanation of veto window";
+  }
+
+  view 'Operating_Agreement_Builder' {
+    display: "Modular agreement assembly (checkbox-based selections)";
+    modules: [
+      "Profit Distribution (Equal, Custom, Tiered)",
+      "Management Structure (Member-managed, Manager-managed)",
+      "Succession Planning (Built-in Legacy Timer language)",
+      "Buy-Sell Provisions (Optional)"
+    ];
+    action: "Generate PDF with plain-English explanations";
+    upl_mode: "Template selection, not legal drafting advice";
+  }
+}
+
+@INTEGRATIONS {
+  sunbiz_api: {
+    endpoint: "FL Department of State API/Web-Node",
+    polling: "24-hour loop for entity status verification",
+    mapping: "Article II (Principal Office), Article III (Registered Agent), Article IV (Organizer), Article VI (Purpose)",
+    submission: "XML format per FL DOS specifications"
+  };
+
+  fpa_pipeline: {
+    vendor: "Florida Press Association",
+    async_wait: "Electronic Proof of Publication (e-POP)",
+    action: "Auto-vault on detection as TIER_2_BUSINESS",
+    polling: "Check FPA portal every 12 hours for document availability"
+  };
+
+  ra_wholesaler: {
+    api: "White-label Registered Agent nodes",
+    default: "Florida Hub address injection",
+    compliance: "Must be FL-licensed registered agent"
+  };
+
+  email_service: {
+    provider: "SendGrid/AWS SES",
+    templates: "Non-discretionary language templates only",
+    categories: ["onboarding", "status_updates", "compliance_reminders", "succession_alerts"]
+  };
+
+  payment: {
+    processor: "Stripe (if handling filing fees)",
+    compliance: "PCI-DSS for stored payment methods",
+    transparency: "Itemized receipts (State fee vs. Service fee)"
+  };
+}
+
+@MEMORY {
+  engine: "Letta Memory System";
+  
+  context_blocks: [
+    "BusinessContext: Founder intent (e.g., Privacy Priority: High, Family Business, Exit Strategy)",
+    "SessionArtifact: AI conversation logs with reasoning chain",
+    "ScalingGoals: Multi-generational planning notes",
+    "CompliancePreferences: User's risk tolerance, filing preferences"
+  ];
+
+  injection: "Before any AI generation, inject relevant context blocks";
+  
+  vault_integration: "Store memory logs alongside legal documents for successor transparency";
+  
+  retention: "Permanent - memory logs are part of institutional record";
+  
+  example: "User says 'This is for my kids' → Tag BusinessContext with 'Succession Planning Priority: High'";
+}
+
+@EXPORTS {
+  freedom_key: {
+    trigger: "Single 'Export All' command in Privacy Shield Dashboard",
+    contents: [
+      "All vaulted PDFs (Articles, EIN, Operating Agreements, Proofs)",
+      "Markdown documentation (User guides, statutory references)",
+      "JSON metadata (Entity details, filing history)",
+      "Letta memory logs (AI conversation history with intent)",
+      "Audit trail (Cryptographically signed access events)"
+    ],
+    format: "Encrypted ZIP archive (AES-256)",
+    philosophy: "Data sovereignty - users stay by choice, not because data is hostage",
+    filename: "CharterLegacy_Export_{EntityName}_{Date}.zip"
+  };
+
+  physical_backup: {
+    recommendation: "Users encouraged to store Freedom Key export on hardware drive in Master Box",
+    location: "Florida Hub secure storage (optional paid service)"
+  };
+}
+
+@NOTIFICATIONS {
+  email_templates: {
+    upl_compliance: "All emails must follow non-discretionary language rules",
+    
+    categories: {
+      onboarding: {
+        subject: "Welcome to Charter Legacy - Your Formation is Underway",
+        body: "Your Articles of Organization have been submitted to the Florida Department of State. You can track status in your dashboard."
+      },
+      
+      status_updates: {
+        subject: "{EntityName} - Sunbiz Filing Confirmed",
+        body: "Florida Statute 605 filing confirmed. Your entity is now active. Next steps: EIN application, Operating Agreement."
+      },
+      
+      succession_alerts: {
+        subject: "Succession Event Triggered - Veto Buffer Active",
+        body: "A successor has requested access to {EntityName} documents. Per your settings, a 10-day veto buffer is now active. Review in your dashboard."
+      },
+      
+      compliance_reminders: {
+        subject: "{EntityName} - Annual Report Due {Date}",
+        body: "Florida Statute 605.0210 requires annual report filing. Access your filing tool here: [link]"
+      }
+    }
+  };
+
+  tone: "Professional scrivener - informative, not advisory";
+  
+  frequency_caps: {
+    compliance_reminders: "60 days before due, 30 days before, 7 days before",
+    succession_alerts: "Immediate on trigger, daily countdown during veto buffer"
+  };
+}
+
+@SENTINEL {
+  // Active Monitoring (Not Passive Database)
+  
+  sunbiz_loop: {
+    frequency: "Poll FL Dept of State API every 24 hours",
+    action: "Update entity status, detect annual report filing, flag inactive status"
+  };
+
+  fpa_pipeline: {
+    frequency: "Check FPA portal every 12 hours",
+    action: "Async acquisition loop for Electronic Proof of Publication",
+    vault_trigger: "Auto-vault e-POP when detected"
+  };
+
+  veto_buffer: {
+    implementation: "Hard-coded countdown timers (not user-configurable for security)",
+    tiers: {
+      TIER_2_BUSINESS: "240 hours (10 days)",
+      TIER_3_GOVERNANCE: "240 hours (10 days) + hardware key requirement",
+      TIER_4_PERSONAL: "360 hours (15 days) + hardware key requirement"
+    }
+  };
+
+  dead_mans_switch: {
+    trigger: [
+      "User inactivity for 180 days + no response to automated check-ins",
+      "Explicit succession event initiated by user or verified successor"
+    ],
+    action: "Begin veto buffer countdown, notify all stakeholders"
+  };
+}
+
+@UPL_GUARDRAILS {
+  persona: "Extreme Clerical Excellence (32 years Andy experience encoded as logic, not discretion)";
+
+  forbidden: [
+    "I recommend...",
+    "You should...",
+    "In my legal opinion...",
+    "The best choice is...",
+    "I advise...",
+    "It would be wise to..."
+  ];
+
+  mandatory_pattern: "Florida Statute {number} states [FACT]. Here is the tool to execute [ACTION].";
+
+  fact_surfacing: {
+    example: "User: 'Do I need manager-managed?' → AI: 'Florida Statute 605.0407 states that an LLC is member-managed unless the articles explicitly state otherwise. Here is how each structure impacts control: [comparison table]. You can select either option below.'",
+    principle: "Surface statutory options, let user decide"
+  };
+
+  fail_safe: {
+    trigger: "User asks for strategy beyond clerical filing (e.g., 'How do I structure this to minimize taxes?', 'Should I add my spouse as a member?')",
+    action: "Display 'Consult Your Counsel' modal",
+    message: "This question involves legal or tax strategy beyond clerical filing. Charter Legacy can execute the filing once you've made this decision with your advisor. Would you like referrals to licensed professionals?"
+  };
+
+  audit: {
+    frequency: "Every AI-generated output scanned for forbidden phrases before display",
+    enforcement: "Block output if forbidden pattern detected, log incident for review"
+  };
+}
+
+# =====================================================
+# END CHARTER LEGACY PBP SPECIFICATION
+# =====================================================

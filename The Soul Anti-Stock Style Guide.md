@@ -1,0 +1,1 @@
+Style Guide: The Hardware Aesthetic1. The Anti-Beige ProhibitionNO stock photos. NO flat design characters. The Artifact is the hero.2. The PaletteObsidian (#1D1D1F), Legacy Blue (#007AFF), Paper White (#FBFBFD), Warning Red (#EF4444).

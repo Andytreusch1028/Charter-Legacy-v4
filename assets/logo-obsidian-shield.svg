@@ -1,0 +1,25 @@
+<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Traditional Shield Outline -->
+  <path 
+    d="M24 4C24 4 8 8 8 14C8 20 8 28 12 34C16 40 24 44 24 44C24 44 32 40 36 34C40 28 40 20 40 14C40 8 24 4 24 4Z" 
+    stroke="#1D1D1F" 
+    stroke-width="2" 
+    fill="none"
+  />
+  
+  <!-- Wax Seal Accent at Top -->
+  <circle cx="24" cy="10" r="2" fill="#1D1D1F"/>
+  
+  <!-- CL Monogram - Simplified for SVG -->
+  <!-- C -->
+  <path 
+    d="M26 24C26 19 22 16 18 16C14 16 10 19 10 24C10 29 14 32 18 32C22 32 26 29 26 24Z M18 18C21 18 24 20 24 24C24 28 21 30 18 30C15 30 12 28 12 24C12 20 15 18 18 18Z" 
+    fill="#D4AF37"
+  />
+  
+  <!-- L intertwined with C -->
+  <path 
+    d="M26 16L26 32L38 32L38 30L28 30L28 16Z" 
+    fill="#D4AF37"
+  />
+</svg>

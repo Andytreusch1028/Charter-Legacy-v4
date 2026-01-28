@@ -1,0 +1,1 @@
+Explanation: Automated Statutory PurposeWe solve "Thinking Jail" by mapping user passion to the "Any and All Lawful Business" catch-all clause. This provides maximum legal flexibility and protection from accidental regulatory audits.

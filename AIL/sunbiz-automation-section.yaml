@@ -1,0 +1,21 @@
+
+@SUNBIZ_AUTOMATION {
+  // Institutional Automation for Florida Division of Corporations (Sunbiz.gov)
+  // Strategy: Three-Phase Pipeline (Intent Calibration → Execution → Finance)
+  // Compliance: Uses official Prepaid E-File Account program ($300 minimum)
+  
+  philosophy: "Treat Sunbiz.gov as a Statutory State Machine, not a website";
+  
+  // PHASE A: Intent Calibration (The Forge)
+  phase_a_calibration: {
+    purpose: "Transform natural language into Statutory XML before touching government portal";
+    
+    steps: [
+      "Parse: Extract Entity Name, Principal Address, Management Type, Statutory Purpose",
+      "Validate: Regex enforcement for FL-605.0113 (no P.O. Boxes for Principal/RA addresses)",
+      "Sanitize: Force 'LLC' or 'PLLC' suffix based on statutory mapping",
+      "Pre-check: Run name availability query 2 seconds before submission (index drift protection)"
+    ];
+    
+    validation_rules: {
+      po_box_regex: "/(P\\.?O\\.?\\s*Box|PMB|Post Office Box)/i"

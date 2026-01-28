@@ -1,0 +1,1 @@
+Operational SOP: Proof of Publication (e-POP)1. Retrieval LoopDaily polling of floridapublicnotices.com for business name + transaction ID.2. Digital CaptureWhen status changes to "Published," download the e-POP PDF and vault it with a high-taste naming signature.

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Dashboard - Charter Legacy</title>
+    
+    <!-- Obsidian Aesthetic -->
+    <link rel="stylesheet" href="styles/app.css">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1D1D1F">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/assets/logo-obsidian-shield.svg">
+    <link rel="apple-touch-icon" href="/assets/icon-192.png">
+</head>
+<body class="dashboard-page">
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <a href="/app/" class="nav-logo">
+            <svg class="logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 4L40 14V34L24 44L8 34V14L24 4Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M24 16L32 21V31L24 36L16 31V21L24 16Z" fill="currentColor"/>
+            </svg>
+        </a>
+        <button class="nav-menu" id="menuBtn">
+            <span class="menu-icon">☰</span>
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Welcome Header -->
+        <div class="dashboard-header">
+            <h1 class="welcome-title">Welcome back, <span id="userName">Founder</span></h1>
+            <p class="welcome-subtitle">Your Founder's Shield is active</p>
+        </div>
+
+        <!-- Status Card -->
+        <div class="status-card">
+            <div class="status-header">
+                <h2 class="status-title">Founder's Shield</h2>
+                <span class="status-badge status-active">Active</span>
+            </div>
+            
+            <div class="status-details">
+                <div class="status-item">
+                    <span class="status-label">LLC Status</span>
+                    <span class="status-value">Active</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Privacy Shield</span>
+                    <span class="status-value">Protected</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Next Action</span>
+                    <span class="status-value status-deadline">Annual Report due April 15</span>
+                </div>
+            </div>
+            
+            <div class="status-reminder">
+                <svg class="reminder-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Reminder set for 60 days before deadline</span>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3 class="actions-title">Quick Actions</h3>
+            <div class="actions-grid">
+                <a href="/app/vault" class="action-card">
+                    <div class="action-icon">🗄️</div>
+                    <h4 class="action-title">Access Your Vault</h4>
+                    <p class="action-description">View all stored documents</p>
+                </a>
+                
+                <a href="/app/documents" class="action-card">
+                    <div class="action-icon">📄</div>
+                    <h4 class="action-title">View Documents</h4>
+                    <p class="action-description">Articles of Organization, Operating Agreement</p>
+                </a>
+                
+                <a href="/app/privacy" class="action-card">
+                    <div class="action-icon">🛡️</div>
+                    <h4 class="action-title">Privacy Shield Status</h4>
+                    <p class="action-description">Florida Hub protection active</p>
+                </a>
+                
+                <a href="/app/playbook" class="action-card">
+                    <div class="action-icon">📖</div>
+                    <h4 class="action-title">Founder's Playbook</h4>
+                    <p class="action-description">Banking, taxes, compliance guide</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-section">
+            <h3 class="activity-title">Recent Activity</h3>
+            <div class="activity-list">
+                <div class="activity-item">
+                    <div class="activity-icon">✓</div>
+                    <div class="activity-content">
+                        <p class="activity-text">LLC formation complete</p>
+                        <span class="activity-date">January 15, 2026</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">📧</div>
+                    <div class="activity-content">
+                        <p class="activity-text">Annual report reminder set</p>
+                        <span class="activity-date">January 15, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay" style="display: none;">
+        <div class="menu-content">
+            <button class="menu-close" id="menuClose">✕</button>
+            <nav class="menu-nav">
+                <a href="/app/">Dashboard</a>
+                <a href="/app/vault">Vault</a>
+                <a href="/app/documents">Documents</a>
+                <a href="/app/privacy">Privacy Shield</a>
+                <a href="/app/support">Support</a>
+                <a href="/app/logout">Sign Out</a>
+            </nav>
+        </div>
+    </div>
+
+    <script src="scripts/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# .gitignore
+
+# Supabase config with real keys (DO NOT COMMIT)
+app/config.js
+
+# Environment files
+.env
+.env.local
+
+# Node modules
+node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+tmp/
+temp/

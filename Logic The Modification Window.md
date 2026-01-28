@@ -1,0 +1,1 @@
+Logic: Statutory Revisions via Annual Report1. The Cleanup OpportunityThe Annual Report (May 1st) is the master update moment. We allow founders to update leadership and addresses during this window with no additional state amendment fee.2. Differential SyncShow "State Record" vs. "Proposed Record" to ensure absolute clerical precision.

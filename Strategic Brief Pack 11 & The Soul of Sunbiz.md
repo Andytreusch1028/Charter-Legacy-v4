@@ -1,0 +1,1 @@
+Strategy: The Charter Concierge (Partnership without UPL)1. From "Clerical Observation" to "Contextual Curation"Surfacing statutory facts and common industry data points instead of providing discretionary conclusions.2. The Sentinel as a Warning LightMonitoring deadlines and fee traps to provide high-end administrative protection.
