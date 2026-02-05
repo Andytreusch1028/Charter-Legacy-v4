@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Sovereign Merger - Charter Legacy</title>
+    <link rel="stylesheet" href="styles/app.css">
+    <link rel="stylesheet" href="styles/wizard-premium.css">
+    <style>
+        :root {
+            --canvas: #F2F2F7;
+            --surface: #FFFFFF;
+            --obsidian-ink: #1D1D1F;
+            --gold-leaf: #C6A355;
+            --radius-md: 24px;
+            --radius-sm: 12px;
+        }
+
+        body {
+            background-color: var(--canvas);
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+            color: var(--obsidian-ink);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .wizard-container {
+            width: 95% !important;
+            max-width: 900px !important;
+            margin: 40px auto 120px !important;
+            padding: 0 !important;
+        }
+
+        .wizard-card {
+            background: #FFFFFF;
+            border-radius: 28px;
+            padding: 60px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .step-subtitle {
+            font-size: 0.9rem;
+            color: rgba(0, 0, 0, 0.5);
+            margin-bottom: 32px;
+        }
+
+        .input-group {
+            margin-bottom: 28px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--gold-leaf);
+            margin-bottom: 12px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px 20px;
+            background: #F2F2F7;
+            border: 1px solid #E5E5EA;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 500;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--gold-leaf);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(198, 163, 85, 0.1);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(0,0,0,0.05);
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 4px 4px 0 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gold-leaf);
+            width: 25%;
+            transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 24px 40px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .btn-next {
+            background: var(--obsidian-ink);
+            color: white;
+            padding: 14px 40px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            background: transparent;
+            color: var(--obsidian-ink);
+            opacity: 0.5;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .wizard-step {
+            display: none;
+        }
+
+        .wizard-step.active {
+            display: block;
+        }
+
+        .statutory-slab {
+            background: rgba(198, 163, 85, 0.05);
+            border: 1px solid rgba(198, 163, 85, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 28px;
+        }
+
+        .slab-title {
+            font-weight: 900;
+            color: var(--gold-leaf);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .slab-text {
+            color: rgba(0,0,0,0.6);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .entity-selector-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .entity-option {
+            padding: 16px 20px;
+            background: #F9F9FB;
+            border-radius: 12px;
+            border: 1px solid #EEE;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .entity-option:hover {
+            border-color: var(--gold-leaf);
+            background: white;
+        }
+
+        .entity-option.selected {
+            border-color: var(--gold-leaf);
+            background: rgba(198, 163, 85, 0.05);
+        }
+
+        .selection-indicator {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #DDD;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .entity-option.selected .selection-indicator {
+            background: var(--gold-leaf);
+            border-color: var(--gold-leaf);
+        }
+
+        .selection-indicator svg {
+            display: none;
+            stroke: white;
+        }
+
+        .entity-option.selected .selection-indicator svg {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="wizard-container">
+        <div class="wizard-card" id="mergerWizard">
+            <div class="progress-container">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <!-- STEP 1: SURVIVING ENTITY -->
+            <section id="step1" class="wizard-step active">
+                <h2 class="step-title">Surviving Entity</h2>
+                <p class="step-subtitle">Select the entity that will continue to exist after the merger.</p>
+
+                <div class="input-group">
+                    <label class="input-label">Surviving Entity</label>
+                    <select class="input-field" id="survivingEntity">
+                        <!-- Injected by JS -->
+                    </select>
+                </div>
+
+                <div class="statutory-slab">
+                    <div class="slab-title">Statutory Note</div>
+                    <p class="slab-text">Pursuant to Section 605.1021, two or more entities may merge into a surviving entity by approving a Plan of Merger.</p>
+                </div>
+            </section>
+
+            <!-- STEP 2: ENTITIES TO BE ABSORBED -->
+            <section id="step2" class="wizard-step">
+                <h2 class="step-title">Entities to be Absorbed</h2>
+                <p class="step-subtitle">Select the entities that will be merged into the survivor.</p>
+                
+                <div class="entity-selector-list" id="absorptionList">
+                    <!-- Injected by JS -->
+                </div>
+
+                <div class="statutory-slab">
+                    <p class="slab-text">The selected entities will be legally terminated upon the effective date of the merger, and all their assets and liabilities will transfer to the survivor.</p>
+                </div>
+            </section>
+
+            <!-- STEP 3: PLAN OF MERGER -->
+            <section id="step3" class="wizard-step">
+                <h2 class="step-title">Plan of Merger</h2>
+                <p class="step-subtitle">Formalizing the statutory agreement.</p>
+
+                <div class="statutory-slab" style="min-height: 400px; font-family: 'Times New Roman', serif; background: white; border: 1px solid #DDD; padding: 60px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <!-- Watermark Seal -->
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.03; pointer-events: none; z-index: 0;">
+                        <svg width="400" height="400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </div>
+                    
+                    <div style="position: relative; z-index: 1;">
+                        <div style="text-align: center; margin-bottom: 40px;">
+                            <div style="font-size: 0.7rem; font-weight: 800; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.3em; color: #aaa;">Statutory Instrument</div>
+                            <h3 style="text-align: center; text-transform: uppercase; margin-top: 10px; font-size: 1.8rem; letter-spacing: 0.1em;">Agreement and Plan of Merger</h3>
+                            <div style="width: 60px; height: 2px; background: #000; margin: 20px auto;"></div>
+                        </div>
+
+                        <p style="font-size: 1.05rem; line-height: 1.8; text-align: justify; color: #111;" id="mergerPlanPreview">
+                            <!-- Generated by JS -->
+                        </p>
+
+                        <div style="margin-top: 60px; display: flex; justify-content: flex-end;">
+                            <div style="width: 120px; height: 120px; border: 2px solid #EEE; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0.5;">
+                                <div style="font-size: 0.5rem; font-weight: 900; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.1em; text-align: center;">Authentic Portal<br>Seal</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-top: 32px; background: rgba(198, 163, 85, 0.05); padding: 24px; border-radius: 12px; border: 1px solid rgba(198, 163, 85, 0.1);">
+                    <label style="display: flex; align-items: flex-start; gap: 16px; cursor: pointer;">
+                        <input type="checkbox" id="affirmMergerPlan" style="width: 24px; height: 24px; margin-top: 2px;">
+                        <span style="font-size: 0.95rem; font-weight: 600; line-height: 1.4;">I, as an authorized representative, affirm that this Plan of Merger has been approved by the members/managers of all participating entities in accordance with Florida Statute 605.1022.</span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- STEP 4: SOVEREIGN AUTH -->
+            <section id="step4" class="wizard-step">
+                <h2 class="step-title">Sovereign Authorization</h2>
+                <p class="step-subtitle">Executing the Articles of Merger.</p>
+
+                <div class="input-group">
+                    <label class="input-label">Authorized Signature</label>
+                    <input type="text" class="input-field" id="mergerSignature" placeholder="TYPE FULL LEGAL NAME">
+                </div>
+
+                <div class="statutory-slab">
+                    <div class="slab-title">Statutory Fee</div>
+                    <div style="font-size: 2rem; font-weight: 900;">$25.00</div>
+                    <p class="slab-text">Articles of Merger Processing Fee (per entity).</p>
+                </div>
+            </section>
+
+            <!-- SUCCESS -->
+            <section id="step5" class="wizard-step">
+                <div style="text-align: center; padding: 60px 0;">
+                    <div style="width: 64px; height: 64px; background: #34C759; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <h2 class="step-title">Merger Finalized</h2>
+                    <p class="step-subtitle">The Articles of Merger have been filed.<br>Records for the absorbed entities are being dissolved into the survivor.</p>
+                    <button class="btn-next" style="margin-top: 24px;" onclick="window.location.href='/app/obsidian-zenith.html'">Return to Console</button>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- UPL SAFE HARBOR -->
+        <div style="max-width: 600px; margin: 40px auto; padding: 24px; border-top: 1px solid rgba(0,0,0,0.05); text-align: center; opacity: 0.5;">
+            <p style="font-size: 0.65rem; line-height: 1.5; color: #666; font-style: italic;">
+                <strong>Sovereign Notice:</strong> Charter Legacy is a corporate scrivening service. We are not a law firm. This system generates statutory instruments based on user-supplied data and Florida legislative templates. We do not provide legal, tax, or financial advice. Consult a qualified Florida attorney for legal guidance.
+            </p>
+        </div>
+    </div>
+
+    <footer class="action-bar" id="actionBar">
+        <button class="btn-back" onclick="prevStep()">Back</button>
+        <button class="btn-next" onclick="nextStep()" id="nextBtn">Continue →</button>
+    </footer>
+
+    <script src="scripts/config.js"></script>
+    <script src="scripts/advanced-actions.js"></script>
+</body>
+</html>

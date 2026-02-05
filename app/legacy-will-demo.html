@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heir Dashboard Demo | Charter Legacy</title>
+    <link rel="stylesheet" href="styles/app.css">
+    <style>
+        body {
+            padding: 3rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .demo-section {
+            background: var(--canvas);
+            border-radius: var(--radius-secondary);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .demo-button {
+            display: inline-block;
+            background: var(--obsidian-ink);
+            color: var(--canvas);
+            padding: 1rem 2rem;
+            border-radius: 52px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0.5rem;
+            transition: transform 0.2s;
+        }
+        
+        .demo-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .flow-diagram {
+            background: var(--mist);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 0.5rem 0;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 6px;
+        }
+        
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: var(--obsidian-ink);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="demo-section">
+        <h1>🏛️ Legacy Will - Complete Flow Demo</h1>
+        <p>Test the complete heir verification and dashboard access flow.</p>
+    </div>
+    
+    <div class="demo-section">
+        <h2>📋 Complete User Flow</h2>
+        <div class="flow-diagram">
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div>
+                    <strong>Heir Portal</strong> - Choose verification method
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <div>
+                    <strong>Vault Transition</strong> - Light to dark fade animation
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div>
+                    <strong>Heir Dashboard</strong> - Access will, vault items, attorney info
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="demo-section">
+        <h2>🚀 Quick Start</h2>
+        <p><strong>Option 1: Full Flow</strong></p>
+        <a href="heir-portal.html?will_id=will-001" class="demo-button">
+            Start at Heir Portal
+        </a>
+        
+        <p style="margin-top: 2rem;"><strong>Option 2: With Transition</strong></p>
+        <a href="vault-transition.html?will_id=will-001&heir_id=heir-001" class="demo-button">
+            See Vault Transition
+        </a>
+        
+        <p style="margin-top: 2rem;"><strong>Option 3: Direct to Dashboard</strong></p>
+        <a href="heir-dashboard.html?will_id=will-001&heir_id=heir-001" class="demo-button">
+            Open Heir Dashboard
+        </a>
+    </div>
+    
+    <div class="demo-section">
+        <h2>✨ Features Implemented</h2>
+        
+        <h3>Heir Portal</h3>
+        <ul>
+            <li>✅ Three access methods (death certificate, emergency, hardware key)</li>
+            <li>✅ Drag-and-drop file upload</li>
+            <li>✅ Segmented hardware key input</li>
+            <li>✅ Processing animations</li>
+            <li>✅ Dark Obsidian aesthetic with gold accents</li>
+        </ul>
+        
+        <h3>Vault Transition</h3>
+        <ul>
+            <li>✅ 3-second animated gradient (light → dark)</li>
+            <li>✅ Vault unlock animation</li>
+            <li>✅ Loading dots and security badge</li>
+            <li>✅ Auto-redirect to dashboard</li>
+        </ul>
+        
+        <h3>Heir Dashboard</h3>
+        <ul>
+            <li>✅ Will document PDF viewer</li>
+            <li>✅ Vault items grid with download buttons</li>
+            <li>✅ Attorney contact card</li>
+            <li>✅ Probate process guide with checklist</li>
+            <li>✅ Activity timeline</li>
+            <li>✅ 30-minute session timeout</li>
+            <li>✅ Download tracking</li>
+        </ul>
+    </div>
+    
+    <div class="demo-section">
+        <h2>🔐 Security Features</h2>
+        <ul>
+            <li>✅ Multi-factor verification (death cert + hardware key)</li>
+            <li>✅ Hashed hardware keys (SHA-256)</li>
+            <li>✅ Session timeout (30 minutes)</li>
+            <li>✅ Activity logging</li>
+            <li>✅ Download tracking</li>
+            <li>✅ Watermarked PDFs (planned)</li>
+        </ul>
+    </div>
+    
+    <div class="demo-section">
+        <h2>📊 Test Data</h2>
+        <p><strong>Will ID:</strong> will-001</p>
+        <p><strong>Testator:</strong> John Michael Smith</p>
+        <p><strong>Heirs:</strong></p>
+        <ul>
+            <li>heir-001: Sarah Johnson (Spouse)</li>
+            <li>heir-002: Michael Johnson (Child)</li>
+        </ul>
+        <p><strong>Hardware Keys:</strong> Any 16-character alphanumeric (mock mode)</p>
+    </div>
+    
+</body>
+</html>

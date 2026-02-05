@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operating Agreement Builder - Charter Legacy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --obsidian-ink: #0A0A0B;
+            --gold-leaf: #d4af37;
+            --accent-blue: #007AFF;
+            --accent-green: #00c853;
+            --slab-white: #FFFFFF;
+            --radius-xl: 48px;
+            --radius-lg: 32px;
+            --radius-md: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: linear-gradient(135deg, #F5F5F7 0%, #E8E8ED 100%);
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: var(--obsidian-ink);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .builder-slab {
+            width: 100%;
+            max-width: 1200px;
+            background: var(--slab-white);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+
+        .builder-header {
+            padding: 60px 80px 40px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .brand-eyebrow {
+            font-size: 0.65rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #aaa;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .brand-eyebrow:hover {
+            color: var(--gold-leaf);
+        }
+
+        .builder-title {
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .builder-subtitle {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            display: flex;
+            gap: 8px;
+            margin-top: 2rem;
+        }
+
+        .progress-step {
+            flex: 1;
+            height: 4px;
+            background: #eee;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .progress-step.active {
+            background: var(--gold-leaf);
+        }
+
+        .builder-body {
+            padding: 60px 80px;
+        }
+
+        .step-container {
+            display: none;
+        }
+
+        .step-container.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+        }
+
+        .step-description {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 3rem;
+        }
+
+        .template-card {
+            border: 2px solid #eee;
+            border-radius: var(--radius-md);
+            padding: 32px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .template-card:hover {
+            border-color: var(--gold-leaf);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .template-card.selected {
+            border-color: var(--gold-leaf);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .template-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--gold-leaf) 0%, #b8941f 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .template-name {
+            font-size: 1.2rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+
+        .template-description {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #888;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--gold-leaf);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--gold-leaf);
+            color: black;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #666;
+            border: 1px solid #ddd;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 3rem;
+        }
+
+        .upl-disclaimer {
+            background: #fff9e6;
+            border-left: 4px solid var(--gold-leaf);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 3rem;
+        }
+
+        .upl-disclaimer-title {
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #b8941f;
+            margin-bottom: 0.5rem;
+        }
+
+        .upl-disclaimer-text {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .preview-container {
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: var(--radius-md);
+            padding: 40px;
+            font-family: 'Georgia', serif;
+            line-height: 1.8;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .preview-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        .member-row {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr auto;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: end;
+        }
+
+        .btn-remove {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-remove:hover {
+            background: #d32f2f;
+        }
+
+        .btn-add {
+            background: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn-add:hover {
+            background: #00a844;
+        }
+    </style>
+</head>
+<body>
+    <div class="builder-slab">
+        <div class="builder-header">
+            <div class="brand-eyebrow" onclick="window.location.href='/app/obsidian-zenith.html'">← Back to Dashboard</div>
+            <h1 class="builder-title">Operating Agreement Builder</h1>
+            <p class="builder-subtitle">Draft your governing document in minutes using our UPL-compliant scrivening engine.</p>
+            <div class="progress-bar">
+                <div class="progress-step active" id="progress-1"></div>
+                <div class="progress-step" id="progress-2"></div>
+                <div class="progress-step" id="progress-3"></div>
+                <div class="progress-step" id="progress-4"></div>
+            </div>
+        </div>
+
+        <div class="builder-body">
+            <!-- Step 1: Template Selection -->
+            <div class="step-container active" id="step-1">
+                <h2 class="step-title">Select Your Governance Model</h2>
+                <p class="step-description">Choose the template that best matches your organizational structure. Each template is pre-vetted for Florida LLC compliance.</p>
+
+                <div class="template-grid">
+                    <div class="template-card" onclick="selectTemplate('solo')">
+                        <div class="template-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <div class="template-name">Solo</div>
+                        <div class="template-description">Single-member LLC with simplified governance. Ideal for solo founders.</div>
+                    </div>
+
+                    <div class="template-card" onclick="selectTemplate('multi')">
+                        <div class="template-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="template-name">Multi-Rider</div>
+                        <div class="template-description">Multi-member LLC with unit-based ownership. For partnerships and co-founders.</div>
+                    </div>
+
+                    <div class="template-card" onclick="selectTemplate('managed')">
+                        <div class="template-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="9" y1="9" x2="15" y2="9"></line>
+                                <line x1="9" y1="15" x2="15" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="template-name">Managed Node</div>
+                        <div class="template-description">Manager-managed LLC with separation of powers. For complex organizational structures.</div>
+                    </div>
+
+                    <div class="template-card" onclick="selectTemplate('statement_of_authority')">
+                        <div class="template-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                        </div>
+                        <div class="template-name">Statement of Authority</div>
+                        <div class="template-description">Formalizing the powers of managers/members to bind the entity. (FL 605.0302).</div>
+                    </div>
+
+                    <div class="template-card" onclick="selectTemplate('banking_resolution')">
+                        <div class="template-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                        </div>
+                        <div class="template-name">Banking Resolution</div>
+                        <div class="template-description">Standardized resolution for institutional account opening and signatory designation.</div>
+                    </div>
+
+                    <div class="template-card" onclick="selectTemplate('organizational_minutes')">
+                        <div class="template-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <div class="template-name">Organizational Minutes</div>
+                        <div class="template-description">Records of the initial organizational meeting, including OA adoption and officer election.</div>
+                    </div>
+
+                    <div class="template-card" onclick="selectTemplate('incumbency_certificate')">
+                        <div class="template-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="template-name">Incumbency Certificate</div>
+                        <div class="template-description">Formal certification of the Company's current officers and their signing authority.</div>
+                    </div>
+
+                    <div class="template-card" onclick="selectTemplate('membership_certificate')">
+                        <div class="template-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                <circle cx="12" cy="8" r="7"></circle>
+                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                            </svg>
+                        </div>
+                        <div class="template-name">Membership Certificate</div>
+                        <div class="template-description">Private ledger artifacts for ownership tracking and tangible proof of membership units.</div>
+                    </div>
+                </div>
+
+                <div class="upl-disclaimer">
+                    <div class="upl-disclaimer-title">Legal Disclaimer</div>
+                    <div class="upl-disclaimer-text">
+                        Charter Legacy is not a law firm and does not provide legal advice. This tool provides clerical scrivening services only, populating pre-vetted templates with your factual information. For legal advice, consult a licensed attorney.
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="nextStep()" id="btn-next-1" disabled>Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Entity Information -->
+            <div class="step-container" id="step-2">
+                <h2 class="step-title">Entity Information</h2>
+                <p class="step-description">Provide the basic details for your LLC.</p>
+
+                <div class="form-group">
+                    <label class="form-label">LLC Name</label>
+                    <input type="text" class="form-input" id="llc-name" placeholder="e.g., Obsidian Ventures LLC">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Formation Date</label>
+                    <input type="date" class="form-input" id="formation-date">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Principal Address</label>
+                    <input type="text" class="form-input" id="principal-address" placeholder="e.g., 123 Main St, Miami, FL 33101">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="prevStep()">Back</button>
+                    <button class="btn-primary" onclick="nextStep()">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Member Configuration -->
+            <div class="step-container" id="step-3">
+                <h2 class="step-title" id="step-3-title">Member Configuration</h2>
+                <p class="step-description" id="step-3-description">Add members and define ownership percentages.</p>
+
+                <div id="members-container">
+                    <!-- Dynamic member rows -->
+                </div>
+
+                <button class="btn-add" onclick="addMember()" id="btn-add-member">+ Add Member</button>
+                
+                <!-- Dynamic Input Fields (for :input and :optional placeholders) -->
+                <div id="dynamic-fields-container" style="margin-top: 2rem;">
+                    <!-- Generated dynamically based on template placeholders -->
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="prevStep()">Back</button>
+                    <button class="btn-primary" onclick="nextStep()">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Preview & Export -->
+            <div class="step-container" id="step-4">
+                <h2 class="step-title">Preview & Export</h2>
+                <p class="step-description">Review your Operating Agreement before exporting.</p>
+
+                <div class="preview-container" id="preview-content">
+                    <!-- Generated preview -->
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="prevStep()">Back</button>
+                    <button class="btn-primary" onclick="exportDocument()">Export as PDF</button>
+                </div>
+            </div>
+            
+            <!-- Attorney Credentials -->
+            <div id="attorney-credentials"></div>
+        </div>
+    </div>
+
+    <script src="config.js?v=999"></script>
+    <script src="scripts/oa-builder.js?v=2"></script>
+</body>
+</html>

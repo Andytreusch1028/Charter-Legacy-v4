@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Dashboard - Charter Legacy</title>
+    <title>Charter Suite - Institutional Control</title>
     
     <!-- Obsidian Aesthetic -->
-    <link rel="stylesheet" href="styles/app.css">
+    <link rel="stylesheet" href="styles/app.css?v=16">
     
     <!-- PWA -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1D1D1F">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href="/assets/logo-obsidian-shield.svg">
-    <link rel="apple-touch-icon" href="/assets/icon-192.png">
+    <link rel="icon" type="image/svg+xml" href="assets/logo-obsidian-shield.svg">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
 </head>
 <body class="dashboard-page">
     <!-- Inline SVG Sprite for 100% Reliability -->
@@ -70,103 +70,139 @@
 
     <!-- Main Content -->
     <main class="dashboard-main">
-        <!-- Welcome Header -->
-        <div class="dashboard-header">
-            <h1 class="welcome-title">Welcome back, <span id="userName">Founder</span></h1>
-            <p class="welcome-subtitle">Your Founder's Shield is active</p>
-        </div>
+        <!-- The Obsidian Slab: Unified Hardware Frame -->
+        <div class="obsidian-slab">
+            <div class="dashboard-layout">
+            <!-- Primary Column: Actionable Assets -->
+            <div class="layout-primary">
+                <!-- Dynamic Entity List -->
+                <div id="entityList" class="mb-xl">
+                    <div class="loading-state">
+                        <div class="pulse-loader"></div>
+                        <p>Securing your legacy...</p>
+                    </div>
+                </div>
 
-        <!-- Status Card -->
-        <div class="status-card">
-            <div class="status-header">
-                <h2 class="status-title">Founder's Shield</h2>
-                <span class="status-badge status-active">Active</span>
-            </div>
-            
-            <div class="status-details">
-                <div class="status-item">
-                    <span class="status-label">LLC Status</span>
-                    <span class="status-value">Active</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Privacy Shield</span>
-                    <span class="status-value">Protected</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Next Action</span>
-                    <span class="status-value status-deadline">Annual Report due April 15</span>
-                </div>
-            </div>
-            
-            <div class="status-reminder">
-                <svg class="reminder-icon" viewBox="0 0 24 24"><use href="#icon-clock"></use></svg>
-                <span>Reminder set for 60 days before deadline</span>
-            </div>
-        </div>
+                <!-- Maintenance Hub -->
+                <div class="service-hub">
+                    <h2 class="section-title">Maintenance Hub</h2>
+                    <div class="hub-sections">
+                        <!-- Expansion -->
+                        <section class="hub-group">
+                            <h3 class="group-title">Expand</h3>
+                            <div class="catalog-grid">
+                                <a href="/app/formation-wizard.html?product=dba" class="catalog-card">
+                                    <div class="catalog-badge">NEW</div>
+                                    <div class="catalog-content">
+                                        <h4>Register a DBA</h4>
+                                        <p>Add a "Doing Business As" name to your entity.</p>
+                                    </div>
+                                    <div class="catalog-price">$99 + State Fees</div>
+                                </a>
+                                <a href="/app/formation-wizard.html?product=tax_id" class="catalog-card">
+                                    <div class="catalog-content">
+                                        <h4>Sales Tax ID</h4>
+                                        <p>Essential for retail operations.</p>
+                                    </div>
+                                    <div class="catalog-price">$49</div>
+                                </a>
+                            </div>
+                        </section>
 
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <h3 class="actions-title">Quick Actions</h3>
-            <div class="actions-grid">
-                <a href="/app/vault" class="action-card">
-                    <div class="action-icon">
-                        <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-vault"></use></svg>
-                    </div>
-                    <h4 class="action-title">Access Your Vault</h4>
-                    <p class="action-description">View all stored documents</p>
-                </a>
-                
-                <a href="/app/documents" class="action-card">
-                    <div class="action-icon">
-                        <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-documents"></use></svg>
-                    </div>
-                    <h4 class="action-title">View Documents</h4>
-                    <p class="action-description">Articles of Organization, Operating Agreement</p>
-                </a>
-                
-                <a href="/app/privacy" class="action-card">
-                    <div class="action-icon">
-                        <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-shield"></use></svg>
-                    </div>
-                    <h4 class="action-title">Privacy Shield Status</h4>
-                    <p class="action-description">Florida Hub protection active</p>
-                </a>
-                
-                <a href="/app/playbook" class="action-card">
-                    <div class="action-icon">
-                        <svg class="icon-lg" viewBox="0 0 24 24"><use href="#icon-playbook"></use></svg>
-                    </div>
-                    <h4 class="action-title">Founder's Playbook</h4>
-                    <p class="action-description">Banking, taxes, compliance guide</p>
-                </a>
-            </div>
-        </div>
+                        <!-- Maintenance -->
+                        <section class="hub-group">
+                            <h3 class="group-title">Maintain</h3>
+                            <div class="catalog-grid">
+                                <a href="/app/formation-wizard.html?product=amendment" class="catalog-card">
+                                    <div class="catalog-content">
+                                        <h4>Articles of Amendment</h4>
+                                        <p>Change LLC name or leadership.</p>
+                                    </div>
+                                    <div class="catalog-price">$129 + State Fees</div>
+                                </a>
+                                <a href="/app/formation-wizard.html?product=ra_change" class="catalog-card">
+                                    <div class="catalog-content">
+                                        <h4>Registered Agent Change</h4>
+                                        <p>Switch to DeLand Hub representation.</p>
+                                    </div>
+                                    <div class="catalog-price">$49 + State Fees</div>
+                                </a>
+                            </div>
+                        </section>
 
-        <!-- Recent Activity -->
-        <div class="activity-section">
-            <h3 class="activity-title">Recent Activity</h3>
-            <div class="activity-list">
-                <div class="activity-item">
-                    <div class="activity-icon">
-                         <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check-gold"></use></svg>
-                    </div>
-                    <div class="activity-content">
-                        <p class="activity-text">LLC formation complete</p>
-                        <span class="activity-date">January 15, 2026</span>
-                    </div>
-                </div>
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clock"></use></svg>
-                    </div>
-                    <div class="activity-content">
-                        <p class="activity-text">Annual report reminder set</p>
-                        <span class="activity-date">January 15, 2026</span>
+                        <!-- Certification & Exit -->
+                        <section class="hub-group">
+                            <h3 class="group-title">Certify & Exit</h3>
+                            <div class="catalog-grid">
+                                <a href="/app/formation-wizard.html?product=certificate_status" class="catalog-card">
+                                    <div class="catalog-content">
+                                        <h4>Certificate of Status</h4>
+                                        <p>Proof of "Good Standing" for banks.</p>
+                                    </div>
+                                    <div class="catalog-price">$39</div>
+                                </a>
+                                <a href="/app/formation-wizard.html?product=dissolution" class="catalog-card danger">
+                                    <div class="catalog-content">
+                                        <h4>Dissolve Entity</h4>
+                                        <p>Formal Articles of Dissolution.</p>
+                                    </div>
+                                    <div class="catalog-price text-danger">$149 + State Fees</div>
+                                </a>
+                            </div>
+                        </section>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
+
+            <!-- Secondary Column: Institutional Sentinel -->
+            <aside class="layout-secondary">
+                <!-- Quick Actions (Restored) -->
+                <div class="quick-actions-sidebar mb-lg">
+                    <h3 class="actions-title">Quick Actions</h3>
+                    <div class="sidebar-actions-grid">
+                        <a href="/app/vault" class="sidebar-action-item">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-vault"></use></svg>
+                            <span>Access Vault</span>
+                        </a>
+                        <a href="/app/documents" class="sidebar-action-item">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-documents"></use></svg>
+                            <span>View Documents</span>
+                        </a>
+                        <a href="/app/privacy" class="sidebar-action-item">
+                            <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-shield"></use></svg>
+                            <span>Privacy Status</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="activity-section">
+                    <h3 class="activity-title">Recent Activity</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                 <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-check-gold"></use></svg>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-text">LLC formation complete</p>
+                                <span class="activity-date">January 15, 2026</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <svg class="icon-sm" viewBox="0 0 24 24"><use href="#icon-clock"></use></svg>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-text">Annual report reminder set</p>
+                                <span class="activity-date">January 15, 2026</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div> <!-- End Dashboard Layout -->
+    </div> <!-- End Obsidian Slab -->
+</main>
 
     <!-- Mobile Menu Overlay -->
     <div class="menu-overlay" id="menuOverlay" style="display: none;">
@@ -183,6 +219,10 @@
         </div>
     </div>
 
-    <script src="scripts/dashboard.js"></script>
+    <div id="loadingFallback" style="display:none; text-align:center; padding: 20px; font-size: 0.8rem; opacity: 0.5;">
+        Taking a while? <button onclick="loadMockData()" style="text-decoration: underline; background:none; border:none; cursor:pointer;">Force Render</button>
+    </div>
+    <script src="config.js?v=15"></script>
+    <script src="scripts/dashboard.js?v=12"></script>
 </body>
 </html>

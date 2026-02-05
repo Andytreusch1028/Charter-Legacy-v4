@@ -1,0 +1,98 @@
+[
+  {
+    "tag": "INPUT",
+    "type": "submit",
+    "name": "aredit-info",
+    "id": "",
+    "value": "Edit FEI/EIN Number",
+    "label": ""
+  },
+  {
+    "tag": "INPUT",
+    "type": "submit",
+    "name": "",
+    "id": "",
+    "value": "Edit Principal Address",
+    "label": ""
+  },
+  {
+    "tag": "INPUT",
+    "type": "submit",
+    "name": "",
+    "id": "",
+    "value": "Edit Mailing Address",
+    "label": ""
+  },
+  {
+    "tag": "INPUT",
+    "type": "submit",
+    "name": "aredit-agent",
+    "id": "",
+    "value": "Edit Agent / Signature",
+    "label": ""
+  },
+  {
+    "tag": "INPUT",
+    "type": "submit",
+    "name": "aredit-agentaddress",
+    "id": "",
+    "value": "Edit Address",
+    "label": ""
+  },
+  {
+    "tag": "INPUT",
+    "type": "submit",
+    "name": "aredit-editofficer-0",
+    "id": "",
+    "value": "Edit or Delete Manager",
+    "label": ""
+  },
+  {
+    "tag": "INPUT",
+    "type": "submit",
+    "name": "aredit-editofficer-1",
+    "id": "",
+    "value": "Edit or Delete Manager",
+    "label": ""
+  },
+  {
+    "tag": "INPUT",
+    "type": "submit",
+    "name": "aredit-newofficer",
+    "id": "",
+    "value": "Add New Manager/Authorized Member/Authorized Representative?",
+    "label": ""
+  },
+  {
+    "tag": "INPUT",
+    "type": "hidden",
+    "name": "new",
+    "id": "new",
+    "value": "1",
+    "label": ""
+  },
+  {
+    "tag": "INPUT",
+    "type": "radio",
+    "name": "FilingRecord.Certificate",
+    "id": "FilingRecord_Certificate",
+    "value": "True",
+    "label": ""
+  },
+  {
+    "tag": "INPUT",
+    "type": "radio",
+    "name": "FilingRecord.Certificate",
+    "id": "FilingRecord_Certificate",
+    "value": "False",
+    "label": ""
+  },
+  {
+    "tag": "INPUT",
+    "type": "submit",
+    "name": "aredit-finalreview",
+    "id": "",
+    "value": "Move on to the Final Review",
+    "label": ""
+  }
+]

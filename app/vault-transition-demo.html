@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vault Transition Demo | Charter Legacy</title>
+    <link rel="stylesheet" href="styles/app.css">
+    <style>
+        body {
+            padding: 3rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .demo-section {
+            background: var(--canvas);
+            border-radius: var(--radius-secondary);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .demo-button {
+            display: inline-block;
+            background: var(--obsidian-ink);
+            color: var(--canvas);
+            padding: 1rem 2rem;
+            border-radius: 52px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0.5rem;
+            transition: transform 0.2s;
+        }
+        
+        .demo-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .demo-button.secondary {
+            background: transparent;
+            border: 2px solid var(--obsidian-ink);
+            color: var(--obsidian-ink);
+        }
+        
+        code {
+            background: var(--mist);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        pre {
+            background: var(--mist);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="demo-section">
+        <h1>🔐 Vault Transition Demo</h1>
+        <p>This demonstrates the smooth transition from Charter Legacy's light UI to the dark heir portal.</p>
+    </div>
+    
+    <div class="demo-section">
+        <h2>Option 1: With Transition (Recommended)</h2>
+        <p>Smooth 3-second fade from light to dark with vault unlock animation.</p>
+        <a href="vault-transition.html" class="demo-button">
+            Enter Vault (With Transition)
+        </a>
+    </div>
+    
+    <div class="demo-section">
+        <h2>Option 2: Direct Access</h2>
+        <p>Skip the transition and go directly to the heir portal.</p>
+        <a href="heir-portal.html" class="demo-button secondary">
+            Enter Vault (Direct)
+        </a>
+    </div>
+    
+    <div class="demo-section">
+        <h2>🔧 Implementation Guide</h2>
+        
+        <h3>From Dashboard Button:</h3>
+        <pre><code>&lt;!-- Include the helper script --&gt;
+&lt;script src="scripts/vault-transition.js"&gt;&lt;/script&gt;
+
+&lt;!-- Button with transition --&gt;
+&lt;button onclick="VaultTransition.enter('will-001', 'heir-001')"&gt;
+    Access Will
+&lt;/button&gt;
+
+&lt;!-- Button without transition --&gt;
+&lt;button onclick="VaultTransition.direct('will-001', 'heir-001')"&gt;
+    Quick Access
+&lt;/button&gt;</code></pre>
+        
+        <h3>From Link:</h3>
+        <pre><code>&lt;!-- With transition --&gt;
+&lt;a href="vault-transition.html?will_id=will-001&heir_id=heir-001"&gt;
+    Access Will
+&lt;/a&gt;
+
+&lt;!-- Direct access --&gt;
+&lt;a href="heir-portal.html?will_id=will-001&heir_id=heir-001"&gt;
+    Quick Access
+&lt;/a&gt;</code></pre>
+    </div>
+    
+    <div class="demo-section">
+        <h2>✨ What Happens During Transition</h2>
+        <ul>
+            <li><strong>0-1s:</strong> Background gradient shifts from white → dark</li>
+            <li><strong>1-2s:</strong> Vault lock animates (unlock effect)</li>
+            <li><strong>2-3s:</strong> Text color transitions from dark → light</li>
+            <li><strong>3s:</strong> Auto-redirect to heir-portal.html</li>
+        </ul>
+        
+        <h3>Visual Elements:</h3>
+        <ul>
+            <li>🔓 Animated vault lock icon</li>
+            <li>💫 Pulsing gold circle</li>
+            <li>⚡ Loading dots animation</li>
+            <li>🛡️ Security badge (256-bit encryption)</li>
+        </ul>
+    </div>
+    
+    <div class="demo-section">
+        <h2>🎨 Design Philosophy</h2>
+        <p><strong>Why the transition?</strong></p>
+        <ul>
+            <li><strong>Sets expectations:</strong> Users know they're entering a secure area</li>
+            <li><strong>Reduces jarring shift:</strong> Smooth gradient prevents abrupt light → dark jump</li>
+            <li><strong>Builds trust:</strong> Vault metaphor reinforces security</li>
+            <li><strong>Premium feel:</strong> Polished animation matches Charter Legacy quality</li>
+        </ul>
+    </div>
+    
+    <script src="scripts/vault-transition.js"></script>
+    
+</body>
+</html>

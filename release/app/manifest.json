@@ -1,0 +1,39 @@
+{
+  "name": "Charter Legacy",
+  "short_name": "Charter",
+  "description": "Your LLC. Your privacy. Your legacy. Sovereign business formation and estate planning.",
+  "start_url": "/app/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1D1D1F",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance", "productivity"],
+  "screenshots": [
+    {
+      "src": "/assets/screenshot-mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/assets/screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}

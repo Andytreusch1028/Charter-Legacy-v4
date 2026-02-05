@@ -1,0 +1,26 @@
+--- ALL FIELDS ---
+[0] PDFTextField: "Name of Limited Liability Company" POS: {x: 89.4, y: 672, w: 378.72, h: 28.799999999999955}
+[1] PDFTextField: "Name of Person" POS: {x: 36, y: 534.24, w: 288.12, h: 28.799999999999955}
+[2] PDFTextField: "FirmCompany" POS: {x: 36, y: 489.36, w: 288.12, h: 28.799999999999955}
+[3] PDFTextField: "Address" POS: {x: 36, y: 444.6, w: 288.12, h: 28.799999999999955}
+[4] PDFTextField: "CityState and Zip Code" POS: {x: 36, y: 399.72, w: 288.12, h: 28.799999999999955}
+[5] PDFTextField: "Email address to be used for future annual report notification" POS: {x: 36, y: 355.44, w: 288.12, h: 28.80000000000001}
+[6] PDFTextField: "Name of Person_2" POS: {x: 36, y: 266.04, w: 218.64, h: 28.799999999999955}
+[7] PDFTextField: "Area Code" POS: {x: 270.84, y: 266.04, w: 53.160000000000025, h: 28.799999999999955}
+[8] PDFTextField: "Daytime Telephone Number" POS: {x: 329.88, y: 266.04, w: 138.24, h: 28.799999999999955}
+[9] PDFCheckBox: "25 Filing Fee" POS: {x: 36, y: 94.8, w: 9.96, h: 6.6000000000000085}
+[10] PDFCheckBox: "30 Filing Fee" POS: {x: 134.4, y: 94.8, w: 9.960000000000008, h: 6.6000000000000085}
+[11] PDFCheckBox: "55 Filing Fee" POS: {x: 240.48, y: 94.8, w: 9.960000000000008, h: 6.6000000000000085}
+[12] PDFCheckBox: "60 Filing Fee" POS: {x: 331.44, y: 94.8, w: 9.95999999999998, h: 6.6000000000000085}
+[13] PDFTextField: "Pursuant to section 6050209 FS this document is being submitted to correct a previously filed document" POS: {x: 261.84, y: 665.88, w: 278.28000000000003, h: 23.279999999999973}
+[14] PDFTextField: "FIRST The name of the limited liability company is" POS: {x: 99.12, y: 641.76, w: 441, h: 23.279999999999973}
+[15] PDFTextField: "undefined" POS: {x: 389.16, y: 617.64, w: 150.95999999999998, h: 23.279999999999973}
+[16] PDFTextField: "The Florida Document number of the limited liability company is" POS: {x: 229.32, y: 593.4, w: 310.8, h: 23.279999999999973}
+[17] PDFTextField: "statement are as follows 1" POS: {x: 72, y: 507.36, w: 468.12, h: 23.279999999999973}
+[18] PDFTextField: "statement are as follows 2" POS: {x: 72, y: 483.24, w: 468.12, h: 23.279999999999973}
+[19] PDFTextField: "statement are as follows 3" POS: {x: 72, y: 459.12, w: 468.12, h: 23.279999999999973}
+[20] PDFTextField: "as follows 1" POS: {x: 72, y: 373.08, w: 468.12, h: 23.28000000000003}
+[21] PDFTextField: "as follows 2" POS: {x: 72, y: 348.84, w: 468.12, h: 23.28000000000003}
+[22] PDFTextField: "as follows 3" POS: {x: 72, y: 324.72, w: 468.12, h: 23.279999999999973}
+[23] PDFTextField: "The electronic transmission of the record was defective" POS: {x: 72, y: 250.8, w: 468.12, h: 23.279999999999973}
+[24] PDFCheckBox: "Check Box16" POS: {x: 37.4891, y: 545.212, w: 7.686099999999996, h: 7.883000000000038}

@@ -1,6 +1,7 @@
 {
   "name": "charter-legacy-v4",
   "version": "1.0.0",
+  "type": "module",
   "description": "> Premium business formation and estate planning with privacy-first approach",
   "main": "index.js",
   "scripts": {
@@ -18,6 +19,9 @@
   },
   "homepage": "https://github.com/your-username/charter-legacy-v4#readme",
   "dependencies": {
+    "@supabase/supabase-js": "^2.93.2",
+    "dotenv": "^17.2.3",
+    "pdf-lib": "^1.17.1",
     "playwright": "^1.58.0"
   }
 }

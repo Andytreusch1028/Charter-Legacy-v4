@@ -1,0 +1,327 @@
+// ZENITH CONFIGURATION
+const CONFIG = {
+    SUPABASE_URL: window.env?.SUPABASE_URL || 'https://smsqnqfgoheqmynkgpel.supabase.co',
+    SUPABASE_ANON_KEY: window.env?.SUPABASE_ANON_KEY || 'sb_publishable_F_VDMnkLAeo5UGKknSvk8Q_FrZ23LTb',
+    MOCK_MODE: true, 
+    FEATURES: { LEGACY_TIMER: true, FLORIDA_HUB: true, BOARD_MONITOR: true },
+    COMPLIANCE: { LLC_STATUTE: 'FL-605', PLLC_STATUTE: 'FL-621', CONTRACTOR_STATUTE: 'FL-489', SUCCESSION_STATUTE: 'FL-732' },
+    MOCK_ENTITIES: [
+        {
+            id: 'mock-med-1',
+            llc_name: "Dr. Sterling Vision, PLLC",
+            llc_status: "Active",
+            product_type: "medical_pllc",
+            privacy_shield: true,
+            initials: "SV",
+            ra_service: true
+        },
+        {
+            id: 'mock-con-1',
+            llc_name: "Titan Construction & Engineering",
+            llc_status: "Active",
+            product_type: "contractor",
+            privacy_shield: true,
+            initials: "TC",
+            ra_service: true
+        },
+        {
+            id: 'mock-2',
+            llc_name: "Obsidian Ventures DBA",
+            llc_status: "Forming",
+            privacy_shield: true,
+            initials: "OV",
+            ra_service: true
+        },
+        {
+            id: 'mock-1',
+            llc_name: "Charter Legacy LLC",
+            llc_status: "Active",
+            privacy_shield: false,
+            initials: "CL",
+            ra_service: false
+        },
+        {
+            id: 'mock-3',
+            llc_name: "Sovereign Holdings Inc",
+            llc_status: "Active",
+            privacy_shield: true,
+            initials: "SH"
+        }
+    ],
+    MOCK_OA_TEMPLATES: [
+        {
+            id: 'tpl-solo-v1',
+            template_type: 'solo',
+            version: 1,
+            status: 'active',
+            content: `OPERATING AGREEMENT
+OF
+{{LLC_NAME:auto}}
+
+This Operating Agreement ("Agreement") is entered into as of {{FORMATION_DATE:auto}}, by and between the undersigned Member.
+
+ARTICLE I - ORGANIZATION
+1.1 Formation. The Member hereby forms a limited liability company ("Company") under the name {{LLC_NAME:auto}} pursuant to the Florida Revised Limited Liability Company Act (Florida Statutes Chapter 605).
+
+1.2 Principal Office. The principal office of the Company shall be located at {{PRINCIPAL_ADDRESS:auto}}.
+
+ARTICLE II - MEMBER
+2.1 Sole Member. {{MEMBER_NAME:auto}} is the sole Member of the Company and holds 100% of the membership interest.
+
+2.2 Capital Contribution. The Member has contributed ${{CAPITAL_CONTRIBUTION:input}} to the Company.
+
+ARTICLE III - MANAGEMENT
+3.1 Member-Managed. The Company shall be managed by the Member, who shall have full authority to bind the Company.
+
+ARTICLE IV - DISSOLUTION
+4.1 Events of Dissolution. The Company shall dissolve upon the written consent of the Member or as required by law.
+
+IN WITNESS WHEREOF, the Member has executed this Agreement as of the date first written above.
+
+_________________________________
+{{MEMBER_NAME:auto}}, Sole Member`,
+            attorney_name: 'Jane Smith, Esq.',
+            attorney_bar_number: 'FL12345',
+            attorney_review_date: '2026-01-15',
+            fl_statute_version: 'Chapter 605 (2026)',
+            change_summary: 'Initial template creation',
+            created_at: '2026-01-10T10:00:00Z',
+            activated_at: '2026-01-15T14:00:00Z'
+        },
+        {
+            id: 'tpl-multi-v1',
+            template_type: 'multi',
+            version: 1,
+            status: 'active',
+            content: `OPERATING AGREEMENT
+OF
+{{LLC_NAME}}
+
+This Operating Agreement ("Agreement") is entered into as of {{FORMATION_DATE}}, by and between the undersigned Members.
+
+ARTICLE I - ORGANIZATION
+1.1 Formation. The Members hereby form a limited liability company ("Company") under the name {{LLC_NAME}} pursuant to the Florida Revised Limited Liability Company Act (Florida Statutes Chapter 605).
+
+1.2 Principal Office. The principal office of the Company shall be located at {{PRINCIPAL_ADDRESS}}.
+
+ARTICLE II - MEMBERS AND CAPITAL CONTRIBUTIONS
+2.1 Members. The Members of the Company and their respective ownership percentages are as follows:
+
+{{MEMBER_LIST}}
+
+2.2 Capital Contributions. Each Member has contributed capital to the Company as set forth above.
+
+ARTICLE III - MANAGEMENT
+3.1 Member-Managed. The Company shall be managed by the Members in proportion to their ownership interests.
+
+3.2 Voting. Decisions requiring Member approval shall be made by majority vote, with each Member's vote weighted by their ownership percentage.
+
+ARTICLE IV - DISTRIBUTIONS
+4.1 Distributions. Distributions shall be made to Members in proportion to their ownership percentages.
+
+ARTICLE V - DISSOLUTION
+5.1 Events of Dissolution. The Company shall dissolve upon the written consent of Members holding a majority interest or as required by law.
+
+IN WITNESS WHEREOF, the Members have executed this Agreement as of the date first written above.
+
+{{MEMBER_SIGNATURES}}`,
+            attorney_name: 'Jane Smith, Esq.',
+            attorney_bar_number: 'FL12345',
+            attorney_review_date: '2026-01-15',
+            fl_statute_version: 'Chapter 605 (2026)',
+            change_summary: 'Initial template creation',
+            created_at: '2026-01-10T10:00:00Z',
+            activated_at: '2026-01-15T14:00:00Z'
+        },
+        {
+            id: 'tpl-managed-v1',
+            template_type: 'managed',
+            version: 1,
+            status: 'active',
+            content: `OPERATING AGREEMENT
+OF
+{{LLC_NAME}}
+
+This Operating Agreement ("Agreement") is entered into as of {{FORMATION_DATE}}, by and between the undersigned Members.
+
+ARTICLE I - ORGANIZATION
+1.1 Formation. The Members hereby form a limited liability company ("Company") under the name {{LLC_NAME}} pursuant to the Florida Revised Limited Liability Company Act (Florida Statutes Chapter 605).
+
+1.2 Principal Office. The principal office of the Company shall be located at {{PRINCIPAL_ADDRESS}}.
+
+ARTICLE II - MEMBERS AND CAPITAL CONTRIBUTIONS
+2.1 Members. The Members of the Company and their respective ownership percentages are as follows:
+
+{{MEMBER_LIST}}
+
+ARTICLE III - MANAGEMENT
+3.1 Manager-Managed. The Company shall be managed by one or more Managers appointed by the Members.
+
+3.2 Manager Authority. The Manager(s) shall have full authority to manage the day-to-day operations of the Company and bind the Company in ordinary business transactions.
+
+3.3 Member Voting. Major decisions (as defined in Section 3.4) shall require approval by Members holding a majority interest.
+
+3.4 Major Decisions. Major decisions include: (a) sale of substantially all Company assets, (b) merger or dissolution, (c) amendments to this Agreement, and (d) admission of new Members.
+
+ARTICLE IV - DISTRIBUTIONS
+4.1 Distributions. Distributions shall be made to Members in proportion to their ownership percentages, as determined by the Manager(s).
+
+ARTICLE V - DISSOLUTION
+5.1 Events of Dissolution. The Company shall dissolve upon the written consent of Members holding a majority interest or as required by law.
+
+IN WITNESS WHEREOF, the Members have executed this Agreement as of the date first written above.
+
+{{MEMBER_SIGNATURES}}`,
+            attorney_name: 'Jane Smith, Esq.',
+            attorney_bar_number: 'FL12345',
+            attorney_review_date: '2026-01-15',
+            fl_statute_version: 'Chapter 605 (2026)',
+            change_summary: 'Initial template creation',
+            created_at: '2026-01-10T10:00:00Z',
+            activated_at: '2026-01-15T14:00:00Z'
+        }
+    ],
+    MOCK_WILLS: [
+        {
+            id: 'will-001',
+            user_id: 'user-001',
+            testator: {
+                name: 'John Michael Smith',
+                dob: '1965-03-15',
+                ssn: '***-**-1234'  // Partial for security
+            },
+            status: 'executed',
+            execution_date: '2026-01-20',
+            
+            // Access Methods Configuration
+            access_methods: {
+                death_certificate: {
+                    enabled: true,  // Always enabled
+                    status: null,   // 'pending', 'verified', 'rejected'
+                    uploaded_at: null,
+                    uploaded_by: null,
+                    verified_at: null,
+                    lexisnexis_result: null,
+                    certificate_file_url: null
+                },
+                emergency_access: {
+                    enabled: true,  // Always enabled
+                    requests: []    // Array of emergency access requests
+                },
+                legacy_timer: {
+                    enabled: false,  // User choice - disabled by default
+                    duration_days: 75,
+                    last_activity: '2026-02-01T10:00:00Z',
+                    activity_type: 'dashboard_view',
+                    status: 'inactive'    // 'active', 'warning', 'triggered', 'paused'
+                }
+            },
+            
+            // Heirs (Successors)
+            heirs: [
+                {
+                    id: 'heir-001',
+                    name: 'Sarah Johnson',
+                    email: 'sarah.johnson@example.com',
+                    phone: '+1-555-0123',
+                    hardware_key_hash: 'sha256:a7f29k3lp5m8q1r4...', // Hashed for security
+                    relationship: 'Spouse',
+                    access_granted: false,
+                    access_granted_at: null,
+                    access_method: null,  // 'death_certificate', 'emergency', 'timer'
+                    notification_sent: false
+                },
+                {
+                    id: 'heir-002',
+                    name: 'Michael Johnson',
+                    email: 'michael.johnson@example.com',
+                    phone: '+1-555-0124',
+                    hardware_key_hash: 'sha256:b2n6t8v3w9x1y4z7...',
+                    relationship: 'Child',
+                    access_granted: false,
+                    access_granted_at: null,
+                    access_method: null,
+                    notification_sent: false
+                }
+            ],
+            
+            // Will Contents & Vault
+            will_document_url: '/vault/will-001.pdf',
+            vault_items: [
+                { 
+                    id: 'item-001', 
+                    name: 'Bank Account Information', 
+                    type: 'document',
+                    description: 'Chase Bank - Account #****1234',
+                    file_url: '/vault/bank-info-001.pdf'
+                },
+                { 
+                    id: 'item-002', 
+                    name: 'Property Deeds', 
+                    type: 'document',
+                    description: '123 Main St, DeLand, FL',
+                    file_url: '/vault/property-deeds-001.pdf'
+                },
+                { 
+                    id: 'item-003', 
+                    name: 'Digital Assets & Passwords', 
+                    type: 'credentials',
+                    description: 'Email, social media, crypto wallets',
+                    file_url: '/vault/digital-assets-001.pdf'
+                },
+                { 
+                    id: 'item-004', 
+                    name: 'Life Insurance Policies', 
+                    type: 'document',
+                    description: 'State Farm Policy #12345',
+                    file_url: '/vault/insurance-001.pdf'
+                }
+            ],
+            
+            // Attorney Contact
+            attorney_contact: {
+                name: 'Robert Martinez, Esq.',
+                firm: 'Martinez & Associates',
+                phone: '(386) 555-1234',
+                email: 'rmartinez@martinezlaw.com',
+                address: '456 Legal Plaza, DeLand, FL 32720',
+                bar_number: 'FL Bar #123456'
+            },
+            
+            // Probate Guidance
+            probate_guidance: {
+                estimated_timeline: '6-12 months',
+                required_steps: [
+                    'File petition with probate court within 10 days',
+                    'Notify all creditors and beneficiaries',
+                    'Create inventory of estate assets',
+                    'Pay outstanding debts and taxes',
+                    'Distribute remaining assets to heirs'
+                ],
+                resources: [
+                    { title: 'Florida Probate Guide', url: 'https://www.flcourts.gov' },
+                    { title: 'Volusia County Probate Court', url: 'https://www.volusia.org' },
+                    { title: 'Florida Bar - Probate FAQs', url: 'https://www.floridabar.org' }
+                ]
+            },
+            
+            // Audit Trail
+            access_attempts: [],
+            activity_log: [
+                {
+                    timestamp: '2026-01-20T14:30:00Z',
+                    action: 'will_executed',
+                    user: 'John Smith',
+                    details: 'Will executed with self-proving affidavit'
+                },
+                {
+                    timestamp: '2026-01-20T14:35:00Z',
+                    action: 'heirs_designated',
+                    user: 'John Smith',
+                    details: '2 heirs designated with hardware keys generated'
+                }
+            ]
+        }
+    ]
+};
+window.CONFIG = CONFIG;

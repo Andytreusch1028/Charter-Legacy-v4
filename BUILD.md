@@ -230,8 +230,8 @@ COPY nginx.conf /etc/nginx/nginx.conf
 ### Assets (Shared)
 
 ✅ [assets/logo-obsidian-shield.svg](file:///C:/Charter-Legacy%20v4/assets/logo-obsidian-shield.svg)
-⏳ `assets/icon-192.png` (Generated, needs conversion)
-⏳ `assets/icon-512.png` (Generated, needs conversion)
+✅ `assets/icon-192.png` (Optimized)
+✅ `assets/icon-512.png` (Optimized)
 
 ---
 

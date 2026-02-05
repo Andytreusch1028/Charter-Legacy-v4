@@ -1,0 +1,35 @@
+{
+  "project": "Charter-Legacy",
+  "version": "5.5",
+  "archetype": "Antigravity",
+  "mentor": "Steve Jobs (Obsidian Aesthetic)",
+  "compliance": {
+    "mode": "STRICT_NON_DISCRETIONARY",
+    "upl_guardrails": "IMPERATIVE - NO LEGAL ADVICE",
+    "identity": "Identity Pulse (Magic Link Only)",
+    "statutes": ["FL-605", "FL-621", "FL-489", "FL-732"]
+  },
+  "design_system": {
+    "name": "Obsidian Aesthetic",
+    "canvas": "#FFFFFF (White Charter)",
+    "ink": "#1D1D1F",
+    "accent": "#D4AF37 (Gold Leaf)",
+    "radius": {
+      "primary": "52px (Hardware Feel)",
+      "secondary": "24px (Component)",
+      "card": "16px"
+    }
+  },
+  "operational_rules": {
+    "scrivener_protocol": "Ritual of Citation mandatory for all statutory references.",
+    "privacy": "Florida Hub (DeLand) defaults for all addresses.",
+    "workflow": "Three-Phase Pipeline (Calibration -> Execution -> Finality).",
+    "interaction": "Steve mentor style - succinct, confident, no fluff."
+  },
+  "tooling": {
+    "learning_log": ".antigravity/learnings.json",
+    "permissions": ".antigravity/permissions.yaml",
+    "validation": "playwright (automation/snapshot-*)",
+    "backend": "Supabase (Magic Link + REST API)"
+  }
+}

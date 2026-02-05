@@ -1,0 +1,29 @@
+/* ============================================================================
+   FORMATION WIZARD - LAYOUT OVERRIDE
+   Wider, spacious layout matching dashboard aesthetic
+   ============================================================================ */
+
+.wizard-main {
+    max-width: 900px !important; /* Wider than default 600px */
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+.wizard-container {
+    background: var(--canvas);
+    border-radius: var(--radius-secondary);
+    padding: 3rem !important; /* More spacious padding */
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0,0,0,0.02);
+}
+
+@media (max-width: 768px) {
+    .wizard-main {
+        max-width: 100%;
+        padding: var(--spacing-md);
+    }
+    
+    .wizard-container {
+        padding: var(--spacing-lg) !important;
+    }
+}

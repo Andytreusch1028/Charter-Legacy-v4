@@ -41,6 +41,14 @@
           "correction": "Created a dedicated 'Authentication Styles' section in app.css defining specific widths, centering logic, and font tracking for the Auth domain.",
           "impact": "Medium - Visual polish degradation",
           "prevention_rule": "Every major domain (Marketing, App, Auth) must have its own dedicated CSS section or file. Do not rely on shared 'global' styles for domain-specific layouts."
+        },
+        {
+          "id": "learning-017",
+          "date": "2026-02-04",
+          "mistake": "File path syntax errors when using URL encoding manually in tool calls (e.g., %20).",
+          "correction": "Always use clean, absolute local paths. Avoid %20 or other URL encodings when passing paths to filesystem tools.",
+          "impact": "Low - Execution Delay",
+          "prevention_rule": "CRITICAL: Never use URL-encoded strings for filesystem tool arguments. Paths must be literal absolute strings."
         }
       ]
     },
@@ -66,6 +74,62 @@
           "pattern": "Check for existing tracking_number before re-attempting filing",
           "impact": "Critical - Prevents financial loss",
           "reuse_guidance": "Mandatory for all financial transactions in Phase C execution."
+        },
+        {
+          "id": "learning-010",
+          "date": "2026-01-29",
+          "mistake": "Used specific statute citation 'FL-605.0113' in dashboard UI",
+          "correction": "Changed to 'Entity Structure / Florida LLC'. Avoided technical legal citations in user-facing labels.",
+          "impact": "High - UPL Risk and User Confusion",
+          "prevention_rule": "Do not display raw statute numbers as status labels. Use functional descriptions (e.g., 'Florida LLC') to avoid implying legal advice."
+        },
+        {
+          "id": "learning-011",
+          "date": "2026-01-29",
+          "success": "Sovereign Proxy (Envy Node) Pattern",
+          "pattern": "Display deactivated premium features as 'Offline Nodes' (dark, etched style) rather than hiding them. Use 'Node Offline' status to drive feature envy.",
+          "impact": "High - Conversion Psychology",
+          "reuse_guidance": "Use the 'Deactivated Carbon' visual style for any upsellable feature. Never hide it; make it look like missing hardware."
+        },
+        {
+          "id": "learning-012",
+          "date": "2026-01-29",
+          "success": "Fade-to-Slab Scroll Pattern",
+          "pattern": "Use `mask-image: linear-gradient(to bottom, black 80%, transparent 100%)` on scrollable sidebars within a fixed-height slab.",
+          "impact": "Medium - Visual Fidelity",
+          "reuse_guidance": "Apply this mask to any scrollable list inside a fixed-height container to maintain the 'Hardware Slab' aesthetic without hard clipping."
+        },
+        {
+          "id": "learning-013",
+          "date": "2026-01-29",
+          "success": "Human-Centric Labeling Standard (The Steve Protocol)",
+          "pattern": "Replace abstract technical terms with ownership-based language. Mapping: 'Vault' -> 'Corporate Records', 'Hub Node' -> 'Privacy Protected', 'Statute' -> 'Entity Structure', 'Audit Feed' -> 'Activity History'.",
+          "impact": "High - User Clarity and Premium Feel",
+          "reuse_guidance": "Always translate 'Engine Room' jargon into 'Owner Language'. The user wants to know what they HAVE, not how it WORKS."
+        },
+        {
+          "id": "learning-014",
+          "date": "2026-02-04",
+          "success": "Metamorphosis Scrivening Pattern",
+          "pattern": "Use real-time plan generation for multi-entity statutory actions (Mergers/Conversions) to provide legal transparency before final authorization.",
+          "impact": "High - User Confidence and Statutory Clarity",
+          "reuse_guidance": "Apply this to any complex corporate action that requires a 'Plan of [Action]' by Florida Statute. Show the document draft as the user builds the intent."
+        },
+        {
+          "id": "learning-015",
+          "date": "2026-02-04",
+          "success": "Compliance Pulse Engine Injection",
+          "pattern": "Consolidate varying statutory timelines (Annual Reports, Professional Licenses) into a single 0-100 'Pulse' score to drive proactive dashboard alerts.",
+          "impact": "High - Proactive Compliance and User Engagement",
+          "reuse_guidance": "Use this score-based system for any 'Health' monitoring. 100% = Optimal, <50% = Critical."
+        },
+        {
+          "id": "learning-016",
+          "date": "2026-02-04",
+          "success": "Strategic Action Clustering",
+          "pattern": "Separate daily maintenance (Address changes) from high-stakes corporate actions (Mergers, Dissolutions) using a 'Strategic Actions' zone with distinct visual elevation.",
+          "impact": "Medium - UX Hierarchy and Risk Management",
+          "reuse_guidance": "Use for any platform that manages both routine and high-risk permanent actions."
         }
       ]
     },
@@ -121,8 +185,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 0,
-    "last_applied": null,
-    "effectiveness_score": null
+    "total_learnings": 17,
+    "last_updated": "2026-02-04T19:08:00Z"
   }
 }

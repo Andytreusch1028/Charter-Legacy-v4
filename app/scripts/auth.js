@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // VERIFICATION: Check for Mock Mode
-                const targetUrl = 'dashboard-llc.html'; // Define targetUrl for mock mode
+                const targetUrl = 'obsidian-zenith.html'; // Define targetUrl for mock mode
                 console.log("Mock Mode Check:", window.CONFIG.MOCK_MODE + " (Type: " + typeof window.CONFIG.MOCK_MODE + ")");
                 
                 if (window.CONFIG.MOCK_MODE) {
@@ -86,8 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Force Redirect
                     setTimeout(() => {
-                         if (magicLinkBtn) magicLinkBtn.textContent = 'Redirecting to Dashboard...';
-                        window.location.href = 'dashboard-llc.html';
+                         if (magicLinkBtn) magicLinkBtn.textContent = 'Redirecting to Zenith Console...';
+                        window.location.href = 'obsidian-zenith.html';
                     }, 1000);
                     return;
                 }
@@ -100,14 +100,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const { error } = await _supabase.auth.signInWithOtp({
                     email,
-                    options: { emailRedirectTo: window.location.origin + '/app/dashboard-llc.html' },
+                    options: { emailRedirectTo: window.location.origin + '/app/obsidian-zenith.html' },
                 });
 
-                if (error) throw error;
-                alert("Check your email!");
+                if (error) {
+                    if (error.message.includes('Email rate limit exceeded')) {
+                        throw new Error("Security Pulse is cooling down. Please wait a few minutes before trying again, or contact support to upgrade your limits.");
+                    }
+                    throw error;
+                }
+                
+                if (statusMsg) {
+                    statusMsg.style.display = 'block';
+                    const emailDisplay = document.getElementById('emailDisplay');
+                    if (emailDisplay) emailDisplay.textContent = email;
+                    const authForm = document.getElementById('authForm');
+                    if (authForm) authForm.style.display = 'none';
+                }
 
             } catch (error) {
-                alert("Error: " + error.message);
+                console.error("FULL AUTH ERROR:", error);
+                if (magicLinkBtn) magicLinkBtn.textContent = 'Try Again';
+                
+                // TURBO BYPASS: Allow local dev to skip during outages
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    if (typeof openCustomConfirm === 'function') {
+                        openCustomConfirm(
+                            "Supabase Timeout",
+                            "SMTP Handshake Failed or Supabase is currently offline. Would you like to bypass and skip to the Zenith Dashboard for testing?",
+                            (confirmed) => {
+                                if (confirmed) {
+                                    localStorage.setItem('sb-mock-session', JSON.stringify({
+                                        user: { id: '3bb383fd-80f0-4d1f-b877-35d677e240e0', email: 'test@charterlegacy.com' }
+                                    }));
+                                    window.location.href = 'obsidian-zenith.html';
+                                }
+                            }
+                        );
+                    } else {
+                        // Fallback in case UI didn't load
+                        if (confirm("SMTP Handshake Failed. Skip to Dashboard for testing?")) {
+                             window.location.href = 'obsidian-zenith.html';
+                        }
+                    }
+                } else {
+                    alert(error.message);
+                }
             }
         });
     }

@@ -1,15 +1,17 @@
 // Service Worker for Charter Legacy PWA
 // Version 1.0.0
 
-const CACHE_NAME = 'charter-legacy-v1';
+const CACHE_NAME = 'charter-legacy-v2';
 const urlsToCache = [
   '/app/',
   '/app/auth.html',
   '/app/dashboard-llc.html',
+  '/app/obsidian-zenith.html',
   '/app/dashboard-will.html',
   '/app/styles/app.css',
   '/app/scripts/auth.js',
   '/app/scripts/dashboard.js',
+  '/app/scripts/dashboard-zenith.js',
   '/assets/logo-obsidian-shield.svg',
   '/assets/icon-192.png',
   '/assets/icon-512.png'

@@ -2,8 +2,8 @@
 
 // CTA Button Handlers
 document.getElementById('startCharter')?.addEventListener('click', function() {
-    // UPL-safe: Redirect to conversational intake, not automatic form
-    window.location.href = 'https://app.charterlegacy.com/intake';
+    // UPL-safe: Redirect to conversational intake
+    window.location.href = '/app/formation-wizard.html';
 });
 
 // Product Selection
@@ -11,8 +11,8 @@ document.querySelectorAll('[data-product]').forEach(button => {
     button.addEventListener('click', function() {
         const product = this.getAttribute('data-product');
         
-        // UPL-safe: Route to intake with product hint, user still chooses
-        window.location.href = `https://app.charterlegacy.com/intake?product=${product}`;
+        // UPL-safe: Route to wizard with product hint
+        window.location.href = `/app/formation-wizard.html?product=${product}`;
     });
 });
 

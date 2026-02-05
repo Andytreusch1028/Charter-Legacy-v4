@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Sign In - Charter Legacy</title>
+    
+    <!-- Obsidian Aesthetic -->
+    <link rel="stylesheet" href="styles/app.css">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1D1D1F">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="assets/logo-charter-legacy.svg">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <!-- Logo -->
+        <div class="auth-header">
+            <svg class="auth-logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 4L40 14V34L24 44L8 34V14L24 4Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M24 16L32 21V31L24 36L16 31V21L24 16Z" fill="currentColor"/>
+            </svg>
+            <h1 class="auth-title">Charter Legacy</h1>
+        </div>
+
+        <!-- Magic Link Auth Form -->
+        <div class="auth-card">
+            <h2 class="auth-heading">Welcome Back</h2>
+            <p class="auth-subtitle">Sign in to access your dashboard</p>
+            
+            <form id="authForm" class="auth-form">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="form-input" 
+                        placeholder="your@email.com"
+                        required
+                        autocomplete="email"
+                        inputmode="email"
+                    >
+                </div>
+                
+                <button type="submit" class="btn-primary" id="submitBtn">
+                    <span class="btn-text">Send Magic Link</span>
+                    <span class="btn-loader" style="display: none;">Sending...</span>
+                </button>
+            </form>
+            
+            <!-- Success Message -->
+            <div id="successMessage" class="success-message" style="display: none;">
+                <svg class="success-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h3 class="success-title">Check Your Email</h3>
+                <p class="success-text">We've sent a magic link to <strong id="emailDisplay"></strong></p>
+                <p class="success-note">Click the link in your email to sign in securely.</p>
+            </div>
+            
+            <!-- Identity Pulse Branding -->
+            <div class="identity-pulse">
+                <span class="pulse-text">Secured by Identity Pulse</span>
+                <svg class="icon-tiny-lock" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C9.23858 2 7 4.23858 7 7V11H6C4.89543 11 4 11.8954 4 13V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V13C20 11.8954 19.1046 11 18 11H17V7C17 4.23858 14.7614 2 12 2ZM15 7V11H9V7C9 5.34315 10.3431 4 12 4C13.6569 4 15 5.34315 15 7Z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="https://charterlegacy.com">Start Your Charter</a></p>
+        </div>
+    </div>
+
+    <script src="config.js?v=99"></script>
+    <script src="scripts/auth.js?v=99"></script>
+</body>
+</html>

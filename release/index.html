@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Your LLC. Your privacy. Not your home address on Google. Form your Florida LLC with Charter Legacy's privacy-first approach."
+    />
+    <title>Charter Legacy - Your LLC. Your Privacy.</title>
+
+    <!-- Obsidian Aesthetic -->
+    <link rel="stylesheet" href="styles/landing.css" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#1D1D1F" />
+
+    <!-- Icons -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/assets/logo-charter-legacy.svg"
+    />
+  </head>
+  <body>
+    <!-- Inline SVG Sprite for Reliability (Learning-007) -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <symbol id="icon-check-gold" viewBox="0 0 24 24">
+        <path
+          d="M20 6L9 17L4 12"
+          stroke="currentColor"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+        />
+      </symbol>
+    </svg>
+
+    <!-- Navigation -->
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/" class="logo-link">
+          <svg
+            class="logo"
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M24 4L40 14V34L24 44L8 34V14L24 4Z"
+              stroke="currentColor"
+              stroke-width="2"
+              fill="none"
+            />
+            <path
+              d="M24 16L32 21V31L24 36L16 31V21L24 16Z"
+              fill="currentColor"
+            />
+          </svg>
+          <span class="logo-text">Charter Legacy</span>
+        </a>
+        <a href="/app/auth.html" class="nav-login"
+          >Existing Customer? Sign In</a
+        >
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-container">
+        <h1 class="hero-title">
+          Your LLC.<br />Your privacy.<br />Not your home address on Google.
+        </h1>
+        <p class="hero-subtitle">
+          The only LLC service that protects your home address by default
+        </p>
+        <button class="cta-primary" id="startCharter">
+          Start My Charter - $249
+        </button>
+        <p class="hero-trust">
+          Privacy Shield included • No hidden fees • Florida-focused
+        </p>
+      </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="trust">
+      <div class="trust-container">
+        <h2 class="section-title">Why Charter Legacy?</h2>
+
+        <!-- Privacy Comparison -->
+        <div class="comparison-card">
+          <h3 class="comparison-title">Your Home Stays Private</h3>
+          <div class="comparison-grid">
+            <div class="comparison-column comparison-bad">
+              <div class="comparison-label">LegalZoom</div>
+              <div class="comparison-address">123 Main St, Miami, FL 33130</div>
+              <div class="comparison-note">Your actual home ❌</div>
+            </div>
+            <div class="comparison-column comparison-good">
+              <div class="comparison-label">Charter Legacy</div>
+              <div class="comparison-address">Florida Hub, DeLand, FL</div>
+              <div class="comparison-note">Charter's address ✅</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROI Calculator -->
+        <div class="roi-card">
+          <h3 class="roi-title">The Legacy Will: Your ROI</h3>
+          <div class="roi-grid">
+            <div class="roi-item">
+              <div class="roi-label">Typical probate attorney</div>
+              <div class="roi-value">$3,000-$8,000</div>
+            </div>
+            <div class="roi-item">
+              <div class="roi-label">
+                Charter Legacy with self-proving affidavit
+              </div>
+              <div class="roi-value">$399</div>
+            </div>
+            <div class="roi-item roi-savings">
+              <div class="roi-label">You save</div>
+              <div class="roi-value">$2,600-$7,600</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legacy Timer Feature -->
+        <div class="feature-card">
+          <h3 class="feature-title">Legacy Timer</h3>
+          <p class="feature-description">
+            Your family gets automatic access to your will. No probate lawyer
+            needed. No court drama.
+          </p>
+          <div class="feature-steps">
+            <div class="feature-step">
+              <div class="step-number">1</div>
+              <div class="step-text">You designate successors</div>
+            </div>
+            <div class="feature-step">
+              <div class="step-number">2</div>
+              <div class="step-text">
+                After 15 days of inactivity, In Extremis mode activates
+              </div>
+            </div>
+            <div class="feature-step">
+              <div class="step-number">3</div>
+              <div class="step-text">Successors get automatic vault access</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Selection (Rule of Three) -->
+    <section class="products">
+      <div class="products-container">
+        <h2 class="section-title">Choose Your Path</h2>
+        <div class="product-grid">
+          <!-- Founder's Shield -->
+          <div class="product-card">
+            <h3 class="product-name">Founder's Shield</h3>
+            <div class="product-price">$249</div>
+            <p class="product-tagline">
+              Your LLC. Your privacy. Not your home address on Google.
+            </p>
+            <ul class="product-features">
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Privacy Shield (Florida Hub)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Registered Agent included</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Founder's Playbook (10-page guide)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Legacy Vault storage</span>
+              </li>
+            </ul>
+            <button class="cta-secondary" data-product="founders-shield">
+              Start My LLC
+            </button>
+          </div>
+
+          <!-- Licensed Professional -->
+          <div class="product-card">
+            <h3 class="product-name">Licensed Professional</h3>
+            <div class="product-price">$499-$599</div>
+            <p class="product-tagline">
+              Medical PLLC or Trade Professional LLC
+            </p>
+            <ul class="product-features">
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Board License Monitor (Medical)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>DBPR Integration (Contractor)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Priority 24hr support</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>License Dashboard</span>
+              </li>
+            </ul>
+            <button class="cta-secondary" data-product="professional">
+              Choose Your License Type
+            </button>
+          </div>
+
+          <!-- The Legacy Will -->
+          <div class="product-card product-featured">
+            <div class="product-badge">Steve's Pick</div>
+            <h3 class="product-name">The Legacy Will</h3>
+            <div class="product-price">$399</div>
+            <p class="product-tagline">
+              Your family gets access automatically. No probate lawyer needed.
+            </p>
+            <ul class="product-features">
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Legacy Timer (hero feature)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Self-proving affidavit (saves $1,500+)</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Successor Test Run</span>
+              </li>
+              <li>
+                <svg class="icon-check"><use href="#icon-check-gold"></use></svg>
+                <span>Will Completion Checker</span>
+              </li>
+            </ul>
+            <button class="cta-primary" data-product="legacy-will">
+              Protect My Legacy
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Transparency -->
+    <section class="pricing">
+      <div class="pricing-container">
+        <h2 class="section-title">No Hidden Fees</h2>
+        <p class="pricing-subtitle">
+          What you see is what you pay. No surprises.
+        </p>
+        <div class="pricing-breakdown">
+          <div class="pricing-item">
+            <div class="pricing-label">Founder's Shield</div>
+            <div class="pricing-detail">
+              <span class="pricing-amount">$249</span>
+              <span class="pricing-note">All in. Includes state fees.</span>
+            </div>
+          </div>
+          <div class="pricing-item">
+            <div class="pricing-label">The Legacy Will</div>
+            <div class="pricing-detail">
+              <span class="pricing-amount">$399</span>
+              <span class="pricing-note">No state filing fee. Pure value.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div class="footer-legal">
+          <p>
+            Charter Legacy is not a law firm. We provide statutory scrivening
+            services only. No legal advice is given.
+          </p>
+          <p>
+            Florida Statutes: FL-605 (LLC), FL-621 (PLLC), FL-489 (Contractor),
+            FL-732 (Wills)
+          </p>
+        </div>
+        <div class="footer-links">
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Service</a>
+          <a href="/app/auth.html">Existing Customers</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="scripts/landing.js"></script>
+  </body>
+</html>

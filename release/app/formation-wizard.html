@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Sovereign Intent - Charter Legacy</title>
+    <link rel="stylesheet" href="styles/app.css">
+</head>
+<body class="wizard-page">
+    <nav class="dashboard-nav">
+        <a href="/app/" class="nav-logo">
+            <svg class="logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 4L40 14V34L24 44L8 34V14L24 4Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M24 16L32 21V31L24 36L16 31V21L24 16Z" fill="currentColor"/>
+            </svg>
+        </a>
+        <div class="nav-status">Phase: Statutory Identification</div>
+    </nav>
+
+    <main class="wizard-main">
+        <div class="wizard-container">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 33%;"></div>
+            </div>
+
+            <form id="intentForm" class="intent-form">
+                <!-- Step 1: Branding -->
+                <section class="wizard-step" id="step1">
+                    <h2 class="step-title">Identify Your Entity</h2>
+                    <p class="step-description">The name of your LLC must be unique in Florida.</p>
+                    
+                    <div class="input-group">
+                        <label for="llcName">Desired LLC Name</label>
+                        <input type="text" id="llcName" name="llcName" placeholder="e.g. Acme Holdings LLC" required>
+                        <span class="input-hint">Must include "LLC" or "Limited Liability Company"</span>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="purpose">Business Purpose (Optional)</label>
+                        <textarea id="purpose" name="purpose" placeholder="e.g. Real Estate Investment, Consulting, etc."></textarea>
+                    </div>
+
+                    <!-- Statutory Enhancements -->
+                    <div class="enhancements-box" style="background: var(--surface); padding: var(--spacing-md); border-radius: var(--radius-sm); margin-top: var(--spacing-md);">
+                        <h4 style="margin-bottom: var(--spacing-sm); font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">Statutory Enhancements</h4>
+                        <div class="checkbox-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <input type="checkbox" id="certStatus" name="certStatus" value="5.00" onchange="updateTotal()">
+                            <label for="certStatus" style="font-size: 0.9rem; font-weight: 500;">Certificate of Status (+$5.00)</label>
+                        </div>
+                        <div class="checkbox-group" style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="certCopy" name="certCopy" value="30.00" onchange="updateTotal()">
+                            <label for="certCopy" style="font-size: 0.9rem; font-weight: 500;">Certified Copy of Articles (+$30.00)</label>
+                        </div>
+                    </div>
+
+                    <div class="wizard-actions">
+                        <button type="button" class="btn-primary" onclick="nextStep(2)">Continue to Address</button>
+                    </div>
+                </section>
+
+                <!-- Step 2: Physicality -->
+                <section class="wizard-step" id="step2" style="display: none;">
+                    <h2 class="step-title">Address of Record</h2>
+                    <p class="step-description">Your principal physical address in Florida.</p>
+                    
+                    <div class="input-group">
+                        <label for="address">Street Address</label>
+                        <input type="text" id="address" name="address" placeholder="123 Innovation Way" required>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city" placeholder="DeLand" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="zip">Zip Code</label>
+                            <input type="text" id="zip" name="zip" placeholder="32720" required>
+                        </div>
+                    </div>
+
+                    <div class="wizard-actions">
+                        <button type="button" class="btn-secondary" onclick="prevStep(1)">Back</button>
+                        <button type="button" class="btn-primary" onclick="nextStep(3)">Continue to Payment</button>
+                    </div>
+                </section>
+
+                <!-- Step 3: Payment (Mock) -->
+                <section class="wizard-step" id="step3" style="display: none;">
+                    <h2 class="step-title">Secure Fee Payment</h2>
+                    <p class="step-description">State filing fee plus Charter Legacy processing.</p>
+                    
+                    <div class="payment-summary">
+                        <div class="summary-line">
+                            <span>Florida Filing Fee</span>
+                            <span>$125.00</span>
+                        </div>
+                        <div id="statutoryAddOns">
+                            <!-- Dynamic Add-ons here -->
+                        </div>
+                        <div class="summary-line">
+                            <span>Charter Processing</span>
+                            <span>$74.00</span>
+                        </div>
+                        <div class="summary-total">
+                            <span>Total</span>
+                            <span id="finalTotal">$199.00</span>
+                        </div>
+                    </div>
+
+                    <div class="card-element">
+                        <div id="card-mock">
+                            <input type="text" placeholder="Card Number" style="width: 100%;">
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <input type="text" placeholder="MM/YY" style="width: 60%">
+                                <input type="text" placeholder="CVC" style="width: 40%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wizard-actions">
+                        <button type="button" class="btn-secondary" onclick="prevStep(2)">Back</button>
+                        <button type="submit" class="btn-gold">Confirm & Pay</button>
+                    </div>
+                </section>
+            </form>
+        </div>
+    </main>
+
+    <script src="config.js"></script>
+    <script>
+        let currentStep = 1;
+        const BASE_FEE = 199.00;
+
+        function updateTotal() {
+            const certStatus = document.getElementById('certStatus').checked ? 5.00 : 0;
+            const certCopy = document.getElementById('certCopy').checked ? 30.00 : 0;
+            const total = BASE_FEE + certStatus + certCopy;
+            
+            document.getElementById('finalTotal').textContent = `$${total.toFixed(2)}`;
+            
+            // Update Summary UI
+            let addOnHtml = '';
+            if (certStatus) addOnHtml += `<div class="summary-line"><span>Certificate of Status</span><span>$5.00</span></div>`;
+            if (certCopy) addOnHtml += `<div class="summary-line"><span>Certified Copy</span><span>$30.00</span></div>`;
+            document.getElementById('statutoryAddOns').innerHTML = addOnHtml;
+        }
+
+        function nextStep(step) {
+            document.getElementById(`step${currentStep}`).style.display = 'none';
+            document.getElementById(`step${step}`).style.display = 'block';
+            document.querySelector('.progress-fill').style.width = `${(step/3)*100}%`;
+            currentStep = step;
+            if (step === 3) updateTotal(); // Refresh total on payment step
+        }
+        
+        function prevStep(step) {
+            document.getElementById(`step${currentStep}`).style.display = 'none';
+            document.getElementById(`step${step}`).style.display = 'block';
+            document.querySelector('.progress-fill').style.width = `${(step/3)*100}%`;
+            currentStep = step;
+        }
+
+        document.getElementById('intentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // In production, this would hit Stripe and then Supabase
+            const total = document.getElementById('finalTotal').textContent;
+            alert(`Intent Committed! Payment of ${total} processed. Your Scrivener is now filing with the State.`);
+            window.location.href = '/app/dashboard-llc.html';
+        });
+    </script>
+</body>
+</html>

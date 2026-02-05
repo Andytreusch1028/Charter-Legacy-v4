@@ -1,0 +1,201 @@
+/* Obsidian Hardware Slab - Final Precision v7 */
+:root {
+    --canvas: #FBFBFD; /* Integrated Apple Background */
+    --surface: #FFFFFF;
+    --obsidian-ink: #1D1D1F;
+    --legacy-blue: #007AFF;
+    --gold-leaf: #C6A355;
+    --mist: #F2F2F7;
+    
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 2rem;
+    --spacing-lg: 4.5rem; /* Spacious mockup padding */
+    --spacing-xl: 6.5rem;
+    
+    --radius-primary: 56px;
+    --radius-secondary: 32px;
+    --radius-sm: 16px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
+body.dashboard-page {
+    background-color: var(--canvas) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+    color: var(--obsidian-ink);
+    min-height: 100vh;
+}
+
+.dashboard-main {
+    max-width: 1024px !important;
+    margin: 3.5rem auto !important;
+    padding: 0 2rem !important;
+}
+
+.obsidian-slab {
+    background: #FFFFFF;
+    border-radius: var(--radius-primary);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.14); /* Realistic depth */
+    border: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
+    min-height: 850px;
+    display: flex;
+    width: 100%;
+}
+
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    width: 100%;
+}
+
+.layout-primary {
+    padding: 5rem !important; /* Authentic high-end breathing room */
+    flex: 1;
+    overflow-y: auto;
+}
+
+.layout-secondary {
+    padding: 4rem 3.5rem;
+    background: rgba(242, 242, 247, 0.75) !important; /* Crystalline alpha */
+    backdrop-filter: blur(60px) saturate(210%) !important;
+    -webkit-backdrop-filter: blur(60px) saturate(210%) !important;
+    border-left: 1px solid rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+}
+
+/* Institutional Typography - The Mockup Standard */
+.hero-brand {
+    font-size: 0.6rem;
+    font-weight: 1000;
+    text-transform: uppercase;
+    letter-spacing: 0.55em;
+    opacity: 0.22;
+    margin-bottom: 2.5rem;
+}
+
+.hero-name {
+    font-size: 3.4rem !important; /* Dominant Institutional Impact */
+    font-weight: 1000 !important;
+    letter-spacing: -0.065em !important;
+    line-height: 0.95;
+    text-transform: uppercase;
+    color: var(--obsidian-ink);
+    margin-bottom: 2.2rem;
+    white-space: nowrap;
+}
+
+.hero-meta {
+    display: flex;
+    gap: 3.5rem;
+    padding: 2.8rem 0;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    margin-bottom: 4rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+}
+
+.meta-label {
+    font-size: 0.52rem;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    opacity: 0.35;
+}
+
+.meta-value {
+    font-size: 0.82rem;
+    font-weight: 900;
+    color: var(--obsidian-ink);
+}
+
+/* Action Architecture */
+.btn-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 3rem;
+    border-radius: 9999px;
+    font-size: 0.98rem;
+    font-weight: 950;
+    text-decoration: none;
+    transition: all 0.35s cubic-bezier(0.2, 1, 0.2, 1);
+    background: #EEEEF0;
+    color: var(--obsidian-ink);
+    border: none;
+}
+
+.btn-pill:hover {
+    background: #E5E5E7;
+    transform: translateY(-1.5px);
+}
+
+.btn-pill.primary {
+    background: var(--obsidian-ink);
+    color: white;
+}
+
+.btn-pill.primary:hover {
+    background: #000000;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.18);
+}
+
+/* Card Hierarchy */
+.secondary-grid {
+    display: grid;
+    gap: 2.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    width: 100%;
+}
+
+.llc-card {
+    padding: 3rem;
+    background: #F5F5F7;
+    border-radius: var(--radius-secondary);
+    border: 1px solid rgba(0,0,0,0.01);
+    box-shadow: inset 0 2px 12px rgba(0,0,0,0.02);
+}
+
+.llc-status-row h3 {
+    font-size: 1.7rem;
+    font-weight: 1000;
+    letter-spacing: -0.045em;
+    margin-bottom: 0.6rem;
+}
+
+/* Sidebar Titles */
+.activity-title, .section-title {
+    font-size: 0.5rem;
+    font-weight: 1000;
+    text-transform: uppercase;
+    letter-spacing: 0.7em; /* Maximum institutional air */
+    opacity: 0.15;
+    margin-bottom: 4rem;
+}
+
+/* Maintenance Hub Overlay */
+.service-hub {
+    margin-top: 7rem;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 5rem;
+    opacity: 0.85;
+}
+
+.catalog-card {
+    border-radius: var(--radius-secondary);
+    background: rgba(0,0,0,0.02);
+    min-height: 200px;
+}
