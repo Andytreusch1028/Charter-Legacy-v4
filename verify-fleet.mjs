@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
     try {
         const browser = await chromium.launch();
         const page = await browser.newPage();
-        await page.goto('http://localhost:8080/app/obsidian-zenith.html');
+        await page.goto('http://localhost:8080/app/dashboards/obsidian-zenith.html');
         await page.waitForTimeout(2000); 
 
         // Capture Initial State (CL - RA Offline / Privacy Exposed)
@@ -49,3 +49,4 @@ const __dirname = path.dirname(__filename);
         console.error('Error during verification:', err);
     }
 })();
+

@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename);
 
     try {
         console.log('Navigating to RA Portal (Mobile)...');
-        await page.goto('http://localhost:8080/app/ra-portal.html');
+        await page.goto('http://localhost:8080/app/portals/ra-portal.html');
         await page.waitForTimeout(1000);
         
         console.log('Capturing Mobile Pulse State...');
@@ -28,3 +28,4 @@ const __dirname = path.dirname(__filename);
         await browser.close();
     }
 })();
+

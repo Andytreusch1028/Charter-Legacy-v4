@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Charter Suite - Obsidian Slab</title>
+    
+    <!-- Obsidian Aesthetic -->
+    <link rel="stylesheet" href="../styles/app-alpha.css?v=2">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="../core/manifest.json">
+    <meta name="theme-color" content="#1D1D1F">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="../assets/logo-obsidian-shield.svg">
+</head>
+<body class="dashboard-page">
+    <nav class="dashboard-nav">
+        <a href="/app/" class="nav-logo">
+            <svg class="logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 4L40 14V34L24 44L8 34V14L24 4Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M24 16L32 21V31L24 36L16 31V21L24 16Z" fill="currentColor"/>
+            </svg>
+        </a>
+    </nav>
+
+    <main class="dashboard-main">
+        <div class="obsidian-slab">
+            <div class="dashboard-layout">
+                <div class="layout-primary">
+                    <div id="entityList">
+                        <!-- Loading Skeleton (Matches Final Layout 1:1) -->
+                        <div class="skeleton-hero animate-pulse" style="padding: 0;">
+                            <div style="height: 1rem; width: 250px; background: rgba(0,0,0,0.04); border-radius: 4px; margin-bottom: 2.5rem;"></div>
+                            <div style="height: 4rem; width: 80%; background: rgba(0,0,0,0.06); border-radius: 12px; margin-bottom: 3.5rem;"></div>
+                            <div style="height: 6rem; width: 100%; border-top: 1px solid rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.03); margin-bottom: 3rem;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Maintenance Hub (Obsidian Catalog) -->
+                    <div class="service-hub">
+                        <h2 class="section-title">Maintenance Hub</h2>
+                        <div class="hub-sections">
+                            <div class="catalog-grid">
+                                <!-- Placeholder for potential catalog items -->
+                                <div class="catalog-card" style="height: 120px; background: rgba(0,0,0,0.02); opacity: 0.1;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secondary Column (Glass Sentinel) -->
+                <aside class="layout-secondary">
+                    <div class="activity-section">
+                        <h3 class="activity-title">Recent Activity</h3>
+                        <div class="skeleton-list animate-pulse" style="display: flex; flex-direction: column; gap: 2rem; margin-top: 2rem;">
+                            <div style="height: 1rem; background: rgba(0,0,0,0.05); border-radius: 4px; width: 90%;"></div>
+                            <div style="height: 1rem; background: rgba(0,0,0,0.05); border-radius: 4px; width: 70%;"></div>
+                            <div style="height: 1rem; background: rgba(0,0,0,0.05); border-radius: 4px; width: 85%;"></div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <script src="config.js?v=24"></script>
+    <script src="../scripts/dashboards/dashboard-alpha.js?v=2"></script>
+</body>
+</html>
+

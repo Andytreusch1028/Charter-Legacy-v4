@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will Management | Charter Legacy</title>
+    <link rel="stylesheet" href="../styles/app.css">
+    <link rel="stylesheet" href="../styles/legacy-will.css">
+    <style>
+        /* Testator Dashboard Specific Styles */
+        .testator-dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--canvas);
+            min-height: 100vh;
+        }
+        
+        .testator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--mist);
+        }
+        
+        .testator-header h1 {
+            font-size: 2rem;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .subtitle {
+            color: var(--charcoal);
+            margin: 0;
+        }
+        
+        .will-upload-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .upload-zone {
+            border: 2px dashed var(--mist);
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-zone:hover {
+            border-color: var(--obsidian-ink);
+            background: var(--mist);
+        }
+        
+        .upload-zone svg {
+            stroke: var(--obsidian-ink);
+            margin-bottom: 1rem;
+        }
+        
+        .upload-zone h3 {
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .upload-zone p {
+            color: var(--charcoal);
+            margin: 0;
+        }
+        
+        .current-will-display {
+            background: #F5F5F7;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+        
+        .will-file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .file-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--obsidian-ink);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .file-icon svg {
+            stroke: white;
+        }
+        
+        .file-details h4 {
+            margin: 0 0 0.25rem 0;
+        }
+        
+        .file-details p {
+            margin: 0;
+            color: var(--charcoal);
+            font-size: 0.9rem;
+        }
+        
+        .heirs-section, .vault-section-testator {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-header h2 {
+            margin: 0;
+        }
+        
+        .heirs-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .heir-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #F5F5F7;
+            border-radius: 8px;
+        }
+        
+        .heir-info h4 {
+            margin: 0 0 0.25rem 0;
+        }
+        
+        .heir-info p {
+            margin: 0;
+            color: var(--charcoal);
+            font-size: 0.9rem;
+        }
+        
+        .heir-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-badge.pending {
+            background: #FFF3CD;
+            color: #856404;
+        }
+        
+        .status-badge.granted {
+            background: #D4EDDA;
+            color: #155724;
+        }
+        
+        .btn-add {
+            background: var(--obsidian-ink);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 52px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.2s;
+        }
+        
+        .btn-add:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-primary, .btn-secondary {
+            padding: 0.75rem 1.5rem;
+            border-radius: 52px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: var(--obsidian-ink);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--obsidian-ink);
+            border: 1px solid var(--obsidian-ink);
+        }
+        
+        .btn-primary:hover, .btn-secondary:hover {
+            transform: scale(1.05);
+        }
+        
+        .instructions {
+            background: #E8F4F8;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+        
+        .instructions h3 {
+            margin: 0 0 1rem 0;
+        }
+        
+        .instructions ol {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="testator-dashboard-container">
+        
+        <!-- Header -->
+        <div class="testator-header">
+            <div class="header-left">
+                <h1>My Legacy Will</h1>
+                <p class="subtitle">Secure your legacy and provide peace of mind for your loved ones</p>
+            </div>
+            <div class="header-right">
+                <button class="btn-secondary" onclick="window.location.href='dashboard-llc.html'">
+                    ← Back to Dashboard
+                </button>
+            </div>
+        </div>
+        
+        <!-- Will Upload Section -->
+        <div class="will-upload-card">
+            <h2>Your Will Document</h2>
+            <p style="color: var(--charcoal); margin-bottom: 1.5rem;">Upload your executed will to make it accessible to your designated heirs</p>
+            
+            <div class="upload-zone" onclick="document.getElementById('will-file-input').click()">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <h3>Drop your will document here</h3>
+                <p>or click to browse (PDF, DOC, DOCX)</p>
+                <input type="file" id="will-file-input" accept=".pdf,.doc,.docx" style="display: none;" onchange="handleWillUpload(event)">
+            </div>
+            
+            <!-- Current Will Display -->
+            <div class="current-will-display" id="current-will-display" style="display: none;">
+                <div class="will-file-info">
+                    <div class="file-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                    </div>
+                    <div class="file-details">
+                        <h4 id="will-filename">Last_Will_John_Smith.pdf</h4>
+                        <p>Uploaded: <span id="will-upload-date">January 20, 2026</span> • <span id="will-filesize">2.4 MB</span></p>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    <button class="btn-secondary" onclick="viewWill()">View Document</button>
+                    <button class="btn-secondary" onclick="document.getElementById('will-file-input').click()">Replace</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Heirs Section -->
+        <div class="heirs-section">
+            <div class="section-header">
+                <h2>Designated Heirs</h2>
+                <button class="btn-add" onclick="addHeirPrompt()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Heir
+                </button>
+            </div>
+            
+            <div class="heirs-list" id="heirs-list">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Vault Items Section -->
+        <div class="vault-section-testator">
+            <div class="section-header">
+                <h2>Estate Documents Vault</h2>
+                <button class="btn-add" onclick="addVaultItemPrompt()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Document
+                </button>
+            </div>
+            
+            <div class="heirs-list" id="vault-items-list">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3>📋 How It Works</h3>
+            <ol>
+                <li><strong>Upload Your Will:</strong> Upload your executed will document (PDF recommended)</li>
+                <li><strong>Add Heirs:</strong> Designate who should have access to your will</li>
+                <li><strong>Add Vault Items:</strong> Upload supporting documents (bank info, property deeds, insurance policies)</li>
+                <li><strong>Configure Access:</strong> Choose how heirs can verify and access (death certificate, hardware key, etc.)</li>
+                <li><strong>Secure Storage:</strong> Your documents are encrypted and stored securely</li>
+            </ol>
+        </div>
+        
+    </div>
+    
+    <!-- Scripts -->
+    <script src="../scripts/documents/config.js"></script>
+    <script>
+        // Load existing will data
+        window.addEventListener('DOMContentLoaded', () => {
+            loadWillData();
+            loadHeirs();
+            loadVaultItems();
+        });
+        
+        function loadWillData() {
+            // Check if will exists in config
+            const will = window.CONFIG.MOCK_WILLS[0];
+            if (will && will.will_document_url) {
+                document.getElementById('current-will-display').style.display = 'block';
+                document.getElementById('will-filename').textContent = 'Last_Will_' + will.testator.name.replace(/\s/g, '_') + '.pdf';
+                document.getElementById('will-upload-date').textContent = 'January 20, 2026';
+                document.getElementById('will-filesize').textContent = '2.4 MB';
+            }
+        }
+        
+        function loadHeirs() {
+            const will = window.CONFIG.MOCK_WILLS[0];
+            const heirsList = document.getElementById('heirs-list');
+            
+            if (!will || !will.heirs || will.heirs.length === 0) {
+                heirsList.innerHTML = '<p style="color: var(--charcoal); text-align: center; padding: 2rem;">No heirs added yet. Click "Add Heir" to get started.</p>';
+                return;
+            }
+            
+            heirsList.innerHTML = will.heirs.map(heir => `
+                <div class="heir-item">
+                    <div class="heir-info">
+                        <h4>${heir.name}</h4>
+                        <p>${heir.relationship} • ${heir.email || 'No email provided'}</p>
+                    </div>
+                    <div class="heir-status">
+                        <span class="status-badge ${heir.access_granted ? 'granted' : 'pending'}">
+                            ${heir.access_granted ? 'Access Granted' : 'Pending Verification'}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function loadVaultItems() {
+            const will = window.CONFIG.MOCK_WILLS[0];
+            const vaultList = document.getElementById('vault-items-list');
+            
+            if (!will || !will.vault_items || will.vault_items.length === 0) {
+                vaultList.innerHTML = '<p style="color: var(--charcoal); text-align: center; padding: 2rem;">No vault items added yet. Click "Add Document" to get started.</p>';
+                return;
+            }
+            
+            vaultList.innerHTML = will.vault_items.map(item => `
+                <div class="heir-item">
+                    <div class="heir-info">
+                        <h4>${item.name}</h4>
+                        <p>${item.description}</p>
+                    </div>
+                    <div class="heir-status">
+                        <button class="btn-secondary" onclick="viewVaultItem('${item.id}')">View</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function handleWillUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                alert(`Will uploaded: ${file.name}\n\nIn production, this would:\n1. Upload to secure storage\n2. Encrypt the document\n3. Update the database\n4. Notify designated heirs`);
+                
+                // Show current will display
+                document.getElementById('current-will-display').style.display = 'block';
+                document.getElementById('will-filename').textContent = file.name;
+                document.getElementById('will-upload-date').textContent = new Date().toLocaleDateString();
+                document.getElementById('will-filesize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            }
+        }
+        
+        function viewWill() {
+            window.open('vault/will-001.png', '_blank');
+        }
+        
+        function addHeirPrompt() {
+            const name = prompt('Enter heir name:');
+            if (name) {
+                const relationship = prompt('Enter relationship (e.g., Spouse, Child):');
+                const email = prompt('Enter email:');
+                alert(`Heir added: ${name}\n\nIn production, this would:\n1. Add to database\n2. Send invitation email\n3. Generate hardware key\n4. Update access permissions`);
+                loadHeirs();
+            }
+        }
+        
+        function addVaultItemPrompt() {
+            alert('In production, this would open a file upload dialog for:\n• Bank account information\n• Property deeds\n• Insurance policies\n• Digital asset credentials\n• Other important documents');
+        }
+        
+        function viewVaultItem(itemId) {
+            alert(`Viewing vault item: ${itemId}\n\nIn production, this would open the document in a secure viewer.`);
+        }
+    </script>
+    
+</body>
+</html>
+

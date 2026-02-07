@@ -1,27 +1,42 @@
 {
   "name": "charter-legacy-v4",
   "version": "1.0.0",
-  "type": "module",
-  "description": "> Premium business formation and estate planning with privacy-first approach",
+  "description": "Charter Legacy v4",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Andytreusch1028/Charter-Legacy-v4.git"
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "start": "vite"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/your-username/charter-legacy-v4/issues"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Andytreusch1028/Charter-Legacy-v4.git"
   },
-  "homepage": "https://github.com/your-username/charter-legacy-v4#readme",
   "dependencies": {
-    "@supabase/supabase-js": "^2.93.2",
-    "dotenv": "^17.2.3",
+    "@stripe/react-stripe-js": "^5.6.0",
+    "@stripe/stripe-js": "^8.7.0",
+    "@supabase/supabase-js": "^2.49.1",
+    "dotenv": "^16.4.7",
+    "lucide-react": "^0.344.0",
     "pdf-lib": "^1.17.1",
-    "playwright": "^1.58.0"
+    "playwright": "^1.50.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "http-server": "^14.1.1",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "tailwindcss-animate": "^1.0.7",
+    "vite": "^5.3.1"
   }
 }

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legacy Builder - Charter Legacy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/wizard-premium.css">
+    <link rel="stylesheet" href="../styles/wizard-layout.css">
+    <style>
+        :root {
+            --obsidian-ink: #0A0A0B;
+            --accent-blue: #0066FF;
+            --accent-green: #00D084;
+            --slab-white: #FFFFFF;
+            --radius-lg: 32px;
+            --gold-leaf: #d4af37;
+        }
+
+        body {
+            background: #F0F2F5;
+            font-family: 'Inter', sans-serif;
+            color: var(--obsidian-ink);
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .wizard-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            min-height: 80vh;
+        }
+
+        .wizard-header {
+            padding: 48px;
+            background: #fafafa;
+            border-bottom: 1px solid #eee;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .brand-eyebrow {
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--gold-leaf);
+        }
+
+        .step-indicator {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #888;
+        }
+
+        .wizard-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin: 0;
+        }
+
+        .wizard-body {
+            flex: 1;
+            padding: 48px;
+        }
+
+        .wizard-footer {
+            padding: 32px 48px;
+            background: #fafafa;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-wizard {
+            padding: 16px 32px;
+            border-radius: 52px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            background: var(--obsidian-ink);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #555;
+            border: 1px solid #ddd;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Template Grid */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .template-card {
+            padding: 32px;
+            border-radius: 20px;
+            border: 1px solid #eee;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .template-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .template-card.selected {
+            border-color: var(--accent-blue);
+            background: rgba(0,102,255,0.02);
+            box-shadow: 0 10px 30px rgba(0,102,255,0.05);
+        }
+
+        .template-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 24px;
+            height: 24px;
+            background: var(--accent-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.7rem;
+        }
+
+        .template-icon {
+            width: 48px;
+            height: 48px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .template-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .template-description {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 32px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #aaa;
+            margin-bottom: 12px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 1px solid #eee;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            background: #fafafa;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0,102,255,0.05);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        /* Preview Area */
+        .preview-area {
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 20px;
+            padding: 48px;
+            font-family: 'Times New Roman', serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #111;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .step-pane {
+            display: none;
+        }
+
+        .step-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .active {
+            animation: fadeIn 0.4s ease-out;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wizard-container">
+        <!-- Header -->
+        <div class="wizard-header">
+            <div class="header-top">
+                <div class="brand-eyebrow">Personal Legacy Artifacts</div>
+                <div class="step-indicator" id="stepIndicator">Step 1 of 4</div>
+            </div>
+            <h1 class="wizard-title" id="stepTitle">Select Your Artifact</h1>
+        </div>
+
+        <!-- Body -->
+        <div class="wizard-body">
+            
+            <!-- Step 1: Template Selection -->
+            <div class="step-pane active" id="step-1">
+                <div class="template-grid" id="template-grid">
+                    <!-- Templates injected by JS -->
+                </div>
+            </div>
+
+            <!-- Step 2: Personal Details -->
+            <div class="step-pane" id="step-2">
+                <div class="form-group">
+                    <label class="form-label" id="principal-label">Full Legal Name</label>
+                    <input type="text" id="principal-name" class="form-input" placeholder="e.g. Johnathan Quincy Smith">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">County of Residence</label>
+                        <input type="text" id="residence-county" class="form-input" placeholder="e.g. Volusia">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Effective Date</label>
+                        <input type="date" id="effective-date" class="form-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Designated Parties -->
+            <div class="step-pane" id="step-3">
+                <div id="dynamic-parties-container">
+                    <!-- Dynamic fields based on template type -->
+                </div>
+            </div>
+
+            <!-- Step 4: Review & Generate -->
+            <div class="step-pane" id="step-4">
+                <div class="preview-area" id="artifact-preview" style="min-height: 500px; padding: 60px; position: relative; overflow: hidden; background: #fff; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #EEE;">
+                    <!-- Watermark Seal -->
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.03; pointer-events: none; z-index: 0;">
+                        <svg width="400" height="400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <div style="position: relative; z-index: 1;" id="artifact-content-target">
+                        <!-- Preview generated here by JS -->
+                    </div>
+                </div>
+                <div style="margin-top: 24px; padding: 20px; background: rgba(212, 175, 55, 0.05); border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.1);">
+                    <p style="font-size: 0.85rem; color: #666; font-style: italic; text-align: center;">
+                        This document is a statutory manifestation of your intent. Upon generation, it will be encrypted and stored in your Corporate Vault.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="wizard-footer">
+            <button class="btn-wizard btn-secondary" id="btn-back" onclick="prevStep()">Back</button>
+            <button class="btn-wizard btn-primary" id="btn-next" onclick="nextStep()" disabled>Continue</button>
+        </div>
+
+        <!-- UPL SAFE HARBOR -->
+        <div style="max-width: 600px; margin: 40px auto; padding: 24px; border-top: 1px solid rgba(0,0,0,0.05); text-align: center; opacity: 0.5;">
+            <p style="font-size: 0.65rem; line-height: 1.5; color: #666; font-style: italic;">
+                <strong>Sovereign Notice:</strong> Charter Legacy is a corporate scrivening service. We are not a law firm. This system generates statutory instruments based on user-supplied data and Florida legislative templates. We do not provide legal, tax, or financial advice. Consult a qualified Florida attorney for legal guidance regarding your estate plan.
+            </p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../core/config.js"></script>
+    <script src="../scripts/documents/legacy-scrivener.js"></script>
+</body>
+</html>
+

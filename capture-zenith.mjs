@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
         const browser = await chromium.launch();
         const page = await browser.newPage();
         // Use the actual Zenith console path
-        await page.goto('http://localhost:8080/app/obsidian-zenith.html');
+        await page.goto('http://localhost:8080/app/dashboards/obsidian-zenith.html');
         // Wait for dynamic rendering if needed
         await page.waitForTimeout(2000); 
         await page.screenshot({ path: path.join(__dirname, 'zenith_console_capture.png') });
@@ -20,3 +20,4 @@ const __dirname = path.dirname(__filename);
         console.error('Error during capture:', err);
     }
 })();
+
