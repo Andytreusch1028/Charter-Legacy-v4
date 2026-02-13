@@ -1,3 +1,5 @@
+> 🚨 **CRITICAL SECURITY NOTICE**: This application is currently running in a Restricted Dev Mode with known security bypasses to facilitate development. **DO NOT DEPLOY TO PRODUCTION** without reviewing [SHIPPING_MANIFEST.md](./SHIPPING_MANIFEST.md) and removing the client-side Service Key.
+
 # Charter Legacy - Your LLC. Your Privacy.
 
 > Premium business formation and estate planning with privacy-first approach

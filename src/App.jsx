@@ -74,12 +74,12 @@ const QuoteSection = () => (
         <Brain size={32} />
       </div>
       <h2 className="text-3xl md:text-5xl font-medium italic leading-snug text-[#1D1D1F] tracking-tight">
-        "We've automated <span className="text-[#007AFF] font-bold">30 years</span> of Florida legal folklore into a single, seamless engine. No beige forms. No hidden traps. Just your legacy, secured."
+        "We've automated <span className="text-[#007AFF] font-bold">30 years</span> of complex paperwork into a single, elegant signature. No legal jargon. No hidden traps. Just your future, protected."
       </h2>
-      <div className="flex items-center justify-center gap-3 pt-4 opacity-60">
-        <div className="w-10 h-px bg-black" />
-        <span className="text-[10px] font-black uppercase tracking-[0.3em]">Charter Legacy Protocol v3.1</span>
-        <div className="w-10 h-px bg-black" />
+      <div className="flex items-center justify-center gap-3 pt-4 opacity-30">
+        <div className="w-10 h-[0.5px] bg-black" />
+        <span className="text-[9px] font-black uppercase tracking-[0.4em]">Charter Legacy Protocol v4.0</span>
+        <div className="w-10 h-[0.5px] bg-black" />
       </div>
     </div>
   </section>
@@ -494,7 +494,9 @@ const SpecSheet = ({ item, isOpen, onClose, onSuccess }) => {
   );
 };
 
+import LoginModal from './LoginModal';
 import DashboardZenith from './DashboardZenith';
+import ZenithDialog from './ZenithDialog';
 
 // --- MAIN APPLICATION ---
 
@@ -502,6 +504,7 @@ export default function App() {
   const [view, setView] = useState('landing'); 
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   // Shared User State for lifting up from SpecSheet
   const [appUser, setAppUser] = useState(null);
 
@@ -518,13 +521,27 @@ export default function App() {
       }
     });
 
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    const handleKeyDown = (e) => {
+      // Steve-Pro: Keyboard Shortcut for Dashboard (Ctrl+K)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        if (appUser) setView('dashboard');
+        else setIsLoginOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [appUser]);
 
   const handleDashboardTransition = (user) => {
       setAppUser(user);
       setView('dashboard');
       setSelectedPackage(null);
+      setIsLoginOpen(false);
   };
 
   const formationPackages = [
@@ -535,7 +552,7 @@ export default function App() {
       icon: Shield, 
       description: "The definitive \"Founder's Shield\" vehicle. Zero home-address exposure.", 
       plainEnglish: "We file your official Articles with the State and list our registered office address on public record to help keep your home address private. Includes official setup within 24h.",
-      features: ['Private Business Address', 'Free Mail Scanning (Year 1*)', 'Founder\'s Blueprint', 'Your Digital HQ'] 
+      features: ['Private Business Address', 'Free Mail Scanning (Year 1*)', 'Founder\'s Blueprint', 'Free Legacy Protocol (Will/Trust)'] 
     },
     { 
       id: 'medical', 
@@ -544,7 +561,7 @@ export default function App() {
       icon: Stethoscope, 
       description: "For Physicians & Practitioners. Full Board compliance tools.", 
       plainEnglish: "We form your Professional PLLC to align with State Medical Board requirements. Includes standard Patient Privacy Form templates designed for HIPAA compliance.",
-      features: ['Board Compliance Tools', 'HIPAA Compliance Forms', 'Dept. of Health Registration', 'Priority Support'] 
+      features: ['Board Compliance Tools', 'HIPAA Compliance Forms', 'Dept. of Health Registration', 'Free Legacy Protocol (Will/Trust)'] 
     },
     { 
       id: 'contractor', 
@@ -553,18 +570,18 @@ export default function App() {
       icon: HardHat, 
       description: "For General Contractors. DBPR integration and license attachment.", 
       plainEnglish: "We form your LLC and assist with linking it to your Contractor's License. Includes the standard 'Verification of Authority' document often required for permitting.",
-      features: ['DBPR License Linking', 'Qualifier License Attachment', 'Permit-Ready Documents', 'Priority Support'] 
+      features: ['DBPR License Linking', 'Qualifier License Attachment', 'Permit-Ready Documents', 'Free Legacy Protocol (Will/Trust)'] 
     }
   ];
 
   const willPackage = { 
     id: 'will', 
-    title: "The Legacy Will", 
-    price: "$399", 
+    title: "Legacy Vault Suite", 
+    price: "$199/yr", 
     icon: Anchor, 
-    description: "Designed to help your family bypass probate court and access your business instantly.", 
-    plainEnglish: "A secure digital Will template designed to help facilitate the transfer of your LLC ownership. This tool is built to help your family avoid probate court and legal delays.",
-    features: ['Smart Transfer Rules', 'Notary-Ready Templates', 'Family Access Preview', 'Completeness Scan']
+    description: "Bank-grade digital vault, video bequests, and audit trails for your family.", 
+    plainEnglish: "Upgrade to the Compliance Guard level. Includes secure storage, 24/7 audit logs, and encrypted access instructions for your heirs.",
+    features: ['Secure Digital Vault', 'Video Bequests (Coming Soon)', '24/7 Audit Trail', 'Priority Heirs Access']
   };
 
   const handleSelection = (pkg) => {
@@ -577,10 +594,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FBFBFD] text-[#1D1D1F] font-sans antialiased selection:bg-[#D4AF37] selection:text-white relative overflow-x-hidden">
+      <ZenithDialog />
       <style>{`
         .bg-mesh { background-image: radial-gradient(at 50% 0%, rgba(29, 29, 31, 0.03) 0, transparent 70%), radial-gradient(at 100% 100%, rgba(0, 122, 255, 0.05) 0, transparent 60%); }
         .text-glow { text-shadow: 0 0 60px rgba(0, 122, 255, 0.15); }
       `}</style>
+      
+      {/* LOGIN MODAL */}
+      <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => setIsLoginOpen(false)} 
+        onSuccess={handleDashboardTransition} 
+      />
 
       {/* NAVIGATION */}
       <nav className={`fixed top-0 w-full z-50 h-24 transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-md border-b border-gray-100/50 shadow-sm' : 'bg-transparent'} flex items-center justify-between px-6 md:px-12`}>
@@ -593,7 +618,7 @@ export default function App() {
           <button onClick={() => document.getElementById('privacy').scrollIntoView({behavior:'smooth'})} className="hover:text-black transition-colors text-[#007AFF]">Privacy Hub</button>
           <button 
             className="bg-[#1D1D1F] text-white px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all text-[9px] font-black uppercase tracking-widest"
-            onClick={() => appUser ? setView('dashboard') : alert("Please start a business to create an account.")}
+            onClick={() => appUser ? setView('dashboard') : setIsLoginOpen(true)}
           >
             {appUser ? "Open Console" : "Client Login"}
           </button>
@@ -610,11 +635,11 @@ export default function App() {
             </div>
             
             <h1 className="text-6xl md:text-[8.5rem] font-black tracking-tighter leading-[0.9] uppercase text-[#1D1D1F] animate-in zoom-in-95 duration-1000">
-              Your LLC.<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1D1D1F] to-[#4A4A4A]">Your Privacy.</span>
+              Your LLC.<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1D1D1F] to-[#4A4A4A]">Secured.</span>
             </h1>
             
             <p className="max-w-2xl mx-auto text-xl md:text-2xl text-gray-500 font-medium italic leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-1000 delay-200">
-              Invisibility by Default. We keep your name off the public record so you can build in private.
+              Privacy by Design. We keep your home address off the public record so you can build with peace of mind.
             </p>
 
             <div className="pt-8 animate-in slide-in-from-bottom-8 fade-in duration-1000 delay-300">
@@ -668,7 +693,7 @@ export default function App() {
                     </div>
                     <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none text-white">Secure The <span className="text-[#007AFF]">Driver.</span></h2>
                     <p className="text-2xl text-gray-400 font-medium italic leading-relaxed">
-                      "You built the vehicle. Now protect the driver. The Legacy Will integrates with your Charter to ensure your shares transfer automatically."
+                      "You built the vehicle. Now protect the driver. The Legacy Vault integrates with your Charter to ensure your shares transfer automatically."
                     </p>
                  </div>
                  <div className="space-y-6">
@@ -683,7 +708,7 @@ export default function App() {
                  </div>
                  <div className="pt-4">
                     <button onClick={() => handleSelection(willPackage)} className="bg-white text-black px-12 py-6 rounded-full font-black text-lg uppercase tracking-widest hover:bg-[#D4AF37] hover:text-black hover:scale-105 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] flex items-center gap-4">
-                       Add Legacy Will - $399 <ArrowRight size={24} />
+                       Add Legacy Vault - $199/yr <ArrowRight size={24} />
                     </button>
                  </div>
               </div>

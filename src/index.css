@@ -2,12 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+@layer base {
+  :root {
+    --ive-glass: rgba(255, 255, 255, 0.03);
+    --ive-glass-border: rgba(255, 255, 255, 0.08);
+    --ive-aluminum: #e2e2e2;
+    --ive-charcoal: #0a0a0b;
+    --ive-gold: #d4af37;
+    --ive-blue: #007aff;
+    
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+@layer utilities {
+  .bg-mesh {
+    background-color: #fbfbfd;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(212, 175, 55, 0.03) 0px, transparent 50%);
+  }
+
+  .ive-glass {
+    background: var(--ive-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--ive-glass-border);
+  }
+
+  .ive-shadow-optical {
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .ive-squircle {
+    border-radius: 44px;
+  }
+
+  .bg-radial-gradient-vault {
+    background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+  }
+
+  .animate-spin-slow {
+    animation: spin 8s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .scroller-zen::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scroller-zen::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scroller-zen::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
 }

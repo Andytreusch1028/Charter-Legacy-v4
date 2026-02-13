@@ -1,5 +1,6 @@
 {
   "name": "charter-legacy-v4",
+  "type": "module",
   "version": "1.0.0",
   "description": "Charter Legacy v4",
   "main": "index.js",
