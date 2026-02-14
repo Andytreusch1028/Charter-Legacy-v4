@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Shield, Clock, FileText, CheckCircle2, AlertCircle, 
   ChevronRight, Lock, Activity, RefreshCw, LogOut, Settings,
-  Copy, Download, Eye, EyeOff
+  Copy, Download, Eye, EyeOff, MessageSquare, ShieldCheck, Fingerprint, Trash2, Scale
 } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
@@ -23,6 +23,10 @@ const DashboardZenith = ({ user, initialData }) => {
   
   // Steve Mode: Power Tools
   const [privacyMode, setPrivacyMode] = useState(false);
+  
+  // Agent Console Config
+  const [autoDisposeMarketing, setAutoDisposeMarketing] = useState(true);
+  const [priorityForwarding, setPriorityForwarding] = useState(true);
 
   const handleExport = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(llcData, null, 2));
@@ -65,9 +69,9 @@ const DashboardZenith = ({ user, initialData }) => {
 
         // Mock Activity Log (Replace with real RPC call later)
         setActivityLog([
-            { id: 1, message: "Secure Environment Initialized", time: "Just now", icon: Shield },
-            { id: 2, message: "Payment Verified (Stripe)", time: "1 min ago", icon: CheckCircle2 },
-            { id: 3, message: "Identity Verification Pending", time: "Action Required", icon: AlertCircle },
+            { id: 1, message: "Privacy Protection Started", time: "Just now", icon: ShieldCheck },
+            { id: 2, message: "Institutional Payment Verified", time: "1 min ago", icon: CheckCircle2 },
+            { id: 3, message: "Identity Verification Active", time: "Action Required", icon: Fingerprint },
         ]);
 
         // Simulate "Booting" sequence
@@ -140,45 +144,37 @@ const DashboardZenith = ({ user, initialData }) => {
           <DesignationProtocol user={user} onSuccess={handleDesignationSuccess} />
       )}
 
-      <div className="min-h-screen bg-[#F0F2F5] text-[#0A0A0B] font-sans antialiased flex items-center justify-center p-4 md:p-10 relative overflow-hidden">
+      <div className="min-h-screen bg-luminous text-luminous-ink font-sans antialiased flex items-center justify-center p-4 md:p-10 relative overflow-hidden">
         <style>{`
-          :root {
-            --obsidian-ink: #0A0A0B;
-            --accent-green: #00D084;
-            --gold-leaf: #d4af37;
-        }
         .bg-blob {
             position: fixed;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(0, 102, 255, 0.05) 0%, rgba(0, 102, 255, 0) 70%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(0, 122, 255, 0.03) 0%, rgba(0, 122, 255, 0) 70%);
             border-radius: 50%;
             z-index: 0;
-            filter: blur(100px);
-            animation: move 20s infinite alternate;
+            filter: blur(120px);
+            animation: move 25s infinite alternate;
         }
-        .blob-1 { top: -10%; left: -10%; }
-        .blob-2 { bottom: -10%; right: -10%; background: radial-gradient(circle, rgba(0, 208, 132, 0.04) 0%, rgba(0, 208, 132, 0) 70%); }
+        .blob-1 { top: -15%; left: -10%; }
+        .blob-2 { bottom: -15%; right: -10%; background: radial-gradient(circle, rgba(212, 175, 55, 0.03) 0%, rgba(212, 175, 55, 0) 70%); }
         @keyframes move {
             from { transform: translate(0, 0); }
-            to { transform: translate(100px, 50px); }
-        }
-        .zenith-slab-shadow {
-            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.1), 0 30px 60px -30px rgba(0, 0, 0, 0.1);
+            to { transform: translate(80px, 40px); }
         }
       `}</style>
       
       {/* Background Blobs */}
       <div className="bg-blob blob-1"></div>
       <div className="bg-blob blob-2"></div>
+      <div className="fixed inset-0 dot-overlay opacity-[0.15] pointer-events-none" />
 
       {/* The Obsidian Slab */}
-      <div className="bg-white w-full max-w-6xl min-h-[600px] rounded-[48px] zenith-slab-shadow flex flex-col md:flex-row relative z-10 border border-white/70 animate-in fade-in zoom-in-95 duration-700">
+      <div className="vitreous-glass w-full max-w-7xl min-h-[700px] rounded-[48px] flex flex-col md:flex-row relative z-10 border border-white animate-in fade-in zoom-in-95 duration-700 overflow-hidden shadow-[0_80px_160px_-40px_rgba(0,122,255,0.08)]">
         
-        {/* Main Control Area */}
-        <main className="flex-1 p-8 md:p-20">
-            <div className="text-[0.65rem] font-black uppercase tracking-[0.5em] text-[#0A0A0B] opacity-30 mb-8">
-                Corporate Command Center
+        <main className="flex-1 p-8 md:p-20 flex flex-col">
+            <div className="text-[0.65rem] font-black uppercase tracking-[0.5em] text-luminous-ink opacity-30 mb-12">
+                Registered Agent Console
             </div>
 
             {loading ? (
@@ -195,36 +191,37 @@ const DashboardZenith = ({ user, initialData }) => {
                     
                     {/* --- ZERO STATE (SETUP MODE) --- */}
                     {!llcData || llcData?.llc_status === 'Setting Up' ? (
-                        <div className="max-w-2xl mx-auto text-center pt-10">
-                            <div className="w-20 h-20 bg-white rounded-3xl mx-auto mb-8 shadow-xl flex items-center justify-center text-[#0A0A0B]">
-                                <Shield size={40} strokeWidth={1.5} />
+                        <div className="max-w-2xl text-left pt-10">
+                            <div className="w-16 h-16 bg-luminous-ink rounded-2xl mb-12 shadow-2xl flex items-center justify-center text-white rotate-3">
+                                <ShieldCheck size={32} strokeWidth={1.5} />
                             </div>
                             
-                            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-[#0A0A0B] mb-6">
-                                Welcome, Founder.
+                            <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-luminous-ink mb-8 leading-[0.9]">
+                                Secure Your<br/><span className="text-luminous-blue">Foundation.</span>
                             </h1>
                             
-                            <p className="text-gray-500 font-medium text-lg mb-12 max-w-lg mx-auto leading-relaxed">
-                                Your secure vault is ready. We just need a few details to legally form your Florida entity.
+                            <p className="text-gray-500 font-medium text-xl mb-16 max-w-lg leading-relaxed italic">
+                                "The path to institutional privacy is one signature away. Let us finalize the architecture of your Florida entity."
                             </p>
 
                             {/* The ONE Main Action */}
                             <div 
                                onClick={() => setShowDesignation(true)}
-                               className="bg-white p-2 rounded-[2rem] shadow-2xl border border-white/50 hover:scale-[1.02] transition-transform cursor-pointer group"
+                               className="bg-white/50 p-2 rounded-[2.5rem] shadow-2xl border border-white/80 hover:scale-[1.01] transition-transform cursor-pointer group mb-12"
                             >
-                                <div className="bg-[#0A0A0B] text-white rounded-[1.5rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
-                                    <div className="text-left">
-                                        <div className="flex items-center gap-3 mb-2 text-[#00D084] font-bold uppercase tracking-widest text-xs">
-                                            <div className="w-2 h-2 bg-[#00D084] rounded-full animate-pulse"></div>
-                                            Action Required
+                                <div className="bg-luminous-ink text-white rounded-[2rem] p-8 md:p-14 flex flex-col md:flex-row items-center justify-between gap-12 relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-luminous-blue/10 rounded-bl-full pointer-events-none"></div>
+                                    <div className="text-left relative z-10">
+                                        <div className="flex items-center gap-3 mb-4 text-luminous-blue font-bold uppercase tracking-[0.3em] text-[10px]">
+                                            <div className="w-2.5 h-2.5 bg-luminous-blue rounded-full animate-pulse shadow-[0_0_15px_rgba(0,122,255,0.8)]"></div>
+                                            Strategy Required
                                         </div>
-                                        <h3 className="text-3xl font-black uppercase tracking-tight mb-2">Initialize LLC</h3>
-                                        <p className="text-gray-400 font-medium">Step 1: Naming & Address Protocols</p>
+                                        <h3 className="text-4xl font-black uppercase tracking-tight mb-4 leading-none">Initialize Charter</h3>
+                                        <p className="text-gray-400 font-medium italic">Naming, Addresses, and Privacy Protocols.</p>
                                     </div>
                                     
-                                    <button className="bg-white text-[#0A0A0B] px-10 py-5 rounded-2xl font-black uppercase tracking-wider hover:bg-[#00D084] hover:text-white transition-colors flex items-center gap-3 text-sm shadow-lg whitespace-nowrap">
-                                        Start Now <ChevronRight size={18} />
+                                    <button className="bg-white text-luminous-ink px-12 py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-luminous-blue hover:text-white transition-all flex items-center gap-3 text-xs shadow-xl whitespace-nowrap relative z-10">
+                                        Begin Entry <ChevronRight size={18} />
                                     </button>
                                 </div>
                             </div>
@@ -241,83 +238,172 @@ const DashboardZenith = ({ user, initialData }) => {
                         /* --- ACTIVE STATE (FULL DASHBOARD) --- */
                         <>
                             <div className="flex flex-col md:flex-row items-start justify-between gap-6 mb-12">
-                                <h1 className={`text-5xl md:text-6xl font-black uppercase tracking-tighter leading-[1.1] text-[#0A0A0B] break-words max-w-full transition-all duration-300`}>
+                                <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85] text-luminous-ink break-words max-w-full">
                                     {llcData?.llc_name}
                                 </h1>
                             </div>
 
                             {/* Stats Strip */}
-                            <div className="flex flex-col md:flex-row gap-8 md:gap-16 py-12 border-y border-gray-100 mb-16">
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Status</span>
-                                    <span className="text-base font-bold text-[#00D084] flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-[#00D084] rounded-full animate-pulse shadow-[0_0_10px_rgba(0,208,132,0.4)]"></div>
+                            <div className="flex flex-col md:flex-row gap-12 md:gap-24 py-16 border-y border-gray-100/50 mb-16">
+                                <div className="flex flex-col gap-3">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Current Status</span>
+                                    <span className="text-lg font-black text-luminous-blue flex items-center gap-3">
+                                        <div className="w-2.5 h-2.5 bg-luminous-blue rounded-full animate-pulse shadow-[0_0_15px_rgba(0,122,255,0.4)]"></div>
                                         {llcData?.llc_status || "Active"}
                                     </span>
                                 </div>
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Privacy Shield</span>
-                                    <span className="text-base font-bold text-[#0A0A0B] flex items-center gap-2">
-                                        <Shield size={16} className={llcData?.privacy_shield_active ? "text-[#00D084]" : "text-gray-300"} />
-                                        {llcData?.privacy_shield_active ? "Engaged" : "Inactive"}
+                                <div className="flex flex-col gap-3">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Privacy Shield</span>
+                                    <span className="text-lg font-black text-luminous-ink flex items-center gap-3">
+                                        <ShieldCheck size={20} className={llcData?.privacy_shield_active ? "text-luminous-blue" : "text-gray-300"} />
+                                        {llcData?.privacy_shield_active ? "Verified" : "Inactive"}
                                     </span>
                                 </div>
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Renewal</span>
-                                    <span className="text-base font-bold text-[#0A0A0B] opacity-40 flex items-center gap-2">
-                                        <Clock size={16} />
-                                        Auto-Renew (Year 1)
+                                <div className="flex flex-col gap-3">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Governance</span>
+                                    <span className="text-lg font-black text-luminous-ink opacity-40 flex items-center gap-3">
+                                        <Clock size={20} />
+                                        Auto-Protect
                                     </span>
                                 </div>
                             </div>
 
                             {/* Action Area */}
-                            <div className="space-y-8">
-                                <div 
-                                onClick={() => setIsBlueprintOpen(true)}
-                                className="p-8 bg-[#FAFAFA] rounded-3xl border border-gray-100 shadow-sm flex items-center justify-between transition-all hover:shadow-md hover:border-gray-200 cursor-pointer group"
-                                >
-                                    <div>
-                                        <h3 className="text-xl font-black uppercase tracking-tight text-[#0A0A0B] mb-1 group-hover:text-[#00D084] transition-colors">Company Profile</h3>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                            Manage Documents & Details
-                                        </p>
-                                    </div>
-                                    <button className="bg-[#0A0A0B] text-white px-8 py-4 rounded-2xl font-bold text-sm hover:scale-105 transition-transform shadow-lg flex items-center gap-2 group-hover:bg-[#00D084]">
-                                        Manage <ChevronRight size={16} />
-                                    </button>
-                                </div>
-
+                            <div className="space-y-12">
+                                {/* PRIMARY CARDS */}
                                 <div className="grid md:grid-cols-2 gap-8">
                                     <div 
-                                        onClick={() => setIsSuccessionOpen(true)}
-                                        className="p-8 bg-[#0A0A0B] text-white rounded-3xl shadow-xl flex flex-col justify-between relative overflow-hidden group cursor-pointer hover:scale-[1.02] transition-transform"
+                                        onClick={() => setIsBlueprintOpen(true)}
+                                        className="p-10 bg-[#FAFAFA] rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col justify-between h-[320px] transition-all hover:shadow-md hover:border-gray-200 cursor-pointer group relative overflow-hidden"
                                     >
-                                        <div className="absolute top-0 right-0 p-32 bg-gradient-to-br from-[#d4af37]/20 to-transparent rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none group-hover:bg-[#d4af37]/30 transition-colors"></div>
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-gray-100 rounded-bl-full -mr-16 -mt-16 transition-colors group-hover:bg-gray-200"></div>
                                         <div>
-                                            <div className="flex items-center gap-2 text-[#d4af37] text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-                                                <Clock size={12} /> Beneficiary Protection
+                                            <div className="flex items-center gap-2 text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6">
+                                                <FileText size={14} /> Official Records
                                             </div>
-                                            <h3 className="text-2xl font-black uppercase tracking-tight mb-2 group-hover:text-[#d4af37] transition-colors">Succession Plan</h3>
-                                            <p className="text-gray-400 text-xs font-medium leading-relaxed max-w-[80%]">
-                                                Your corporate will is active. Next verification check in:
+                                            <h3 className="text-3xl font-black uppercase tracking-tight text-luminous-ink mb-2 group-hover:text-luminous-blue transition-colors leading-none">Company Charter</h3>
+                                            <p className="text-gray-400 text-xs font-medium italic leading-relaxed max-w-[80%] mt-4">
+                                                "Access your filed Articles, EIN, and Operating Agreement."
                                             </p>
                                         </div>
-                                        <div className="mt-8 font-mono text-3xl font-bold tracking-widest text-[#d4af37] opacity-90">
+                                        <button className="bg-luminous-ink text-white w-full py-4 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-luminous-blue transition-colors shadow-lg flex items-center justify-center gap-2">
+                                            View Documents <ChevronRight size={14} />
+                                        </button>
+                                    </div>
+
+                                    <div 
+                                        onClick={() => setIsSuccessionOpen(true)}
+                                        className="p-10 bg-luminous-ink text-white rounded-[2.5rem] shadow-2xl flex flex-col justify-between h-[320px] relative overflow-hidden group cursor-pointer hover:scale-[1.02] transition-transform prism-border"
+                                    >
+                                        <div className="absolute top-0 right-0 p-32 bg-gradient-to-br from-luminous-blue/20 to-transparent rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none group-hover:from-luminous-blue/30 transition-colors"></div>
+                                        <div>
+                                            <div className="flex items-center gap-2 text-luminous-gold text-[10px] font-black uppercase tracking-[0.2em] mb-6">
+                                                <Activity size={14} /> Heritage Architecture
+                                            </div>
+                                            <h3 className="text-3xl font-black uppercase tracking-tight mb-4 group-hover:text-luminous-blue transition-colors leading-none">The Vault</h3>
+                                            <p className="text-gray-400 text-xs font-medium italic leading-relaxed max-w-[80%]">
+                                                "Will • Trust • Estate protocols are active."
+                                            </p>
+                                        </div>
+                                        <div className="mt-auto font-mono text-3xl font-black tracking-widest text-luminous-gold opacity-90">
                                             364:23:59:59
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div className="p-8 bg-[#FAFAFA] rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-center gap-4 opacity-50 cursor-not-allowed">
-                                        <div>
-                                            <h3 className="text-xl font-black uppercase tracking-tight text-[#0A0A0B] mb-1">Florida Annual Report</h3>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Locked until Jan 1, 2027</p>
+                                {/* REGISTERED AGENT CONSOLE WIDGETS */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h4 className="text-sm font-black uppercase tracking-[0.2em] text-gray-400 flex items-center gap-4">
+                                            <ShieldCheck size={16} /> Secure Agent Uplink 
+                                        </h4>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-3 bg-white/50 px-3 py-1.5 rounded-full border border-gray-100 shadow-sm transition-all hover:bg-white hover:shadow-md cursor-pointer group/toggle" onClick={() => setPriorityForwarding(!priorityForwarding)}>
+                                                <Scale size={12} className={`transition-colors ${priorityForwarding ? "text-luminous-blue" : "text-gray-300"}`} />
+                                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest select-none">Pleadings / Priority</span>
+                                                <div className={`w-7 h-4 rounded-full transition-colors relative ${priorityForwarding ? 'bg-luminous-blue' : 'bg-gray-200'}`}>
+                                                     <div className={`absolute top-[2px] w-3 h-3 bg-white rounded-full shadow-sm transition-all ${priorityForwarding ? 'left-[14px]' : 'left-[2px]'}`}></div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3 bg-white/50 px-3 py-1.5 rounded-full border border-gray-100 shadow-sm transition-all hover:bg-white hover:shadow-md cursor-pointer group/toggle" onClick={() => setAutoDisposeMarketing(!autoDisposeMarketing)}>
+                                                <Trash2 size={12} className={`transition-colors ${autoDisposeMarketing ? "text-luminous-blue" : "text-gray-300"}`} />
+                                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest select-none">Auto-Dispose Ads</span>
+                                                <div className={`w-7 h-4 rounded-full transition-colors relative ${autoDisposeMarketing ? 'bg-luminous-blue' : 'bg-gray-200'}`}>
+                                                     <div className={`absolute top-[2px] w-3 h-3 bg-white rounded-full shadow-sm transition-all ${autoDisposeMarketing ? 'left-[14px]' : 'left-[2px]'}`}></div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                                            <div className="w-[5%] h-full bg-[#0A0A0B]"></div>
+                                    </div>
+                                    
+                                    <div className="grid lg:grid-cols-2 gap-8">
+                                        {/* Document Feed */}
+                                        <div className="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm h-[400px] flex flex-col">
+                                            <div className="flex items-center justify-between mb-8">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-luminous-ink">
+                                                        <FileText size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <h5 className="font-black uppercase text-sm tracking-tight">Scanned Documents</h5>
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Miami Processing Center</p>
+                                                    </div>
+                                                </div>
+                                                <button className="text-[10px] font-black uppercase tracking-widest text-luminous-blue hover:text-luminous-ink transition-colors">View All</button>
+                                            </div>
+                                            
+                                            <div className="space-y-3 overflow-y-auto pr-2 custom-scrollbar flex-1">
+                                                {[
+                                                    { title: 'Notice of Annual Filing', date: 'Feb 12, 2026', type: 'State Requirement', status: 'Action Required' },
+                                                    { title: 'Service of Process (Mock)', date: 'Feb 09, 2026', type: 'Legal Notice', status: 'Urgent' },
+                                                    { title: 'Information Request', date: 'Feb 05, 2026', type: 'Bureaucracy', status: 'Standard' }
+                                                ].map((doc, idx) => (
+                                                    <div key={idx} className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-md transition-all cursor-pointer flex items-center justify-between">
+                                                        <div className="space-y-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-xs font-black text-luminous-ink group-hover:text-luminous-blue transition-colors">{doc.title}</p>
+                                                                {doc.status === 'Urgent' && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
+                                                            </div>
+                                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{doc.date} • {doc.type}</p>
+                                                        </div>
+                                                        <ChevronRight size={14} className="text-gray-300 group-hover:text-luminous-ink" />
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
-                                            <Lock size={12} /> Filing window closed
+
+                                        {/* Agent Messaging */}
+                                        <div className="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm h-[400px] flex flex-col relative overflow-hidden">
+                                            <div className="flex items-center justify-between mb-8 relative z-10">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-luminous-blue/10 rounded-xl flex items-center justify-center text-luminous-blue">
+                                                        <MessageSquare size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <h5 className="font-black uppercase text-sm tracking-tight text-luminous-blue">Direct Liaison</h5>
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Live Agent 402
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex-1 space-y-4 mb-4 overflow-y-auto pr-2 custom-scrollbar relative z-10">
+                                                <div className="bg-gray-50 p-4 rounded-2xl rounded-tl-none border border-gray-100 max-w-[85%]">
+                                                    <p className="text-xs text-gray-600 font-medium leading-relaxed">"Welcome to the console. I'm your dedicated agent. Your privacy shield is active and holding. No breaches detected."</p>
+                                                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mt-2 text-right">10:42 AM</p>
+                                                </div>
+                                                <div className="bg-luminous-blue/5 p-4 rounded-2xl rounded-tr-none border border-luminous-blue/10 max-w-[85%] ml-auto text-right">
+                                                    <p className="text-xs text-luminous-ink font-medium leading-relaxed">"Confirmed. Please alert me if any mail arrives from the Department of Revenue."</p>
+                                                    <p className="text-[8px] font-black text-luminous-blue/60 uppercase tracking-widest mt-2 text-left">10:45 AM</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="relative z-10 mt-auto">
+                                                <input type="text" placeholder="Type secure message..." className="w-full bg-gray-50 rounded-xl py-4 px-5 text-xs font-bold outline-none border-2 border-transparent focus:border-luminous-blue/20 transition-all placeholder:text-gray-300" />
+                                                <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-luminous-ink text-white rounded-lg hover:scale-105 transition-transform">
+                                                    <ChevronRight size={14} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -329,13 +415,13 @@ const DashboardZenith = ({ user, initialData }) => {
         </main>
 
         {/* Sidebar Sentinel */}
-        <aside className="w-full md:w-[380px] bg-[#F8F9FB]/70 backdrop-blur-3xl border-l border-[#F0F2F5] p-10 flex flex-col">
-            <div className="flex items-center justify-between mb-10">
-                <div className="text-[0.55rem] font-black uppercase tracking-[0.6em] text-[#0A0A0B] opacity-20">
-                    Activity Log
+        <aside className="w-full md:w-[420px] bg-white/40 backdrop-blur-3xl border-l border-white/50 p-10 flex flex-col">
+            <div className="flex items-center justify-between mb-12">
+                <div className="text-[0.55rem] font-black uppercase tracking-[0.6em] text-luminous-ink opacity-20">
+                    System Activity
                 </div>
-                <button onClick={handleLogout} className="text-gray-400 hover:text-red-500 transition-colors">
-                    <LogOut size={16} />
+                <button onClick={handleLogout} className="text-gray-300 hover:text-luminous-blue transition-colors">
+                    <LogOut size={18} />
                 </button>
             </div>
 

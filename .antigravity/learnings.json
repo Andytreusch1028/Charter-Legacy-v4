@@ -12,6 +12,14 @@
           "correction": "Changed to 'Will Completion Checker' (mechanical only) and 'Status Dashboard' (factual only)",
           "impact": "Critical - UPL violation risk",
           "prevention_rule": "MANDATORY: Before suggesting ANY new feature or messaging, run UPL pre-check: Does this imply legal advice, compliance opinion, or interpretation? If yes, reframe as factual/mechanical only."
+        },
+        {
+          "id": "learning-018",
+          "date": "2026-02-14",
+          "mistake": "Used 'fine protection' and 'guarantee' in BOI compliance marketing.",
+          "correction": "Changed to 'help avoid potential civil penalties'. Removed all indemnity-implied language.",
+          "impact": "High - UPL/Insurance Risk",
+          "prevention_rule": "NEVER use 'protection' or 'guarantee' regarding statutory fines. Use 'assistance', 'filing service', and 'help avoid'."
         }
       ]
     },
@@ -130,6 +138,38 @@
           "pattern": "Separate daily maintenance (Address changes) from high-stakes corporate actions (Mergers, Dissolutions) using a 'Strategic Actions' zone with distinct visual elevation.",
           "impact": "Medium - UX Hierarchy and Risk Management",
           "reuse_guidance": "Use for any platform that manages both routine and high-risk permanent actions."
+        },
+        {
+          "id": "learning-019",
+          "date": "2026-02-14",
+          "success": "Compliance Stacking Strategy (The $149+$49 Pattern)",
+          "pattern": "Pair a high-fear One-Time add-on (BOI Filing) with a low-cost Recurring retention feature (Breach Alerts) in the checkout flow. Bundle both in the Premium Tier to drive upgrades.",
+          "impact": "High - AOV and Retention Boost",
+          "reuse_guidance": "Always offer a 'Regulatory Shield' (One-time) and a 'Security Monitor' (Recurring) as distinct but adjacent upsells."
+        },
+        {
+          "id": "learning-020",
+          "date": "2026-02-14",
+          "success": "Tangible Invisibility Pattern",
+          "pattern": "Visualize intangible services (Registered Agent, Privacy) using a high-fidelity 'Command Center' dashboard. Make 'doing nothing' (privacy) look like 'active shielding'.",
+          "impact": "High - Perceived Value",
+          "reuse_guidance": "For any invisible service, build a 'Console' that shows status lights, mock activity logs, and 'Active' badges to justify the fee."
+        },
+        {
+          "id": "learning-021",
+          "date": "2026-02-14",
+          "success": "Security Simulation Pattern (The Fire Drill)",
+          "pattern": "Allow users to 'Test' high-stakes security features (Breach/Veto) with a simulated Red Alert mode. This proves the feature works and builds confidence.",
+          "impact": "High - Feature Verification & Trust",
+          "reuse_guidance": "Always include a 'Test Protocol' button for passive security features like Dead Man Switches or Veto Keys."
+        },
+        {
+          "id": "learning-022",
+          "date": "2026-02-14",
+          "success": "Proactive Agent Pattern (The Concierge Protocol)",
+          "pattern": "Agents must NOT just wait for commands. They should proactively comment, suggest improvements, and refine changes within their specific venue (UI, Legal, Security).",
+          "impact": "High - User Engagement & Value",
+          "reuse_guidance": "Act as an expert consultant. If you see a better way to do something within your domain, SUGGEST IT. Don't just execute."
         }
       ]
     },
@@ -185,7 +225,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 17,
-    "last_updated": "2026-02-04T19:08:00Z"
+    "total_learnings": 20,
+    "last_updated": "2026-02-14T05:50:00Z"
   }
 }
