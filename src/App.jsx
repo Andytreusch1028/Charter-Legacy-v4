@@ -15,6 +15,7 @@ import DashboardZenith from './DashboardZenith';
 import ZenithDialog from './ZenithDialog';
 import RegisteredAgentConsole from './RegisteredAgentConsole';
 import SpecSheet from './SpecSheet';
+import DoubleLLCExplainer from './DoubleLLCExplainer';
 
 /**
  * CHARTER LEGACY v3.1.0 // THE "RULE OF THREE" REVERSION
@@ -236,6 +237,7 @@ export default function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [appUser, setAppUser] = useState(null);
   const [showVibeGallery, setShowVibeGallery] = useState(false);
+  const [showDoubleLLCExplainer, setShowDoubleLLCExplainer] = useState(false); // 2. Add showDoubleLLCExplainer state
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -330,6 +332,8 @@ export default function App() {
         onClose={() => setIsLoginOpen(false)} 
         onSuccess={handleDashboardTransition} 
       />
+      {showVibeGallery && <VibeGallery onClose={() => setShowVibeGallery(false)} />}
+      <DoubleLLCExplainer isOpen={showDoubleLLCExplainer} onClose={() => setShowDoubleLLCExplainer(false)} /> {/* 4. Render DoubleLLCExplainer component */}
 
       <nav className={`fixed top-0 w-full z-50 h-24 transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-md border-b border-gray-100/50 shadow-sm' : 'bg-transparent'} flex items-center justify-between px-6 md:px-12`}>
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('landing')}>
@@ -442,23 +446,32 @@ export default function App() {
                                   ))}
                               </div>
 
-                              <button 
-                                onClick={() => {
-                                    handleSelection({
-                                        id: 'sovereign_upgrade',
-                                        title: 'The Sovereign Strategy',
-                                        price: '$999',
-                                        icon: Shield,
-                                        description: 'The ultimate privacy architecture. Dual-entity structure for absolute anonymity.',
-                                        plainEnglish: 'We set up two companies for you. One in Florida to do business, and one in Wyoming to own the Florida company so your name never appears on Sunbiz.',
-                                        features: ['Florida Operating LLC', 'Wyoming Holding LLC', 'Registered Agent for Both', 'EIN for Both', 'Inter-Company Agreement']
-                                    });
-                                }}
-                                className="mt-8 bg-white text-black px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-105 transition-transform flex items-center gap-3 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
-                              >
-                                  Deploy Protocol <ArrowRight size={16} />
-                              </button>
-                          </div>
+                              <div className="mt-8 flex items-center gap-8">
+                                <button 
+                                    onClick={() => {
+                                        handleSelection({
+                                            id: 'sovereign_upgrade',
+                                            title: 'The Sovereign Strategy',
+                                            price: '$999',
+                                            icon: Shield,
+                                            description: 'The ultimate privacy architecture. Dual-entity structure for absolute anonymity.',
+                                            plainEnglish: 'We set up two companies for you. One in Florida to do business, and one in Wyoming to own the Florida company so your name never appears on Sunbiz.',
+                                            features: ['Florida Operating LLC', 'Wyoming Holding LLC', 'Registered Agent for Both', 'EIN for Both', 'Inter-Company Agreement']
+                                        });
+                                    }}
+                                    className="bg-white text-black px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-105 transition-transform flex items-center gap-3 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
+                                >
+                                    Deploy Protocol <ArrowRight size={16} />
+                                </button>
+                                
+                                <button 
+                                    onClick={() => setShowDoubleLLCExplainer(true)}
+                                    className="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest border-b border-gray-800 hover:border-white transition-colors pb-1"
+                                >
+                                    How does it work?
+                                </button>
+                              </div>
+                           </div>
 
                           {/* Visual Diagram */}
                           <div className="relative h-full min-h-[300px] flex items-center justify-center">
