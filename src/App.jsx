@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from './lib/supabase';
 import { 
   Shield, ArrowRight, Lock, Zap, CheckCircle2, Fingerprint, 
@@ -226,11 +226,140 @@ const TestimonialSection = () => (
 
 const RegisteredAgentConsole = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [loading, setLoading] = useState(true);
+  const [documents, setDocuments] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [autoDisposeMarketing, setAutoDisposeMarketing] = useState(true);
   const [priorityForwarding, setPriorityForwarding] = useState(true);
   const [autoRenew, setAutoRenew] = useState(false);
   const [smsInterrupt, setSmsInterrupt] = useState(false);
   const [brokerShield, setBrokerShield] = useState(true);
+
+  // Fetch Configuration & Content on Load
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // 1. Load Config
+        let { data: configData } = await supabase
+          .from('registered_agent_config')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (configData) {
+           setAutoDisposeMarketing(configData.auto_dispose_marketing);
+           setPriorityForwarding(configData.priority_forwarding);
+           setAutoRenew(configData.auto_renew);
+           setSmsInterrupt(configData.sms_interrupt);
+           setBrokerShield(configData.data_broker_shield);
+        }
+
+        // 2. Load Documents
+        const { data: docData } = await supabase
+          .from('registered_agent_documents')
+          .select('*')
+          .eq('user_id', user.id);
+        
+        if (docData && docData.length > 0) {
+            setDocuments(docData);
+        } else {
+            // Fallback Mock Data
+            setDocuments([
+                { title: 'Notice of Annual Filing', date: 'Feb 12, 2026', type: 'State Requirement' },
+                { title: 'Service of Process (Mock)', date: 'Feb 09, 2026', type: 'Legal Notice' },
+                { title: 'Information Request', date: 'Feb 05, 2026', type: 'Bureaucracy' }
+            ]);
+        }
+
+        // 3. Load Messages
+        const { data: msgData } = await supabase
+           .from('registered_agent_messages')
+           .select('*')
+           .eq('user_id', user.id);
+
+        if (msgData && msgData.length > 0) {
+            setMessages(msgData);
+        } else {
+             // Fallback Mock Data
+             setMessages([
+                 { sender: 'Sarah J.', role: 'Legal Liaison', content: 'We received a state notice regarding your annual report. No action needed yet.', time: '2h ago', unread: true },
+                 { sender: 'Mike T.', role: 'Privacy Officer', content: 'Data Broker Shield has successfully removed your info from Whitepages.', time: '1d ago', unread: false }
+             ]);
+        }
+
+      } catch (err) {
+        console.error('Error loading RA data:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  // Save Configuration Debounced/Direct
+  const saveConfig = async (key, value) => {
+    // Optimistic Update
+    if (key === 'auto_dispose_marketing') setAutoDisposeMarketing(value);
+    if (key === 'priority_forwarding') setPriorityForwarding(value);
+    if (key === 'auto_renew') setAutoRenew(value);
+    if (key === 'sms_interrupt') setSmsInterrupt(value);
+    if (key === 'data_broker_shield') setBrokerShield(value);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('registered_agent_config')
+        .upsert({ 
+          user_id: user.id,
+          [key]: value,
+          updated_at: new Date()
+        }, { onConflict: 'user_id' });
+
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error saving config:', err);
+      // Revert on error (optional implementation)
+    }
+  };
+
+  // Mock: Initiate Broker Removal
+  const initiateBrokerRemoval = async () => {
+     if (!brokerShield) return;
+     // Simulate API call
+     const newMsg = {
+        sender: 'Mike T.',
+        role: 'Privacy Officer',
+        content: 'Manual removal request initiated for 3 new databases. We will update you within 48 hours.',
+        time: 'Just Now',
+        unread: true
+     };
+     setMessages(prev => [newMsg, ...prev]);
+     alert('Removal Protocol Initiated. Check your Agent Messages.');
+  };
+
+  // Dev: Simulate Service of Process
+  const simulateServiceOfProcess = () => {
+      const newDoc = { 
+          title: 'URGENT: Service of Process', 
+          date: 'Feb 14, 2026', 
+          type: 'Legal Action', 
+          status: priorityForwarding ? 'Forwarded' : 'Received' 
+      };
+      setDocuments(prev => [newDoc, ...prev]);
+
+      if (smsInterrupt) {
+          alert('SMS INTERRUPT: Service of Process Received. Immediate Action Required.');
+      } else {
+          console.log('Standard notification sent.');
+      }
+      
+      setActiveTab('documents');
+  };
 
   const tabs = [
     { id: 'dashboard', icon: Activity, label: 'Agent Dashboard' },
@@ -241,6 +370,15 @@ const RegisteredAgentConsole = () => {
   ];
 
   const renderContent = () => {
+    if (loading) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-500">
+                <Loader2 className="animate-spin text-luminous-blue" size={32} />
+                <p className="text-[10px] uppercase font-black tracking-[0.3em] text-gray-400">Establish Secure Uplink...</p>
+            </div>
+        );
+    }
+
     switch (activeTab) {
       case 'documents':
         return (
@@ -440,7 +578,7 @@ const RegisteredAgentConsole = () => {
              </div>
 
              <div className="space-y-6 max-w-2xl">
-                <div onClick={() => setAutoDisposeMarketing(!autoDisposeMarketing)} className={`p-6 bg-white rounded-2xl border-2 transition-all duration-300 cursor-pointer flex items-center justify-between group hover:scale-[1.01] ${autoDisposeMarketing ? 'border-[#007AFF]/20 shadow-xl shadow-[#007AFF]/5' : 'border-gray-100 hover:border-gray-200'}`}>
+                <div onClick={() => saveConfig('auto_dispose_marketing', !autoDisposeMarketing)} className={`p-6 bg-white rounded-2xl border-2 transition-all duration-300 cursor-pointer flex items-center justify-between group hover:scale-[1.01] ${autoDisposeMarketing ? 'border-[#007AFF]/20 shadow-xl shadow-[#007AFF]/5' : 'border-gray-100 hover:border-gray-200'}`}>
                    <div className="space-y-1">
                       <p className={`font-black text-sm uppercase tracking-wide transition-colors ${autoDisposeMarketing ? 'text-[#007AFF]' : 'text-[#1D1D1F]'}`}>Auto-Dispose Marketing</p>
                       <p className="text-xs text-gray-500 font-medium">Automatically shred spam and solicitation mail.</p>
@@ -455,13 +593,13 @@ const RegisteredAgentConsole = () => {
                    </div>
                 </div>
                 
-                <div onClick={() => setPriorityForwarding(!priorityForwarding)} className={`p-6 bg-white rounded-2xl border-2 transition-all duration-300 cursor-pointer flex items-center justify-between group hover:scale-[1.01] ${priorityForwarding ? 'border-[#007AFF]/20 shadow-xl shadow-[#007AFF]/5' : 'border-gray-100 hover:border-gray-200'}`}>
+                <div onClick={() => saveConfig('priority_forwarding', !priorityForwarding)} className={`p-6 bg-white rounded-2xl border-2 transition-all duration-300 cursor-pointer flex items-center justify-between group hover:scale-[1.01] ${priorityForwarding ? 'border-[#007AFF]/20 shadow-xl shadow-[#007AFF]/5' : 'border-gray-100 hover:border-gray-200'}`}>
                    <div className="space-y-1">
                       <p className={`font-black text-sm uppercase tracking-wide transition-colors ${priorityForwarding ? 'text-[#007AFF]' : 'text-[#1D1D1F]'}`}>Pleadings / Priority Mail</p>
                       <p className="text-xs text-gray-500 font-medium">Instant scan & forward for all court/state documents.</p>
                    </div>
                    <div className="flex items-center gap-4">
-                      <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${priorityForwarding ? 'text-[#007AFF]' : 'text-gray-300'}`}>
+                       <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${priorityForwarding ? 'text-[#007AFF]' : 'text-gray-300'}`}>
                           {priorityForwarding ? 'Active' : 'Off'}
                       </span>
                       <div className={`w-14 h-8 rounded-full relative transition-all duration-300 ${priorityForwarding ? 'bg-[#007AFF] shadow-[0_0_15px_rgba(0,122,255,0.4)]' : 'bg-gray-200'}`}>
@@ -470,13 +608,13 @@ const RegisteredAgentConsole = () => {
                    </div>
                 </div>
 
-                <div onClick={() => setAutoRenew(!autoRenew)} className={`p-6 bg-white rounded-2xl border-2 transition-all duration-300 cursor-pointer flex items-center justify-between group hover:scale-[1.01] ${autoRenew ? 'border-[#007AFF]/20 shadow-xl shadow-[#007AFF]/5' : 'border-gray-100 opacity-80 hover:opacity-100 hover:border-gray-200'}`}>
+                <div onClick={() => saveConfig('auto_renew', !autoRenew)} className={`p-6 bg-white rounded-2xl border-2 transition-all duration-300 cursor-pointer flex items-center justify-between group hover:scale-[1.01] ${autoRenew ? 'border-[#007AFF]/20 shadow-xl shadow-[#007AFF]/5' : 'border-gray-100 opacity-80 hover:opacity-100 hover:border-gray-200'}`}>
                    <div className="space-y-1">
                       <p className={`font-black text-sm uppercase tracking-wide transition-colors ${autoRenew ? 'text-[#007AFF]' : 'text-[#1D1D1F]'}`}>Auto-Renewal</p>
                       <p className="text-xs text-gray-500 font-medium">Automatically renew my privacy shield every year.</p>
                    </div>
                    <div className="flex items-center gap-4">
-                      <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${autoRenew ? 'text-[#007AFF]' : 'text-gray-300'}`}>
+                       <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${autoRenew ? 'text-[#007AFF]' : 'text-gray-300'}`}>
                           {autoRenew ? 'Active' : 'Off'}
                       </span>
                       <div className={`w-14 h-8 rounded-full relative transition-all duration-300 ${autoRenew ? 'bg-[#007AFF] shadow-[0_0_15px_rgba(0,122,255,0.4)]' : 'bg-gray-200'}`}>
@@ -485,13 +623,13 @@ const RegisteredAgentConsole = () => {
                    </div>
                 </div>
 
-                <div onClick={() => setSmsInterrupt(!smsInterrupt)} className={`p-6 bg-white rounded-2xl border-2 transition-all duration-300 cursor-pointer flex items-center justify-between group hover:scale-[1.01] ${smsInterrupt ? 'border-[#007AFF]/20 shadow-xl shadow-[#007AFF]/5' : 'border-gray-100 hover:border-gray-200'}`}>
+                <div onClick={() => saveConfig('sms_interrupt', !smsInterrupt)} className={`p-6 bg-white rounded-2xl border-2 transition-all duration-300 cursor-pointer flex items-center justify-between group hover:scale-[1.01] ${smsInterrupt ? 'border-[#007AFF]/20 shadow-xl shadow-[#007AFF]/5' : 'border-gray-100 hover:border-gray-200'}`}>
                    <div className="space-y-1">
                       <p className={`font-black text-sm uppercase tracking-wide transition-colors ${smsInterrupt ? 'text-[#007AFF]' : 'text-[#1D1D1F]'}`}>Urgent SMS Interrupt</p>
                       <p className="text-xs text-gray-500 font-medium">Bypass "Do Not Disturb" for Service of Process alerts.</p>
                    </div>
                    <div className="flex items-center gap-4">
-                      <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${smsInterrupt ? 'text-[#007AFF]' : 'text-gray-300'}`}>
+                       <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${smsInterrupt ? 'text-[#007AFF]' : 'text-gray-300'}`}>
                           {smsInterrupt ? 'Active' : 'Off'}
                       </span>
                       <div className={`w-14 h-8 rounded-full relative transition-all duration-300 ${smsInterrupt ? 'bg-[#007AFF] shadow-[0_0_15px_rgba(0,122,255,0.4)]' : 'bg-gray-200'}`}>
@@ -500,7 +638,7 @@ const RegisteredAgentConsole = () => {
                    </div>
                 </div>
 
-                <div onClick={() => setBrokerShield(!brokerShield)} className={`p-6 bg-white rounded-2xl border-2 transition-all duration-300 cursor-pointer flex flex-col gap-4 group hover:scale-[1.01] ${brokerShield ? 'border-[#007AFF]/20 shadow-xl shadow-[#007AFF]/5' : 'border-gray-100 hover:border-gray-200'}`}>
+                <div onClick={() => saveConfig('data_broker_shield', !brokerShield)} className={`p-6 bg-white rounded-2xl border-2 transition-all duration-300 cursor-pointer flex flex-col gap-4 group hover:scale-[1.01] ${brokerShield ? 'border-[#007AFF]/20 shadow-xl shadow-[#007AFF]/5' : 'border-gray-100 hover:border-gray-200'}`}>
                    <div className="flex items-center justify-between w-full">
                       <div className="space-y-1">
                          <p className={`font-black text-sm uppercase tracking-wide transition-colors ${brokerShield ? 'text-[#007AFF]' : 'text-[#1D1D1F]'}`}>Data Broker Shield</p>
@@ -516,7 +654,6 @@ const RegisteredAgentConsole = () => {
                       </div>
                    </div>
                    
-                   {/* Expanded Detail View for Data Broker Shield */}
                    <div className={`pt-4 border-t ${brokerShield ? 'border-[#007AFF]/10' : 'border-gray-100'} grid grid-cols-2 gap-4`}>
                       <div className="space-y-1">
                          <div className="flex items-center gap-1.5 text-[10px] uppercase font-black tracking-widest text-gray-400">
@@ -537,13 +674,28 @@ const RegisteredAgentConsole = () => {
                          </p>
                       </div>
                    </div>
-                   {/* Inactive State Upsell */}
                    {!brokerShield && (
                       <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex items-center justify-between">
                          <span className="text-[10px] font-bold text-gray-500">Included in Sovereign Package</span>
                          <span className="text-[10px] font-black uppercase text-luminous-blue cursor-pointer">Upgrade</span>
                       </div>
                    )}
+                   
+                   {/* Removal Simulation Button */}
+                   {brokerShield && (
+                       <div onClick={initiateBrokerRemoval} className="mt-2 w-full py-3 bg-luminous-blue/10 rounded-xl flex items-center justify-center gap-2 cursor-pointer hover:bg-luminous-blue/20 transition-colors">
+                           <ShieldCheck size={14} className="text-luminous-blue" />
+                           <span className="text-[10px] font-black uppercase tracking-widest text-luminous-blue">Run Manual Removal Scan</span>
+                       </div>
+                   )}
+                </div>
+
+                {/* Dev Tool: Service of Process Simulation */}
+                <div onClick={simulateServiceOfProcess} className="mt-8 p-4 bg-red-50 border border-red-100 rounded-xl cursor-pointer hover:bg-red-100 transition-colors opacity-50 hover:opacity-100">
+                    <div className="flex items-center gap-3 text-red-500">
+                        <Zap size={16} />
+                        <span className="text-xs font-black uppercase tracking-widest">Dev: Simulate Service of Process</span>
+                    </div>
                 </div>
              </div>
            </div>
@@ -576,11 +728,7 @@ const RegisteredAgentConsole = () => {
                       Scanned Documents <span onClick={() => setActiveTab('documents')} className="text-[10px] text-luminous-blue cursor-pointer hover:underline">View All</span>
                    </h3>
                    <div className="space-y-3">
-                      {[
-                        { title: 'Notice of Annual Filing', date: 'Feb 12, 2026', type: 'State Requirement' },
-                        { title: 'Service of Process (Mock)', date: 'Feb 09, 2026', type: 'Legal Notice' },
-                        { title: 'Information Request', date: 'Feb 05, 2026', type: 'Bureaucracy' }
-                      ].map((doc, idx) => (
+                      {documents.map((doc, idx) => (
                         <div key={idx} className="p-5 bg-gray-50/80 rounded-2xl border border-gray-100 flex items-center justify-between group hover:bg-white hover:shadow-xl transition-all cursor-pointer">
                            <div className="space-y-1">
                               <p className="text-xs font-black text-luminous-ink">{doc.title}</p>
@@ -598,35 +746,35 @@ const RegisteredAgentConsole = () => {
 
                 {/* MESSAGING WIDGET */}
                 <div className="space-y-6">
-                   <h3 className="text-sm font-black uppercase tracking-widest">Direct Agent Liaison</h3>
-                   <div className="bg-gray-50/80 rounded-[32px] border border-gray-100 flex flex-col h-[400px] overflow-hidden group cursor-pointer" onClick={() => setActiveTab('messaging')}>
-                      <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
-                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-luminous-ink flex items-center justify-center text-white text-[10px] font-black">L</div>
-                            <div className="space-y-0.5">
-                               <p className="text-[10px] font-black uppercase">Liaison 402</p>
-                               <p className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Currently Online</p>
-                            </div>
-                         </div>
-                      </div>
-                      <div className="flex-1 p-6 space-y-4 overflow-y-auto">
-                         <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm max-w-[80%]">
-                            <p className="text-[11px] text-gray-600 italic">"Client 482910, your Annual Report has been successfully finalized with the Florida Department of State. Privacy shield maintained."</p>
-                         </div>
-                         <div className="bg-luminous-blue p-4 rounded-2xl rounded-tr-none text-white shadow-sm max-w-[80%] ml-auto">
-                            <p className="text-[11px] font-medium">"Thank you. Please scan the hard copy and upload it to the vault."</p>
-                         </div>
-                      </div>
-                      <div className="p-4 bg-white border-t border-gray-100">
-                         <div className="relative pointer-events-none">
-                            <input type="text" placeholder="Secure Message to Agent..." className="w-full bg-gray-50 rounded-xl py-3 px-4 text-xs font-medium outline-none border border-transparent" />
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-luminous-ink text-white rounded-lg">
-                               <ArrowRight size={14} />
-                            </div>
-                         </div>
-                      </div>
+                   <h3 className="text-sm font-black uppercase tracking-widest flex items-center justify-between">
+                      Agent Secure Chat <span onClick={() => setActiveTab('messaging')} className="text-[10px] text-luminous-blue cursor-pointer hover:underline">Open Comms</span>
+                   </h3>
+                   <div className="space-y-3">
+                      {messages.map((msg, i) => (
+                        <div key={i} className="p-5 bg-white rounded-2xl border border-gray-100 group hover:shadow-xl transition-all cursor-pointer relative overflow-hidden">
+                           {msg.unread && <div className="absolute top-0 right-0 w-3 h-3 bg-luminous-blue rounded-bl-xl" />}
+                           <div className="flex gap-4">
+                              <div className="w-10 h-10 rounded-full bg-luminous-ink text-white flex items-center justify-center font-black text-xs shrink-0">
+                                 {msg.sender[0]}
+                              </div>
+                              <div className="space-y-1.5">
+                                 <div className="flex justify-between items-start w-full">
+                                    <div>
+                                       <p className="text-xs font-black text-luminous-ink">{msg.sender}</p>
+                                       <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{msg.role}</p>
+                                    </div>
+                                    <span className="text-[9px] text-gray-300 font-bold">{msg.time}</span>
+                                 </div>
+                                 <p className="text-xs text-gray-500 font-medium leading-relaxed line-clamp-2">
+                                    "{msg.content}"
+                                 </p>
+                              </div>
+                           </div>
+                        </div>
+                      ))}
                    </div>
                 </div>
+
              </div>
 
              {/* SYSTEM ACTIVITY TRACKER */}

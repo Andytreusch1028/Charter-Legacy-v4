@@ -22,6 +22,11 @@ const DesignationProtocol = ({ user, onSuccess }) => {
 
     const [members, setMembers] = useState([{ name: '', email: user?.email || '', role: 'Manager', address: '' }]);
     
+    // Ownership Structure (Double LLC)
+    const [ownershipStructure, setOwnershipStructure] = useState('direct'); // 'direct' | 'holding'
+    const [holdingCompanyName, setHoldingCompanyName] = useState('');
+    const [holdingCompanyState, setHoldingCompanyState] = useState('WY');
+    
     // Advanced / Optional Data
     const [effectiveDate, setEffectiveDate] = useState('');
     const [purpose, setPurpose] = useState('Any and all lawful business for which a limited liability company may be organized under the laws of the State of Florida.');
@@ -196,7 +201,7 @@ const DesignationProtocol = ({ user, onSuccess }) => {
 
     return (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-[#0A0A0B]/90 backdrop-blur-xl animate-in fade-in duration-500">
-            <div className="w-full max-w-2xl bg-white rounded-[40px] overflow-hidden shadow-2xl relative">
+            <div className="w-full max-w-2xl vitreous-glass rounded-[40px] overflow-hidden relative shadow-2xl">
                 
                 {/* Header Strip */}
                 <div className="bg-[#0A0A0B] p-8 pb-12 text-center relative overflow-hidden">
@@ -272,7 +277,7 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                                 <div>
                                     <h4 className="font-bold text-[#0A0A0B] text-lg">Use Charter Privacy Address</h4>
                                     <p className="text-gray-500 text-sm mt-1 leading-relaxed">
-                                        Protect your home address. We will use our registered office in Ft. Lauderdale for all public filings.
+                                        Safeguard your residential identity. We will use our registered office in Ft. Lauderdale for all public filings.
                                     </p>
                                     {usePrivacyAddress && (
                                         <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-[#00D084]/10 text-[#00D084] rounded-lg text-xs font-bold">
@@ -398,55 +403,126 @@ const DesignationProtocol = ({ user, onSuccess }) => {
 
                     {step === 4 && (
                         <div className="space-y-6 flex-1 flex flex-col">
-                            <p className="text-gray-500 text-sm font-medium text-center">Who owns/manages this LLC?</p>
+                            <p className="text-gray-500 text-sm font-medium text-center">Structure Your Ownership</p>
                             
-                            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-                                {members.map((member, idx) => (
-                                    <div key={idx} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Member {idx + 1}</span>
-                                            {idx > 0 && <button onClick={() => {
-                                                const newM = [...members];
-                                                newM.splice(idx, 1);
-                                                setMembers(newM);
-                                            }} className="text-red-400 hover:text-red-600"><X size={14} /></button>}
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <input 
-                                                type="text" 
-                                                placeholder="Full Name" 
-                                                value={member.name}
-                                                onChange={(e) => updateMember(idx, 'name', e.target.value)}
-                                                className="bg-white p-3 rounded-xl text-sm font-bold outline-none border border-gray-200 focus:border-black"
-                                            />
-                                            <select 
-                                                value={member.role}
-                                                onChange={(e) => updateMember(idx, 'role', e.target.value)}
-                                                className="bg-white p-3 rounded-xl text-sm font-bold outline-none border border-gray-200 focus:border-black"
-                                            >
-                                                <option>Authorized Member</option>
-                                                <option>Manager</option>
-                                            </select>
-                                        </div>
-                                        {/* Optional Member Address - Hidden unless they want to add it? Actually, user wanted advanced customization. 
-                                            Let's just show it if they type in it, or simpler: let's leave it hidden in this view as per Steve/Mom, 
-                                            but allow it via the Advanced section?
-                                            Wait, "managers and memeber fields to complete" in the Advanced Accordion request.
-                                            I'll add specific inputs in the Advanced Accordion to override these.
-                                        */}
-                                    </div>
-                                ))}
+                            {/* Ownership Structure Toggle */}
+                            <div className="grid grid-cols-2 gap-4 mb-2">
+                                <div 
+                                    onClick={() => setOwnershipStructure('direct')}
+                                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all text-center space-y-2 ${ownershipStructure === 'direct' ? 'border-black bg-black text-white' : 'border-gray-100 hover:border-gray-200'}`}
+                                >
+                                    <div className="flex justify-center"><Users size={20} /></div>
+                                    <div className="text-xs font-black uppercase tracking-widest">Direct Ownership</div>
+                                </div>
+                                <div 
+                                    onClick={() => setOwnershipStructure('holding')}
+                                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all text-center space-y-2 ${ownershipStructure === 'holding' ? 'border-[#00D084] bg-[#00D084]/10 text-black' : 'border-gray-100 hover:border-gray-200'}`}
+                                >
+                                    <div className="flex justify-center"><Landmark size={20} className={ownershipStructure === 'holding' ? "text-[#00D084]" : "text-gray-400"} /></div>
+                                    <div className="text-xs font-black uppercase tracking-widest">Anonymous Holding Co.</div>
+                                </div>
                             </div>
 
-                            <button onClick={addMember} className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 font-bold text-xs uppercase tracking-widest hover:border-gray-400 hover:text-gray-600 transition-all">
-                                {members.length >= 6 ? 'Max Members Reached' : '+ Add Another Member'}
-                            </button>
+                            {ownershipStructure === 'holding' ? (
+                                <div className="space-y-6 animate-in fade-in slide-in-from-right">
+                                    <div className="bg-[#00D084]/5 p-5 rounded-2xl border border-[#00D084]/20 space-y-3">
+                                        <div className="flex items-start gap-3">
+                                            <Shield size={18} className="text-[#00D084] mt-1 shrink-0" />
+                                            <div>
+                                                <h4 className="text-sm font-black uppercase tracking-wide text-[#0A0A0B]">Double LLC Strategy Active</h4>
+                                                <p className="text-xs text-gray-500 leading-relaxed mt-1">
+                                                    We will list your Holding Company as the "Manager" on public records. Your personal name will not appear on Sunbiz.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Holding Company Name</label>
+                                            <div className="relative">
+                                                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Results Only Holdings LLC"
+                                                    value={holdingCompanyName}
+                                                    onChange={(e) => setHoldingCompanyName(e.target.value)}
+                                                    className="w-full pl-12 p-4 bg-gray-50 rounded-xl border border-gray-200 font-bold text-sm outline-none focus:border-black"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Formation State</label>
+                                            <select 
+                                                value={holdingCompanyState}
+                                                onChange={(e) => setHoldingCompanyState(e.target.value)}
+                                                className="w-full p-4 bg-gray-50 rounded-xl border border-gray-200 font-bold text-sm outline-none focus:border-black"
+                                            >
+                                                <option value="WY">Wyoming (Recommended)</option>
+                                                <option value="NM">New Mexico</option>
+                                                <option value="DE">Delaware</option>
+                                                <option value="NV">Nevada</option>
+                                                <option value="OTHER">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 animate-in fade-in slide-in-from-left">
+                                    {members.map((member, idx) => (
+                                        <div key={idx} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Member {idx + 1}</span>
+                                                {idx > 0 && <button onClick={() => {
+                                                    const newM = [...members];
+                                                    newM.splice(idx, 1);
+                                                    setMembers(newM);
+                                                }} className="text-red-400 hover:text-red-600"><X size={14} /></button>}
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Full Name" 
+                                                    value={member.name}
+                                                    onChange={(e) => updateMember(idx, 'name', e.target.value)}
+                                                    className="bg-white p-3 rounded-xl text-sm font-bold outline-none border border-gray-200 focus:border-black"
+                                                />
+                                                <select 
+                                                    value={member.role}
+                                                    onChange={(e) => updateMember(idx, 'role', e.target.value)}
+                                                    className="bg-white p-3 rounded-xl text-sm font-bold outline-none border border-gray-200 focus:border-black"
+                                                >
+                                                    <option>Authorized Member</option>
+                                                    <option>Manager</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button onClick={addMember} className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 font-bold text-xs uppercase tracking-widest hover:border-gray-400 hover:text-gray-600 transition-all">
+                                        {members.length >= 6 ? 'Max Members Reached' : '+ Add Another Member'}
+                                    </button>
+                                </div>
+                            )}
 
                             <button 
                                 onClick={() => {
-                                    if (members.some(m => !m.name.trim())) {
-                                        alert("Please enter names for all members.");
-                                        return;
+                                    if (ownershipStructure === 'holding') {
+                                        if (!holdingCompanyName) {
+                                            alert("Please enter your Holding Company Name.");
+                                            return;
+                                        }
+                                        // Override members for the final submit
+                                        setMembers([{ 
+                                            name: `${holdingCompanyName} (${holdingCompanyState})`, 
+                                            email: user?.email, 
+                                            role: 'Manager', // MGR
+                                            address: '' 
+                                        }]);
+                                    } else {
+                                        if (members.some(m => !m.name.trim())) {
+                                            alert("Please enter names for all members.");
+                                            return;
+                                        }
                                     }
                                     setStep(5);
                                 }}
@@ -474,6 +550,14 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                                     <span className="text-gray-500 font-medium">Managers/Members</span>
                                     <span className="font-bold text-[#0A0A0B]">{members.length}</span>
                                 </div>
+                                {ownershipStructure === 'holding' && (
+                                    <div className="flex justify-between items-center border-b border-gray-200 pb-3">
+                                        <span className="text-gray-500 font-medium">Structure</span>
+                                        <span className="font-bold text-[#00D084] flex items-center gap-1">
+                                            <Shield size={12} /> Anonymous Holding Co.
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-500 font-medium">Registered Agent</span>
                                     <span className="font-bold text-[#0A0A0B]">

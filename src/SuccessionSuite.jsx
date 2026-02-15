@@ -732,6 +732,11 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
   const [isSaving, setIsSaving] = useState(false);
   const [vaultData, setVaultData] = useState('');
   
+  // Veto Sentinel State
+  const [showBreachAlert, setShowBreachAlert] = useState(false);
+  const [breachCountdown, setBreachCountdown] = useState(10); // 10-Day Statutory Buffer (Simulated as seconds for demo)
+  const [breachSource, setBreachSource] = useState(null);
+  
   // Physical Locations State
   const [locations, setLocations] = useState([
       { id: 1, docType: 'Original Last Will', location: 'Home Safe', notes: 'Master Bedroom Closet, Code: 9942' }
@@ -1468,6 +1473,39 @@ const HeritageDashboard = ({
     }
   };
 
+  // VETO SENTINEL LOGIC
+  const simulateBreach = async () => {
+      const confirmed = await window.zenith.confirm(
+          "This will simulate a 'Succession Key' usage event to test your Veto Protocol. Continue?",
+          "TEST BREACH PROTOCOL"
+      );
+      if(!confirmed) return;
+
+      setShowBreachAlert(true);
+      setBreachCountdown(10);
+      setBreachSource(`IP: 45.22.19.${Math.floor(Math.random() * 255)} (Unknown Device)`);
+      
+      // Countdown Timer
+      const timer = setInterval(() => {
+          setBreachCountdown(prev => {
+              if (prev <= 1) {
+                  clearInterval(timer);
+                  return 0;
+              }
+              return prev - 1;
+          });
+      }, 1000);
+      
+      addAuditEntry('BREACH_DETECTED', 'Succession Key Activated', 'Status: 10-Day Statutory Buffer Initiated');
+  };
+
+  const executeVeto = () => {
+      setShowBreachAlert(false);
+      addAuditEntry('VETO_EXECUTED', 'Root Authority Intervened', 'Succession Key REVOKED. Vault Locked.');
+      window.zenith.alert("PROTOCOL ENFORCED: The active session has been terminated and the key is now invalid.", "VETO CONFIRMED");
+      setIsVaultUnlocked(false); // Force lock
+  };
+
   // Identify the Active Protocol
   const activeWill = docs.find(d => d.status === 'active' && d.label.includes('Will'));
   const activeTrust = docs.find(d => d.status === 'active' && d.label.includes('Trust'));
@@ -1515,10 +1553,10 @@ const HeritageDashboard = ({
             <div className="max-w-5xl w-full py-12">
                 <div className="text-center mb-12">
                     <div className="inline-block px-3 py-1 bg-gray-800 rounded-full text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-4">
-                        Standard Form Templates
+                        The Inheritance Path
                     </div>
-                    <h2 className="text-4xl font-black uppercase text-white tracking-tighter mb-4 italic">Legacy Protocol Selection</h2>
-                    <p className="text-gray-500 text-sm max-w-lg mx-auto">Select the best way to help protect your family and your business. Offer includes both Traditional Will and Automated Living Trust options.</p>
+                    <h2 className="text-4xl font-black uppercase text-white tracking-tighter mb-4 italic">How Shall We Protect Your Life’s Work?</h2>
+                    <p className="text-gray-500 text-sm max-w-lg mx-auto">The path to a clean transition starts here. Select the instruction set that best secures your family’s future.</p>
                 </div>
 
                 {!showCompareGrid ? (
@@ -1534,9 +1572,9 @@ const HeritageDashboard = ({
                             <div className="w-20 h-20 bg-[#d4af37]/10 rounded-3xl flex items-center justify-center mb-8 text-[#d4af37] group-hover:bg-[#d4af37] group-hover:text-black transition-colors">
                                 <Shield size={40} />
                             </div>
-                            <h3 className="text-2xl font-black text-white uppercase mb-4">Family Living Trust Plan</h3>
+                            <h3 className="text-2xl font-black text-white uppercase mb-4">The Guardian Trust</h3>
                             <p className="text-gray-400 text-sm leading-relaxed mb-8">
-                                Designed to help your family stay out of court. Includes a <span className="text-white font-bold inline-flex items-center gap-1">Living Trust</span> and a <span className="text-[#d4af37] font-bold">Safety-Net Will</span>.
+                                Our most complete strategy. Designed to help your family avoid the public court process and keep your private life private. Includes a <span className="text-white font-bold inline-flex items-center gap-1">Living Trust Template</span> and a <span className="text-[#d4af37] font-bold">Safeguard Will Form</span>.
                             </p>
                             
                             <div className="bg-black/20 p-5 rounded-2xl border border-[#d4af37]/10 mb-8">
@@ -1544,12 +1582,12 @@ const HeritageDashboard = ({
                                     <Brain size={12} /> Why Choose This?
                                 </h4>
                                 <p className="text-gray-500 text-[10px] leading-relaxed">
-                                    Avoids the public court process while ensuring your <span className="text-white font-bold">Business Stays Running</span> even if you are unavailable.
+                                    Intended to assist in avoiding the public court process while facilitating <span className="text-white font-bold">Business Continuity</span> for your heirs.
                                 </p>
                             </div>
 
                             <div className="grid grid-cols-1 gap-3 mb-10">
-                                {['Designed to Avoid Court', 'Stay Private & Confidential', 'Operational Continuity', 'Rapid Transfer to Heirs'].map(f => (
+                                {['Designed to Assist in Avoiding Probate', 'Maintain Privacy & Confidentiality', 'Operational Continuity Support', 'Rapid Transfer to Heirs'].map(f => (
                                     <div key={f} className="flex items-center gap-3 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
                                         <CheckCircle2 size={14} className="text-[#d4af37]" /> {f}
                                     </div>
@@ -1570,9 +1608,9 @@ const HeritageDashboard = ({
                             <div className="w-20 h-20 bg-slate-900 rounded-3xl flex items-center justify-center mb-8 text-slate-500 group-hover:text-white transition-colors">
                                 <FileText size={40} />
                             </div>
-                            <h3 className="text-2xl font-black text-white uppercase mb-4">Simple Legal Will</h3>
+                            <h3 className="text-2xl font-black text-white uppercase mb-4">The Legacy Will</h3>
                             <p className="text-gray-400 text-sm leading-relaxed mb-8">
-                                A traditional legal form. Provides <span className="text-white font-bold underline">Standard Instructions</span> for the court to handle your assets through the <span className="text-slate-300 font-bold">Public Court Process</span>.
+                                A clean, standard approach. Provides <span className="text-white font-bold">Specific Instructions</span> for the court to manage your wishes through the <span className="text-slate-300 font-bold">Public Probate Process</span>.
                             </p>
                             
                             <div className="space-y-4 mb-10">
@@ -1654,7 +1692,7 @@ const HeritageDashboard = ({
     <div className="w-full max-w-4xl mx-auto space-y-8 pb-20">
 
         {/* SECTION 1: SUCCESSION ENGINE (The Blueprint) */}
-        <div className="bg-gradient-to-br from-[#1c1c1e] to-[#0A0A0B] rounded-[2.5rem] border-t-4 border-t-[#d4af37] border-x border-x-gray-800 border-b border-b-gray-800 p-8 shadow-2xl relative overflow-hidden group">
+        <div className="bg-gradient-to-br from-[#1c1c1e] to-[#0A0A0B] rounded-[2.5rem] border-t-4 border-t-[#d4af37] border-x border-x-gray-800 border-b border-b-gray-800 p-8 shadow-2xl relative overflow-hidden group prism-border">
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#d4af37]/5 rounded-bl-[10rem] group-hover:bg-[#d4af37]/10 transition-colors pointer-events-none"></div>
             
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
@@ -2005,7 +2043,7 @@ const HeritageDashboard = ({
                                                     const val = e.target.value.replace(/\D/g, '');
                                                     setTempPIN(val);
                                                 }}
-                                                className="absolute inset-0 opacity-0 cursor-default caret-transparent"
+                                                className="absolute inset-0 opacity-0 cursor-default caret-transparent outline-none"
                                             />
                                             {/* Visual Masking Grid */}
                                             <div className="flex justify-center gap-3">
@@ -2055,7 +2093,7 @@ const HeritageDashboard = ({
                                                     }
                                                 }}
                                                 onKeyDown={handlePINKeyPress}
-                                                className="absolute inset-0 opacity-0 cursor-default caret-transparent"
+                                                className="absolute inset-0 opacity-0 cursor-default caret-transparent outline-none"
                                             />
                                             {/* Visual Masking Grid */}
                                             <div className="flex justify-center gap-3">
@@ -2155,7 +2193,6 @@ const HeritageDashboard = ({
                 )}
 
                 {/* Vault Footer / Metadata (Steve-Pro) */}
-                {isVaultUnlocked && (
                     <div className="flex justify-between items-center mb-4 px-2 py-2 border-b border-gray-900">
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-1.5">
@@ -2177,6 +2214,12 @@ const HeritageDashboard = ({
                                 <Terminal size={12} /> View Sentinel
                             </button>
                             <button 
+                                onClick={simulateBreach}
+                                className="flex items-center gap-1.5 text-[9px] text-gray-700 hover:text-red-500 font-bold uppercase tracking-widest transition-colors animate-pulse"
+                            >
+                                <ShieldAlert size={12} /> Test Breach
+                            </button>
+                            <button 
                                 onClick={resetVaultSecurity}
                                 className="flex items-center gap-1.5 text-[9px] text-gray-700 hover:text-red-500 font-bold uppercase tracking-widest transition-colors"
                             >
@@ -2184,7 +2227,6 @@ const HeritageDashboard = ({
                             </button>
                         </div>
                     </div>
-                )}
 
                 {/* SUPPORTING DOCUMENTS (Now Protected) */}
                 <div className="pt-4">
@@ -2838,6 +2880,49 @@ const HeritageDashboard = ({
                   </button>
               </div>
           </div>
+       )}
+
+      {/* VETO SENTINEL ALERT MODAL */}
+      {showBreachAlert && (
+        <div className="fixed inset-0 z-[999] bg-red-900/90 backdrop-blur-xl flex items-center justify-center p-6 animate-pulse-slow">
+            <div className="bg-black border-4 border-red-600 rounded-[3rem] p-12 w-full max-w-2xl shadow-[0_0_100px_rgba(220,38,38,0.5)] text-center relative overflow-hidden">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 pointer-events-none"></div>
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-white to-red-600 animate-shimmer"></div>
+
+                <div className="w-24 h-24 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_50px_rgba(220,38,38,0.6)] animate-bounce">
+                    <ShieldAlert size={48} className="text-white" />
+                </div>
+                
+                <h2 className="text-5xl font-black text-white uppercase tracking-tighter mb-2 glitch-text">Breach Detected</h2>
+                <p className="text-red-400 font-bold uppercase tracking-[0.3em] text-sm mb-8">Succession Key Activation In Progress</p>
+                
+                <div className="my-8 py-6 border-y border-red-800 bg-red-900/20">
+                     <p className="text-gray-400 text-xs font-mono mb-2">SOURCE ID: {breachSource}</p>
+                     <div className="text-4xl font-mono font-black text-white tabular-nums">
+                         BUFFER LOCK: 00:00:{breachCountdown.toString().padStart(2, '0')}
+                     </div>
+                     <p className="text-red-500/80 text-[10px] uppercase font-bold mt-2 animate-pulse">Auto-Release Imminent</p>
+                </div>
+
+                <p className="text-gray-400 max-w-md mx-auto mb-8 text-xs leading-relaxed">
+                    A Succession Key has been used to request access to your vault. If you did not authorize this, or if you are being coerced, engage the Veto Protocol immediately.
+                </p>
+
+                <button 
+                    onClick={executeVeto}
+                    className="w-full py-6 bg-red-600 hover:bg-white text-white hover:text-red-600 rounded-2xl font-black text-2xl uppercase tracking-[0.2em] transition-all shadow-2xl hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-4 group"
+                >
+                    <ShieldX size={32} className="group-hover:rotate-90 transition-transform duration-300" />
+                    Veto Access Now
+                </button>
+                <div className="mt-6">
+                    <button onClick={() => setShowBreachAlert(false)} className="text-gray-600 hover:text-white text-[10px] uppercase font-bold tracking-widest underline decoration-gray-800 underline-offset-4">
+                        Dismiss (Allow Access)
+                    </button>
+                </div>
+            </div>
+        </div>
       )}
     </div>
   </>

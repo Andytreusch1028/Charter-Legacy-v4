@@ -52,7 +52,7 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName }) => {
 
         if (docType === 'oa') {
             filename = `${companyName.replace(/\s+/g, '_')}_Operating_Agreement.pdf`;
-            page.drawText(`OPERATING AGREEMENT`, { x: 50, y: height - 50, size: 24, font: timesRomanFont });
+            page.drawText(`OPERATING AGREEMENT TEMPLATE`, { x: 50, y: height - 50, size: 24, font: timesRomanFont });
             page.drawText(`OF`, { x: 50, y: height - 80, size: 14, font: timesRomanFont });
             page.drawText(companyName.toUpperCase(), { x: 50, y: height - 110, size: 18, font: timesRomanFont });
             
@@ -76,7 +76,7 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName }) => {
             page.drawText(bodyText, { x: 50, y: height - 200, size: 12, font: timesRomanFont, lineHeight: 18 });
         } else if (docType === 'banking') {
             filename = `${companyName.replace(/\s+/g, '_')}_Banking_Resolution.pdf`;
-            page.drawText(`BANKING RESOLUTION`, { x: 50, y: height - 50, size: 24, font: timesRomanFont });
+            page.drawText(`BANKING RESOLUTION FORM`, { x: 50, y: height - 50, size: 24, font: timesRomanFont });
             page.drawText(`AUTHORIZATION TO OPEN ACCOUNTS`, { x: 50, y: height - 80, size: 14, font: timesRomanFont });
 
             const bodyText = `
@@ -113,7 +113,7 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName }) => {
     <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
       <div className="absolute inset-0 bg-[#F0F2F5]/90 backdrop-blur-xl" onClick={onClose} />
       
-      <div className="bg-[#FBFBFD] w-full max-w-5xl h-[90vh] rounded-[48px] shadow-2xl relative overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 border border-white">
+      <div className="vitreous-glass w-full max-w-5xl h-[90vh] rounded-[48px] overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95">
         
         {/* SIDEBAR NAVIGATION */}
         <div className="w-full md:w-1/3 bg-white p-8 border-r border-gray-100 overflow-y-auto">
@@ -142,7 +142,7 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName }) => {
               </BlueprintStep>
 
               <BlueprintStep 
-                title="Operating Agreement" 
+                title="Operating Agreement Template" 
                 icon={FileText} 
                 active={activeStep === 'oa'} 
                 status={completedSteps.includes('oa') ? 'complete' : 'pending'}
@@ -161,7 +161,7 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName }) => {
               </BlueprintStep>
 
               <BlueprintStep 
-                title="Banking Resolution" 
+                title="Banking Resolution Form" 
                 icon={Landmark} 
                 active={activeStep === 'banking'} 
                 status={completedSteps.includes('banking') ? 'complete' : 'pending'}
@@ -228,7 +228,7 @@ const OAContent = ({ companyName }) => (
     <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm text-[#007AFF]">
        <FileText size={32} />
     </div>
-    <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Operating Agreement</h2>
+    <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Operating Agreement Template</h2>
     <p className="text-gray-500 font-medium">
       This multi-member agreement defines the ownership structure (Membership Units) and management rules for <strong>{companyName}</strong>.
     </p>
@@ -244,12 +244,12 @@ const BankContent = ({ companyName }) => (
     <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm text-[#007AFF]">
        <Landmark size={32} />
     </div>
-    <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Banking Resolution</h2>
+    <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Banking Resolution Form</h2>
     <p className="text-gray-500 font-medium">
       Most banks require a "Banking Resolution" signed by the members to open a business checking account.
     </p>
     <div className="p-6 bg-[#007AFF]/5 rounded-2xl border border-[#007AFF]/10 text-left">
-       <h4 className="font-bold text-[#007AFF] uppercase text-xs tracking-widest mb-2">Recommended Banks</h4>
+       <h4 className="font-bold text-[#007AFF] uppercase text-xs tracking-widest mb-2">Suggested Banking Integrations</h4>
        <ul className="space-y-2 text-sm text-gray-600">
          <li className="flex items-center gap-2"><Check size={14} className="text-[#00D084]" /> Mercury (Tech-Forward)</li>
          <li className="flex items-center gap-2"><Check size={14} className="text-[#00D084]" /> Chase Business (Traditional)</li>

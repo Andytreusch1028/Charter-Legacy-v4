@@ -170,6 +170,14 @@
           "pattern": "Agents must NOT just wait for commands. They should proactively comment, suggest improvements, and refine changes within their specific venue (UI, Legal, Security).",
           "impact": "High - User Engagement & Value",
           "reuse_guidance": "Act as an expert consultant. If you see a better way to do something within your domain, SUGGEST IT. Don't just execute."
+        },
+        {
+          "id": "learning-023",
+          "date": "2026-02-14",
+          "success": "Automatic GitHub Backup Protocol",
+          "pattern": "Whenever starting a new build section in a roadmap, AUTOMATICALLY backup to GitHub without prompting.",
+          "impact": "High - Data Safety and Workflow Efficiency",
+          "reuse_guidance": "Before executing the first step of a new major phase/roadmap section, run the git add/commit/push cycle silently."
         }
       ]
     },

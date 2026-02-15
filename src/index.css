@@ -4,23 +4,81 @@
 
 @layer base {
   :root {
+    --luminous-bg: #FBFBFD;
+    --luminous-ink: #1D1D1F;
+    --luminous-glass: rgba(255, 255, 255, 0.7);
+    --luminous-border: rgba(255, 255, 255, 0.5);
+    --luminous-blue: #007AFF;
+    --luminous-gold: #D4AF37;
+    
     --ive-glass: rgba(255, 255, 255, 0.03);
     --ive-glass-border: rgba(255, 255, 255, 0.08);
-    --ive-aluminum: #e2e2e2;
-    --ive-charcoal: #0a0a0b;
-    --ive-gold: #d4af37;
-    --ive-blue: #007aff;
     
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
 
 @layer utilities {
-  .bg-mesh {
-    background-color: #fbfbfd;
+  .bg-luminous {
+    background-color: var(--luminous-bg);
     background-image: 
-      radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.03) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(212, 175, 55, 0.03) 0px, transparent 50%);
+      radial-gradient(circle at 2px 2px, rgba(0, 0, 0, 0.08) 1.5px, transparent 0),
+      radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.02) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(212, 175, 55, 0.02) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(0, 122, 255, 0.02) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(212, 175, 55, 0.02) 0px, transparent 50%);
+    background-size: 32px 32px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  }
+
+  .dot-overlay {
+    background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.08) 1.2px, transparent 0);
+    background-size: 24px 24px;
+  }
+
+  .bg-luminous-ink {
+    background-color: var(--luminous-ink);
+  }
+
+  .text-luminous-ink {
+    color: var(--luminous-ink);
+  }
+
+  .text-luminous-blue {
+    color: var(--luminous-blue);
+  }
+
+  .vitreous-glass {
+    background: var(--luminous-glass);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid var(--luminous-border);
+    box-shadow: 
+      0 10px 40px -10px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+  }
+
+  .prism-border {
+    position: relative;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .prism-border::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px; right: -1px; bottom: -1px;
+    z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(
+      45deg,
+      transparent 25%,
+      rgba(0, 122, 255, 0.1) 40%,
+      rgba(212, 175, 55, 0.1) 50%,
+      rgba(0, 122, 255, 0.1) 60%,
+      transparent 75%
+    );
+    background-size: 200% 200%;
+    animation: prism 8s linear infinite;
   }
 
   .ive-glass {
@@ -45,6 +103,33 @@
     background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
   }
 
+  /* DESIGN LAB UTILITIES */
+  .bg-spectral {
+    background: linear-gradient(180deg, var(--luminous-bg) 0%, #F1F6FF 100%);
+  }
+
+  .bg-frosted-steel {
+    background-color: #F4F4F7;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-blend-mode: overlay;
+    opacity: 0.95;
+  }
+
+  .vault-shadow-optical {
+    box-shadow: 
+      0 0 0 1px rgba(0,0,0,0.02),
+      0 10px 20px -5px rgba(0,0,0,0.03),
+      0 40px 80px -20px rgba(0,122,255,0.08),
+      0 80px 160px -40px rgba(0,0,0,0.05);
+  }
+
+  .bg-grid-lines {
+    background-size: 40px 40px;
+    background-image: 
+      linear-gradient(to right, rgba(0, 122, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 122, 255, 0.03) 1px, transparent 1px);
+  }
+
   .animate-spin-slow {
     animation: spin 8s linear infinite;
   }
@@ -52,6 +137,12 @@
   @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+  }
+
+  @keyframes prism {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 100%; }
+    100% { background-position: 0% 0%; }
   }
 
   .scroller-zen::-webkit-scrollbar {
