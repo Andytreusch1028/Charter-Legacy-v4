@@ -16,6 +16,7 @@ import ZenithDialog from './ZenithDialog';
 import RegisteredAgentConsole from './RegisteredAgentConsole';
 import SpecSheet from './SpecSheet';
 import DoubleLLCExplainer from './DoubleLLCExplainer';
+import PlanManager from './components/PlanManager';
 
 /**
  * CHARTER LEGACY v3.1.0 // THE "RULE OF THREE" REVERSION
@@ -538,6 +539,7 @@ export default function App() {
         onClose={() => setSelectedPackage(null)} 
         onSuccess={(user) => handleDashboardTransition(user)}
       />
+      <PlanManager />
     </div>
   );
 }

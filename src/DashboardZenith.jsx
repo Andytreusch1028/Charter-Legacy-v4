@@ -10,6 +10,7 @@ import FoundersBlueprint from './FoundersBlueprint';
 import SuccessionSuite from './SuccessionSuite';
 
 import DesignationProtocol from './DesignationProtocol';
+import AssetSentryTile from './components/AssetSentryTile';
 
 const DashboardZenith = ({ user, initialData }) => {
   const [loading, setLoading] = useState(true);
@@ -271,7 +272,7 @@ const DashboardZenith = ({ user, initialData }) => {
                             {/* Action Area */}
                             <div className="space-y-12">
                                 {/* PRIMARY CARDS */}
-                                <div className="grid md:grid-cols-2 gap-8">
+                                <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
                                     <div 
                                         onClick={() => setIsBlueprintOpen(true)}
                                         className="p-10 bg-[#FAFAFA] rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col justify-between h-[320px] transition-all hover:shadow-md hover:border-gray-200 cursor-pointer group relative overflow-hidden"
@@ -309,6 +310,8 @@ const DashboardZenith = ({ user, initialData }) => {
                                             364:23:59:59
                                         </div>
                                     </div>
+
+                                    <AssetSentryTile />
                                 </div>
 
                                 {/* REGISTERED AGENT CONSOLE WIDGETS */}
