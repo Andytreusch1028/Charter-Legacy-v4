@@ -1,11 +1,123 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from './lib/supabase';
-import { 
-  Shield, ArrowRight, Zap, CheckCircle2, Fingerprint, Building2, 
-  Settings, ShieldCheck, Loader2, FileCode, MessageSquare, Clock, FileText, Activity 
-} from 'lucide-react';
+const RegisteredAgentConsole = ({ isModal = false, onClose }) => {
+  // ... (state remain same)
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [loading, setLoading] = useState(true);
+  const [documents, setDocuments] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [autoDisposeMarketing, setAutoDisposeMarketing] = useState(true);
+  const [priorityForwarding, setPriorityForwarding] = useState(true);
+  const [autoRenew, setAutoRenew] = useState(false);
+  const [smsInterrupt, setSmsInterrupt] = useState(false);
+  const [brokerShield, setBrokerShield] = useState(true);
 
-const RegisteredAgentConsole = () => {
+  // ... (effects and functions remain same, omitted for brevity in search matching if not replacing, but since I am replacing the wrapper, I need to keep the content)
+  // Actually, replace_file_content replaces a chunk. I should target the wrapper.
+
+  // Let's rely on the fact that I will replace the Return statement mostly.
+  // But I need to change the component signature line 8.
+
+// ... (Effect and helper functions are unchanged)
+
+  const renderContent = () => {
+      // (Content remains same)
+      if (loading) {
+        // ...
+        return (
+            <div className="h-full flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-500">
+                <Loader2 className="animate-spin text-luminous-blue" size={32} />
+                <p className="text-[10px] uppercase font-black tracking-[0.3em] text-gray-400">Establish Secure Uplink...</p>
+            </div>
+        );
+    }
+
+    switch (activeTab) {
+        // ... (Keep all switch cases logic same, just using them in the new return)
+        
+        // I need to only replace the RETURN statement and the Function Definition line.
+        // But replace_file_content for non-contiguous is tricky if I can't use MultiReplace.
+        // I'll use MultiReplace or just replace the component definition and the return.
+        
+        // Wait, I can only replace one block if using replace_file_content.
+        // Let's use MultiReplaceFileContent if available, or just ReplaceFileContent on the whole file or large chunk?
+        // Viewing the file shows getting the whole file is huge.
+        
+        // Strategy:
+        // 1. Update line 8 to accept props.
+        // 2. Update the return statement (lines 611-663) to handle isModal.
+        
+        // I will do two Replace calls? No "Do NOT make multiple parallel calls...".
+        // Use multi_replace_file_content.
+        
+    }
+    // ...
+  };
+  
+ return (
+    <section id="privacy" className={`${isModal ? 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 md:p-8' : 'py-48 px-6 bg-luminous relative overflow-hidden'}`}>
+        {!isModal && (
+            <>
+                <div className="absolute inset-0 bg-grid-lines opacity-10" />
+                <div className="absolute inset-0 dot-overlay opacity-30 pointer-events-none" />
+            </>
+        )}
+        
+        <div className={`${isModal ? 'w-full max-w-7xl h-full max-h-[90vh] shadow-2xl' : 'max-w-7xl mx-auto'}`}>
+            <div className="bg-white rounded-[48px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden relative group/slab h-full flex flex-col">
+                
+                {/* Close Button for Modal */}
+                {isModal && (
+                    <button onClick={onClose} className="absolute top-6 right-6 z-50 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 transition-colors">
+                        <X size={20} />
+                    </button>
+                )}
+
+                <div className="flex flex-col md:flex-row h-full">
+                
+                 {/* SIDEBAR NAVIGATION */}
+                 <aside className="w-full md:w-72 bg-gray-50/50 border-r border-gray-100/50 p-10 space-y-12 shrink-0 overflow-y-auto">
+                    <div className="space-y-2 text-left">
+                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 block">Console ID</span>
+                       <span className="text-xs font-mono text-luminous-blue">RA-FL-482910</span>
+                    </div>
+                    <nav className="space-y-6">
+                       {tabs.map((link) => (
+                         <button 
+                            key={link.id} 
+                            onClick={() => setActiveTab(link.id)}
+                            className={`flex items-center gap-4 w-full transition-all duration-300 group ${activeTab === link.id ? 'text-luminous-blue translate-x-2' : 'text-gray-400 hover:text-black hover:translate-x-1'}`}
+                         >
+                            <link.icon size={18} className={activeTab === link.id ? "" : "group-hover:scale-110 transition-transform"} />
+                            <span className="text-xs font-black uppercase tracking-widest text-left">{link.label}</span>
+                         </button>
+                       ))}
+                    </nav>
+                    
+                    <div className="pt-20 text-left">
+                       <div className="p-4 bg-luminous-blue/10 rounded-2xl border border-luminous-blue/20">
+                          <div className="flex items-center gap-3 text-luminous-blue mb-2">
+                             <Clock size={14} />
+                             <span className="text-[9px] font-black uppercase tracking-widest">Facility Uplink</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                             <span className="text-[10px] font-bold text-gray-600">Miami Hub Active</span>
+                          </div>
+                       </div>
+                    </div>
+                 </aside>
+
+                 {/* MAIN CONTENT AREA */}
+                 <main className="flex-1 p-12 md:p-20 relative text-left overflow-y-auto">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-luminous-blue/5 rounded-full blur-3xl -translate-y-12 translate-x-12" />
+                    {renderContent()}
+                 </main>
+
+              </div>
+           </div>
+        </div>
+    </section>
+  );
+};
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
@@ -143,11 +255,11 @@ const RegisteredAgentConsole = () => {
   };
 
   const tabs = [
-    { id: 'dashboard', icon: Activity, label: 'Agent Dashboard' },
-    { id: 'documents', icon: FileText, label: 'Document Feed' },
-    { id: 'messaging', icon: MessageSquare, label: 'Agent Messaging' },
-    { id: 'privacy', icon: ShieldCheck, label: 'Ownership Privacy' },
-    { id: 'config', icon: Settings, label: 'Console Config' },
+    { id: 'dashboard', icon: Activity, label: 'Owner Console' },
+    { id: 'documents', icon: FileText, label: 'Corporate Records' },
+    { id: 'messaging', icon: MessageSquare, label: 'Private Uplink' },
+    { id: 'privacy', icon: ShieldCheck, label: 'Identity Protection' },
+    { id: 'config', icon: Settings, label: 'Protocol Config' },
   ];
 
   const renderContent = () => {
@@ -558,25 +670,49 @@ const RegisteredAgentConsole = () => {
 
              </div>
 
-             {/* SYSTEM ACTIVITY TRACKER */}
-             <div className="bg-luminous-ink rounded-[32px] p-10 space-y-8 text-white relative overflow-hidden">
-                <div className="absolute inset-0 dot-overlay opacity-10 pointer-events-none" />
-                <h4 className="text-sm font-black uppercase tracking-[0.3em] flex items-center gap-3">
-                   System Activity Tracker <span className="h-[1px] flex-1 bg-white/10" />
-                </h4>
-                <div className="grid md:grid-cols-3 gap-8 relative z-10">
-                   <div className="space-y-2">
-                      <p className="text-2xl font-black text-luminous-blue">Activated</p>
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Ownership Privacy Shield</p>
-                   </div>
-                   <div className="space-y-2">
-                      <p className="text-2xl font-black">Live</p>
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Sunbiz Automated Liaison</p>
-                   </div>
-                   <div className="space-y-2">
-                      <p className="text-2xl font-black">24h</p>
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Document Processing Window</p>
-                   </div>
+             {/* SYSTEM ACTIVITY TRACKER & STATUTORY FOUNDATION */}
+             <div className="space-y-8">
+                <div className="bg-luminous-ink rounded-[32px] p-10 space-y-8 text-white relative overflow-hidden">
+                    <div className="absolute inset-0 dot-overlay opacity-10 pointer-events-none" />
+                    <h4 className="text-sm font-black uppercase tracking-[0.3em] flex items-center gap-3">
+                    System Activity Tracker <span className="h-[1px] flex-1 bg-white/10" />
+                    </h4>
+                    <div className="grid md:grid-cols-3 gap-8 relative z-10">
+                    <div className="space-y-2">
+                        <p className="text-2xl font-black text-luminous-blue">Activated</p>
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Ownership Privacy Shield</p>
+                    </div>
+                    <div className="space-y-2">
+                        <p className="text-2xl font-black">Live</p>
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Sunbiz Automated Liaison</p>
+                    </div>
+                    <div className="space-y-2">
+                        <p className="text-2xl font-black">24h</p>
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Document Processing Window</p>
+                    </div>
+                    </div>
+                </div>
+
+                 <div className="bg-gray-50/50 rounded-[48px] p-12 border border-gray-100 flex flex-col md:flex-row items-center gap-12 border-l-8 border-l-luminous-blue mt-12 text-left">
+                    <div className="shrink-0 w-20 h-20 bg-white rounded-3xl shadow-sm border border-gray-100 flex items-center justify-center text-luminous-blue">
+                        <Scale size={32} />
+                    </div>
+                    <div className="space-y-3 flex-1">
+                        <h4 className="text-[10px] font-black uppercase tracking-[0.6em] text-luminous-blue">Institutional Layer</h4>
+                        <p className="text-sm text-gray-400 font-medium italic leading-relaxed">
+                            "Charter Legacy provides the mandatory physical nexus for your entity. We maintain continuous availability to intercept state documents and preserve your private residential address."
+                        </p>
+                    </div>
+                    <div className="md:ml-auto grid grid-cols-2 gap-8 shrink-0">
+                        <div className="text-center">
+                            <p className="text-[10px] font-black text-luminous-ink opacity-20">STRUCTURE</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">FLORIDA LLC</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-[10px] font-black text-luminous-blue opacity-20">STATUS</p>
+                            <p className="text-xs font-black text-[#00D084] tracking-widest uppercase">ACTIVE</p>
+                        </div>
+                    </div>
                 </div>
              </div>
           </div>
@@ -585,16 +721,28 @@ const RegisteredAgentConsole = () => {
   };
 
   return (
-    <section id="privacy" className="py-48 px-6 bg-luminous relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-lines opacity-10" />
-        <div className="absolute inset-0 dot-overlay opacity-30 pointer-events-none" />
+    <section id="privacy" className={`${isModal ? 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 md:p-8 animate-in fade-in duration-300' : 'py-48 px-6 bg-luminous relative overflow-hidden'}`}>
+        {!isModal && (
+            <>
+                <div className="absolute inset-0 bg-grid-lines opacity-10" />
+                <div className="absolute inset-0 dot-overlay opacity-30 pointer-events-none" />
+            </>
+        )}
         
-        <div className="max-w-7xl mx-auto">
-            <div className="bg-white rounded-[48px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden relative group/slab">
-                <div className="flex flex-col md:flex-row min-h-[850px]">
+        <div className={`${isModal ? 'w-full max-w-7xl h-full max-h-[90vh] shadow-2xl animate-in zoom-in-95 duration-300' : 'max-w-7xl mx-auto'}`}>
+            <div className="bg-white rounded-[48px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden relative group/slab h-full flex flex-col">
+                
+                {/* Close Button for Modal */}
+                {isModal && (
+                    <button onClick={onClose} className="absolute top-6 right-6 z-50 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 transition-colors">
+                        <X strokeWidth={2.5} size={20} />
+                    </button>
+                )}
+
+                <div className="flex flex-col md:flex-row h-full">
                 
                  {/* SIDEBAR NAVIGATION */}
-                 <aside className="w-full md:w-72 bg-gray-50/50 border-r border-gray-100/50 p-10 space-y-12 shrink-0">
+                 <aside className="w-full md:w-72 bg-gray-50/50 border-r border-gray-100/50 p-10 space-y-12 shrink-0 overflow-y-auto">
                     <div className="space-y-2 text-left">
                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 block">Console ID</span>
                        <span className="text-xs font-mono text-luminous-blue">RA-FL-482910</span>

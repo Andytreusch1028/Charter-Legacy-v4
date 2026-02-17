@@ -7,10 +7,14 @@ import {
 import { supabase } from './lib/supabase';
 
 import FoundersBlueprint from './FoundersBlueprint';
+import RegisteredAgentConsole from './RegisteredAgentConsole';
 import SuccessionSuite from './SuccessionSuite';
+import { AnimatePresence } from 'framer-motion';
 
 import DesignationProtocol from './DesignationProtocol';
 import AssetSentryTile from './components/AssetSentryTile';
+import SubscriptionGate from './components/SubscriptionGate';
+import VaultTile from './components/VaultTile';
 
 const DashboardZenith = ({ user, initialData }) => {
   const [loading, setLoading] = useState(true);
@@ -18,12 +22,15 @@ const DashboardZenith = ({ user, initialData }) => {
   const [activityLog, setActivityLog] = useState([]);
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [isSuccessionOpen, setIsSuccessionOpen] = useState(false);
+  const [isRAConsoleOpen, setIsRAConsoleOpen] = useState(false);
   
   // New State for Designation
   const [showDesignation, setShowDesignation] = useState(false);
   
   // Steve Mode: Power Tools
   const [privacyMode, setPrivacyMode] = useState(false);
+  const [designMode, setDesignMode] = useState('MONOLITH'); // 'MONOLITH' | 'SWISS' | 'CUPERTINO'
+  const [focusMode, setFocusMode] = useState(false); // TRUE = NO SIDEBAR (Zenith Focus)
   
   // Agent Console Config
   const [autoDisposeMarketing, setAutoDisposeMarketing] = useState(true);
@@ -97,7 +104,7 @@ const DashboardZenith = ({ user, initialData }) => {
     };
 
     fetchData();
-  }, [user]);
+  }, [user?.id]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -129,21 +136,6 @@ const DashboardZenith = ({ user, initialData }) => {
 
   return (
     <>
-      <FoundersBlueprint 
-        isOpen={isBlueprintOpen} 
-        onClose={() => setIsBlueprintOpen(false)} 
-        companyName={llcData?.llc_name || "Your Company"} 
-      />
-
-      <SuccessionSuite 
-        isOpen={isSuccessionOpen} 
-        onClose={() => setIsSuccessionOpen(false)} 
-        companyName={llcData?.llc_name || "Your Company"} 
-      />
-
-      {showDesignation && (
-          <DesignationProtocol user={user} onSuccess={handleDesignationSuccess} />
-      )}
 
       <div className="min-h-screen bg-luminous text-luminous-ink font-sans antialiased flex items-center justify-center p-4 md:p-10 relative overflow-hidden">
         <style>{`
@@ -163,6 +155,32 @@ const DashboardZenith = ({ user, initialData }) => {
             from { transform: translate(0, 0); }
             to { transform: translate(80px, 40px); }
         }
+        
+        /* DESIGN TOGGLE UI */
+        .design-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            padding: 8px;
+            border-radius: 20px;
+            display: flex;
+            gap: 4px;
+            z-index: 100;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .design-btn {
+            padding: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .design-btn:hover { background: rgba(255,255,255,0.1); }
+        .design-btn.active { background: white; color: black; }
       `}</style>
       
       {/* Background Blobs */}
@@ -171,12 +189,9 @@ const DashboardZenith = ({ user, initialData }) => {
       <div className="fixed inset-0 dot-overlay opacity-[0.15] pointer-events-none" />
 
       {/* The Obsidian Slab */}
-      <div className="vitreous-glass w-full max-w-7xl min-h-[700px] rounded-[48px] flex flex-col md:flex-row relative z-10 border border-white animate-in fade-in zoom-in-95 duration-700 overflow-hidden shadow-[0_80px_160px_-40px_rgba(0,122,255,0.08)]">
+      <div className={`vitreous-glass w-full max-w-screen-2xl min-h-screen md:min-h-[900px] rounded-[48px] flex flex-col md:flex-row relative z-10 border border-white/10 animate-in fade-in zoom-in-95 duration-1000 overflow-hidden shadow-[0_100px_200px_-50px_rgba(0,122,255,0.12)] transition-all ${focusMode ? 'max-w-6xl mx-auto' : ''}`}>
         
-        <main className="flex-1 p-8 md:p-20 flex flex-col">
-            <div className="text-[0.65rem] font-black uppercase tracking-[0.5em] text-luminous-ink opacity-30 mb-12">
-                Registered Agent Console
-            </div>
+        <main className={`flex-1 p-12 md:p-24 lg:p-32 flex flex-col transition-all duration-700 ${focusMode ? 'items-center' : ''}`}>
 
             {loading ? (
                 <div className="space-y-6 animate-pulse">
@@ -238,178 +253,125 @@ const DashboardZenith = ({ user, initialData }) => {
                     ) : ( 
                         /* --- ACTIVE STATE (FULL DASHBOARD) --- */
                         <>
-                            <div className="flex flex-col md:flex-row items-start justify-between gap-6 mb-12">
-                                <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85] text-luminous-ink break-words max-w-full">
-                                    {llcData?.llc_name}
+                            {/* Focused Header Section */}
+                            <div className="flex flex-col mb-24">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-2.5 h-2.5 bg-luminous-blue rounded-full animate-pulse shadow-[0_0_15px_rgba(0,122,255,0.6)]"></div>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.5em] text-luminous-blue">System Active</span>
+                                </div>
+                                <h1 className="text-6xl md:text-[9.5rem] font-black uppercase tracking-tighter leading-[0.8] text-luminous-ink break-words max-w-5xl mb-12">
+                                    {llcData?.llc_name}.
                                 </h1>
-                            </div>
-
-                            {/* Stats Strip */}
-                            <div className="flex flex-col md:flex-row gap-12 md:gap-24 py-16 border-y border-gray-100/50 mb-16">
-                                <div className="flex flex-col gap-3">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Current Status</span>
-                                    <span className="text-lg font-black text-luminous-blue flex items-center gap-3">
-                                        <div className="w-2.5 h-2.5 bg-luminous-blue rounded-full animate-pulse shadow-[0_0_15px_rgba(0,122,255,0.4)]"></div>
-                                        {llcData?.llc_status || "Active"}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col gap-3">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Privacy Shield</span>
-                                    <span className="text-lg font-black text-luminous-ink flex items-center gap-3">
-                                        <ShieldCheck size={20} className={llcData?.privacy_shield_active ? "text-luminous-blue" : "text-gray-300"} />
-                                        {llcData?.privacy_shield_active ? "Verified" : "Inactive"}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col gap-3">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Governance</span>
-                                    <span className="text-lg font-black text-luminous-ink opacity-40 flex items-center gap-3">
-                                        <Clock size={20} />
-                                        Auto-Protect
-                                    </span>
-                                </div>
+                                <p className="text-gray-400 font-medium text-2xl italic max-w-3xl leading-relaxed opacity-60">
+                                    "Institutional-grade privacy architecture verified. Your physical and digital nexus remains secure."
+                                </p>
                             </div>
 
                             {/* Action Area */}
                             <div className="space-y-12">
                                 {/* PRIMARY CARDS */}
-                                <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
-                                    <div 
-                                        onClick={() => setIsBlueprintOpen(true)}
-                                        className="p-10 bg-[#FAFAFA] rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col justify-between h-[320px] transition-all hover:shadow-md hover:border-gray-200 cursor-pointer group relative overflow-hidden"
-                                    >
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-gray-100 rounded-bl-full -mr-16 -mt-16 transition-colors group-hover:bg-gray-200"></div>
-                                        <div>
-                                            <div className="flex items-center gap-2 text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6">
-                                                <FileText size={14} /> Official Records
-                                            </div>
-                                            <h3 className="text-3xl font-black uppercase tracking-tight text-luminous-ink mb-2 group-hover:text-luminous-blue transition-colors leading-none">Company Charter</h3>
-                                            <p className="text-gray-400 text-xs font-medium italic leading-relaxed max-w-[80%] mt-4">
-                                                "Access your filed Articles, EIN, and Operating Agreement."
-                                            </p>
-                                        </div>
-                                        <button className="bg-luminous-ink text-white w-full py-4 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-luminous-blue transition-colors shadow-lg flex items-center justify-center gap-2">
-                                            View Documents <ChevronRight size={14} />
-                                        </button>
+                            {/* THE POWER TRINITY (Primary Action Grid) */}
+                            {/* THE POWER TRINITY (Primary Action Grid) */}
+                            {designMode === 'MONOLITH' && (
+                                <div className="grid xl:grid-cols-3 lg:grid-cols-2 gap-10 mb-24 animate-in fade-in duration-500">
+                                    <div className="h-[600px]">
+                                        <FoundersBlueprint 
+                                            isOpen={false} 
+                                            onClose={() => setIsBlueprintOpen(true)} 
+                                            mode="MONOLITH"
+                                        />
                                     </div>
 
-                                    <div 
+                                    <VaultTile 
                                         onClick={() => setIsSuccessionOpen(true)}
-                                        className="p-10 bg-luminous-ink text-white rounded-[2.5rem] shadow-2xl flex flex-col justify-between h-[320px] relative overflow-hidden group cursor-pointer hover:scale-[1.02] transition-transform prism-border"
-                                    >
-                                        <div className="absolute top-0 right-0 p-32 bg-gradient-to-br from-luminous-blue/20 to-transparent rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none group-hover:from-luminous-blue/30 transition-colors"></div>
+                                        locked={!user?.permissions?.heritage_vault}
+                                        mode="MONOLITH"
+                                    />
+
+                                    <AssetSentryTile mode="MONOLITH" />
+                                </div>
+                            )}
+
+                            {designMode === 'SWISS' && (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-24 animate-in fade-in duration-500">
+                                    <div className="lg:row-span-2 h-full min-h-[500px]">
+                                        <FoundersBlueprint 
+                                            isOpen={false} 
+                                            onClose={() => setIsBlueprintOpen(true)} 
+                                            mode="SWISS"
+                                        />
+                                    </div>
+                                    <div className="h-[280px]">
+                                        <VaultTile 
+                                            onClick={() => setIsSuccessionOpen(true)}
+                                            locked={!user?.permissions?.heritage_vault}
+                                            mode="SWISS"
+                                        />
+                                    </div>
+                                    <div className="h-[280px]">
+                                        <AssetSentryTile 
+                                            mode="SWISS" 
+                                            onClick={() => setIsRAConsoleOpen(true)}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {designMode === 'CUPERTINO' && (
+                                <div className="space-y-6 mb-24 animate-in fade-in duration-500">
+                                    <div className="h-[180px]">
+                                        <FoundersBlueprint 
+                                            isOpen={false} 
+                                            onClose={() => setIsBlueprintOpen(true)} 
+                                            mode="CUPERTINO"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-6 h-[340px]">
+                                         <VaultTile 
+                                            onClick={() => setIsSuccessionOpen(true)}
+                                            locked={!user?.permissions?.heritage_vault}
+                                            mode="CUPERTINO"
+                                        />
+                                        <AssetSentryTile 
+                                            mode="CUPERTINO" 
+                                            onClick={() => setIsRAConsoleOpen(true)}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* INTEGRATED UTILITIES (Secondary Actions) */}
+                            <div className="grid lg:grid-cols-2 gap-16">
+                                <div className="p-16 bg-white/40 backdrop-blur-2xl rounded-[56px] border border-white/50 flex items-center justify-between group transition-all hover:bg-white hover:shadow-[0_60px_100px_-20px_rgba(0,122,255,0.1)] cursor-pointer">
+                                    <div className="flex items-center gap-12 flex-1">
+                                        <div className="w-24 h-24 bg-white rounded-[32px] shadow-sm flex items-center justify-center text-luminous-ink group-hover:text-luminous-blue transition-all group-hover:scale-110 shrink-0">
+                                            <FileText size={40} strokeWidth={1.5} />
+                                        </div>
                                         <div>
-                                            <div className="flex items-center gap-2 text-luminous-gold text-[10px] font-black uppercase tracking-[0.2em] mb-6">
-                                                <Activity size={14} /> Heritage Architecture
-                                            </div>
-                                            <h3 className="text-3xl font-black uppercase tracking-tight mb-4 group-hover:text-luminous-blue transition-colors leading-none">The Vault</h3>
-                                            <p className="text-gray-400 text-xs font-medium italic leading-relaxed max-w-[80%]">
-                                                "Will • Trust • Estate protocols are active."
-                                            </p>
-                                        </div>
-                                        <div className="mt-auto font-mono text-3xl font-black tracking-widest text-luminous-gold opacity-90">
-                                            364:23:59:59
+                                            <h4 className="text-[10px] font-black uppercase tracking-[0.6em] text-gray-400 mb-3 whitespace-nowrap">Service Hub</h4>
+                                            <p className="text-3xl font-black text-luminous-ink italic leading-none whitespace-nowrap">Scanned Archives</p>
                                         </div>
                                     </div>
-
-                                    <AssetSentryTile />
-                                </div>
-
-                                {/* REGISTERED AGENT CONSOLE WIDGETS */}
-                                <div className="space-y-6">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <h4 className="text-sm font-black uppercase tracking-[0.2em] text-gray-400 flex items-center gap-4">
-                                            <ShieldCheck size={16} /> Secure Agent Uplink 
-                                        </h4>
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex items-center gap-3 bg-white/50 px-3 py-1.5 rounded-full border border-gray-100 shadow-sm transition-all hover:bg-white hover:shadow-md cursor-pointer group/toggle" onClick={() => setPriorityForwarding(!priorityForwarding)}>
-                                                <Scale size={12} className={`transition-colors ${priorityForwarding ? "text-luminous-blue" : "text-gray-300"}`} />
-                                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest select-none">Pleadings / Priority</span>
-                                                <div className={`w-7 h-4 rounded-full transition-colors relative ${priorityForwarding ? 'bg-luminous-blue' : 'bg-gray-200'}`}>
-                                                     <div className={`absolute top-[2px] w-3 h-3 bg-white rounded-full shadow-sm transition-all ${priorityForwarding ? 'left-[14px]' : 'left-[2px]'}`}></div>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3 bg-white/50 px-3 py-1.5 rounded-full border border-gray-100 shadow-sm transition-all hover:bg-white hover:shadow-md cursor-pointer group/toggle" onClick={() => setAutoDisposeMarketing(!autoDisposeMarketing)}>
-                                                <Trash2 size={12} className={`transition-colors ${autoDisposeMarketing ? "text-luminous-blue" : "text-gray-300"}`} />
-                                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest select-none">Auto-Dispose Ads</span>
-                                                <div className={`w-7 h-4 rounded-full transition-colors relative ${autoDisposeMarketing ? 'bg-luminous-blue' : 'bg-gray-200'}`}>
-                                                     <div className={`absolute top-[2px] w-3 h-3 bg-white rounded-full shadow-sm transition-all ${autoDisposeMarketing ? 'left-[14px]' : 'left-[2px]'}`}></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="grid lg:grid-cols-2 gap-8">
-                                        {/* Document Feed */}
-                                        <div className="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm h-[400px] flex flex-col">
-                                            <div className="flex items-center justify-between mb-8">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-luminous-ink">
-                                                        <FileText size={20} />
-                                                    </div>
-                                                    <div>
-                                                        <h5 className="font-black uppercase text-sm tracking-tight">Scanned Documents</h5>
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Miami Processing Center</p>
-                                                    </div>
-                                                </div>
-                                                <button className="text-[10px] font-black uppercase tracking-widest text-luminous-blue hover:text-luminous-ink transition-colors">View All</button>
-                                            </div>
-                                            
-                                            <div className="space-y-3 overflow-y-auto pr-2 custom-scrollbar flex-1">
-                                                {[
-                                                    { title: 'Notice of Annual Filing', date: 'Feb 12, 2026', type: 'State Requirement', status: 'Action Required' },
-                                                    { title: 'Service of Process (Mock)', date: 'Feb 09, 2026', type: 'Legal Notice', status: 'Urgent' },
-                                                    { title: 'Information Request', date: 'Feb 05, 2026', type: 'Bureaucracy', status: 'Standard' }
-                                                ].map((doc, idx) => (
-                                                    <div key={idx} className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-md transition-all cursor-pointer flex items-center justify-between">
-                                                        <div className="space-y-1">
-                                                            <div className="flex items-center gap-2">
-                                                                <p className="text-xs font-black text-luminous-ink group-hover:text-luminous-blue transition-colors">{doc.title}</p>
-                                                                {doc.status === 'Urgent' && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
-                                                            </div>
-                                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{doc.date} • {doc.type}</p>
-                                                        </div>
-                                                        <ChevronRight size={14} className="text-gray-300 group-hover:text-luminous-ink" />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Agent Messaging */}
-                                        <div className="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm h-[400px] flex flex-col relative overflow-hidden">
-                                            <div className="flex items-center justify-between mb-8 relative z-10">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-luminous-blue/10 rounded-xl flex items-center justify-center text-luminous-blue">
-                                                        <MessageSquare size={20} />
-                                                    </div>
-                                                    <div>
-                                                        <h5 className="font-black uppercase text-sm tracking-tight text-luminous-blue">Direct Liaison</h5>
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Live Agent 402
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex-1 space-y-4 mb-4 overflow-y-auto pr-2 custom-scrollbar relative z-10">
-                                                <div className="bg-gray-50 p-4 rounded-2xl rounded-tl-none border border-gray-100 max-w-[85%]">
-                                                    <p className="text-xs text-gray-600 font-medium leading-relaxed">"Welcome to the console. I'm your dedicated agent. Your privacy shield is active and holding. No breaches detected."</p>
-                                                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mt-2 text-right">10:42 AM</p>
-                                                </div>
-                                                <div className="bg-luminous-blue/5 p-4 rounded-2xl rounded-tr-none border border-luminous-blue/10 max-w-[85%] ml-auto text-right">
-                                                    <p className="text-xs text-luminous-ink font-medium leading-relaxed">"Confirmed. Please alert me if any mail arrives from the Department of Revenue."</p>
-                                                    <p className="text-[8px] font-black text-luminous-blue/60 uppercase tracking-widest mt-2 text-left">10:45 AM</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="relative z-10 mt-auto">
-                                                <input type="text" placeholder="Type secure message..." className="w-full bg-gray-50 rounded-xl py-4 px-5 text-xs font-bold outline-none border-2 border-transparent focus:border-luminous-blue/20 transition-all placeholder:text-gray-300" />
-                                                <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-luminous-ink text-white rounded-lg hover:scale-105 transition-transform">
-                                                    <ChevronRight size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
+                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 group-hover:bg-luminous-blue group-hover:text-white transition-all shrink-0 ml-8">
+                                        <ChevronRight size={32} className="group-hover:translate-x-1 transition-transform" />
                                     </div>
                                 </div>
+
+                                <div className="p-16 bg-white/40 backdrop-blur-2xl rounded-[56px] border border-white/50 flex items-center justify-between group transition-all hover:bg-white hover:shadow-[0_60px_100px_-20px_rgba(0,122,255,0.1)] cursor-pointer">
+                                    <div className="flex items-center gap-12 flex-1">
+                                        <div className="w-24 h-24 bg-luminous-blue/10 rounded-[32px] flex items-center justify-center text-luminous-blue group-hover:bg-luminous-blue group-hover:text-white transition-all group-hover:scale-110 shrink-0">
+                                            <MessageSquare size={40} strokeWidth={1.5} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-[10px] font-black uppercase tracking-[0.6em] text-gray-400 mb-3 whitespace-nowrap">Institutional Uplink</h4>
+                                            <p className="text-3xl font-black text-luminous-ink italic leading-none whitespace-nowrap">Agent Comms Active</p>
+                                        </div>
+                                    </div>
+                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 group-hover:bg-luminous-blue group-hover:text-white transition-all shrink-0 ml-8">
+                                        <ChevronRight size={32} className="group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                </div>
+                            </div>
                             </div>
                         </>
                     )}
@@ -418,76 +380,89 @@ const DashboardZenith = ({ user, initialData }) => {
         </main>
 
         {/* Sidebar Sentinel */}
-        <aside className="w-full md:w-[420px] bg-white/40 backdrop-blur-3xl border-l border-white/50 p-10 flex flex-col">
-            <div className="flex items-center justify-between mb-12">
-                <div className="text-[0.55rem] font-black uppercase tracking-[0.6em] text-luminous-ink opacity-20">
-                    System Activity
+        {!focusMode && (
+            <aside className="w-full md:w-[480px] bg-white/60 backdrop-blur-3xl border-l border-white/20 p-16 flex flex-col animate-in slide-in-from-right duration-700">
+                <div className="flex items-center justify-between mb-20">
+                    <div className="text-[0.65rem] font-black uppercase tracking-[0.8em] text-luminous-ink opacity-20">
+                        System Activity
+                    </div>
+                    <button onClick={handleLogout} className="text-gray-300 hover:text-luminous-blue transition-all hover:rotate-12">
+                        <LogOut size={24} />
+                    </button>
                 </div>
-                <button onClick={handleLogout} className="text-gray-300 hover:text-luminous-blue transition-colors">
-                    <LogOut size={18} />
-                </button>
-            </div>
 
-            <div className="flex-1 overflow-y-auto space-y-6 pr-2">
-                {activityLog.map((log) => (
-                    <div key={log.id} className="bg-white p-6 rounded-[20px] shadow-[0_8px_24px_rgba(0,0,0,0.02)] border border-gray-100 flex gap-4 items-start">
-                        <div className="w-8 h-8 bg-[#F5F5F7] rounded-lg flex items-center justify-center opacity-50 shrink-0">
-                            <log.icon size={16} className="text-[#0A0A0B]" />
+                <div className="flex-1 overflow-y-auto space-y-6 pr-4 custom-scrollbar">
+                    {activityLog.map((log) => (
+                        <div key={log.id} className="bg-white/90 p-10 rounded-[40px] shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-gray-100/30 flex gap-8 items-center transition-all hover:shadow-2xl group cursor-default">
+                            <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-luminous-ink group-hover:bg-blue-50 group-hover:text-luminous-blue transition-all shrink-0">
+                                <log.icon size={28} strokeWidth={1.5} />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-base font-black text-[#0A0A0B] leading-tight mb-2 truncate">{log.message}</p>
+                                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{log.time}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-xs font-bold text-[#0A0A0B] leading-snug mb-1">{log.message}</p>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{log.time}</p>
+                    ))}
+
+                    <div className="p-16 rounded-[40px] border border-dashed border-gray-200/50 flex flex-col items-center justify-center gap-6 text-gray-300 text-[10px] font-black uppercase tracking-[0.4em] mt-12">
+                        <div className="w-4 h-4 rounded-full bg-gray-100 animate-pulse" />
+                        Archive Standby
+                    </div>
+                </div>
+
+                <div className="pt-16 border-t border-gray-100 mt-auto">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center text-luminous-ink font-black text-lg shadow-inner">
+                            {user?.email?.[0].toUpperCase() || "F"}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className={`text-base font-black text-[#0A0A0B] transition-all duration-300 truncate ${privacyMode ? 'blur-md select-none' : ''}`}>
+                                {user?.email || "Founder"}
+                            </p>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.5em] leading-none mt-2">Institutional Admin</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <button 
+                                onClick={() => {
+                                    setLlcData(null);
+                                    setShowDesignation(true);
+                                }}
+                                className="w-12 h-12 rounded-2xl flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all"
+                            >
+                                <RefreshCw size={24} />
+                            </button>
+                            <button className="w-12 h-12 rounded-2xl flex items-center justify-center text-gray-300 hover:text-[#0A0A0B] hover:bg-gray-50 transition-all">
+                                <Settings size={28} />
+                            </button>
                         </div>
                     </div>
-                ))}
-
-                <div className="bg-white/50 p-6 rounded-[20px] border border-dashed border-gray-200 flex items-center justify-center gap-2 text-gray-300 text-xs font-bold uppercase tracking-widest">
-                    <Activity size={14} /> End of Stream
                 </div>
-            </div>
-
-            <div className="pt-8 border-t border-gray-100 mt-auto">
-                <div className="flex items-center gap-4">
-                     <div className="w-10 h-10 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full"></div>
-                     <div>
-                         <p className={`text-xs font-black text-[#0A0A0B] transition-all duration-300 ${privacyMode ? 'blur-sm select-none' : ''}`}>
-                             {user?.email || "Founder"}
-                         </p>
-                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Administrator</p>
-                     </div>
-                     <div className="flex items-center gap-2 ml-auto">
-                        <button 
-                            onClick={() => {
-                                setLlcData(null);
-                                setShowDesignation(true);
-                            }}
-                            title="Reset to Setup (Dev)"
-                            className="text-gray-300 hover:text-red-500 cursor-pointer transition-colors"
-                        >
-                            <RefreshCw size={14} />
-                        </button>
-                        <Settings size={18} className="text-gray-300 hover:text-[#0A0A0B] cursor-pointer transition-colors" />
-                     </div>
-                </div>
-            </div>
-        </aside>
+            </aside>
+        )}
 
       </div>
     </div>
       {/* MODALS */}
-      <FoundersBlueprint 
-          isOpen={isBlueprintOpen} 
-          onClose={() => setIsBlueprintOpen(false)} 
-          llcData={llcData} 
-      />
+      <AnimatePresence>
+      {isBlueprintOpen && (
+          <FoundersBlueprint 
+              isOpen={isBlueprintOpen} 
+              onClose={() => setIsBlueprintOpen(false)} 
+              llcData={llcData} 
+          />
+      )}
+      </AnimatePresence>
 
+      <AnimatePresence>
       <SuccessionSuite 
           isOpen={isSuccessionOpen} 
           onClose={() => setIsSuccessionOpen(false)} 
           companyName={llcData?.llc_name} 
           user={user}
       />
+      </AnimatePresence>
 
+      <AnimatePresence>
       {showDesignation && (
           <DesignationProtocol 
               onComplete={(data) => {
@@ -496,6 +471,26 @@ const DashboardZenith = ({ user, initialData }) => {
               }}
           />
       )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+          {isRAConsoleOpen && (
+              <RegisteredAgentConsole 
+                  isModal={true}
+                  onClose={() => setIsRAConsoleOpen(false)}
+              />
+          )}
+      </AnimatePresence>
+
+      {/* DESIGN TOGGLE */}
+      <div className="design-toggle">
+        <div className={`design-btn ${designMode === 'MONOLITH' ? 'active' : ''}`} onClick={() => setDesignMode('MONOLITH')}>MONOLITH</div>
+        <div className={`design-btn ${designMode === 'SWISS' ? 'active' : ''}`} onClick={() => setDesignMode('SWISS')}>SWISS</div>
+        <div className={`design-btn ${designMode === 'CUPERTINO' ? 'active' : ''}`} onClick={() => setDesignMode('CUPERTINO')}>CUPERTINO</div>
+        <div className={`design-btn ${focusMode ? 'active' : ''} !bg-luminous-blue/20 !text-luminous-blue`} onClick={() => setFocusMode(!focusMode)}>
+            {focusMode ? 'SHOW SIDEBAR' : 'ZENITH FOCUS (NO SIDEBAR)'}
+        </div>
+      </div>
     </>
   );
 };

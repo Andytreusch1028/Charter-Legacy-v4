@@ -2,11 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from './lib/supabase';
 import { 
   Shield, ArrowRight, Lock, Zap, CheckCircle2, Fingerprint, 
-  ChevronRight, X, Building2, Plus, Anchor, 
-  History, Settings, HeartPulse, ShieldCheck, Menu, Brain, Check, Star, CreditCard, Loader2, Mail, Monitor, Box, Wind,
+  ChevronRight, X, Building2, Plus, Anchor, ChevronDown, Minus,
+  History, Settings, HeartPulse, ShieldCheck, Menu, Brain, Check, Star, CreditCard, Loader2, Mail, Box, Wind,
   FileCode, MessageSquare, Clock, FileText, Activity, Landmark, Users
 } from 'lucide-react';
-import VibeGallery from './VibeGallery';
 import FoundersBlueprint from './FoundersBlueprint';
 import SuccessionSuite from './SuccessionSuite';
 import DesignationProtocol from './DesignationProtocol';
@@ -40,105 +39,303 @@ const DesignAgentNote = ({ agent, note }) => (
   </div>
 );
 
-const HeritageVault = ({ willPackage, handleSelection }) => (
-  <section id="protocol" className="py-40 px-6 bg-[#F5F5F7] relative overflow-hidden">
-    {/* Technical Grid Background */}
-    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
-    <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-20%,#FFFFFF_0%,transparent_100%)] opacity-60" />
+const PrivacyShield = ({ privacyPackage, handleSelection }) => {
+  const [hoveredTier, setHoveredTier] = useState(null);
 
-    <div className="max-w-6xl mx-auto relative z-10">
-      {/* The Floating Window */}
-      <div className="bg-white rounded-[40px] shadow-[0_40px_100px_-30px_rgba(0,0,0,0.12)] border border-gray-100 p-12 md:p-20 relative overflow-hidden group/window">
-          
-          {/* Decorative Blur */}
-          <div className="absolute -top-20 -right-20 w-96 h-96 bg-blue-50/50 rounded-full blur-3xl opacity-50 pointer-events-none" />
+  const tiers = [
+    {
+      title: 'Static Safeguard',
+      icon: Shield,
+      features: [
+        { name: 'Private Business Address', desc: 'Florida office nexus provided for state filings.' },
+        { name: 'Director Privacy', desc: 'Your residential information removed from searchable state records.' },
+        { name: 'Compliance Monitoring', desc: 'Technical tracking of statutory deadlines and tax filings.' }
+      ]
+    },
+    {
+      title: 'Proactive Privacy',
+      icon: Lock,
+      features: [
+        { name: 'Data Broker Shield', desc: 'Automated suppression and removal of owner info from public data sites and whitepages.' },
+        { name: 'Privacy-First Templates', desc: 'Operating document templates designed to limit public info disclosure.' },
+        { name: 'Regulatory Buffer', desc: 'We act as the technical primary contact for filtering official inquiries.' }
+      ]
+    }
+  ];
 
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            
-            {/* Left Column: Typography & Features */}
-            <div className="space-y-12 relative z-10">
-               <div className="space-y-8">
-                  <div className="inline-flex items-center gap-3 text-blue-600 text-[10px] font-black uppercase tracking-[0.3em]">
-                     <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
-                     Will • Trust • Estate
-                  </div>
-                  
-                  <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] text-black">
-                     WILL • TRUST <br/>
-                     <span className="text-blue-600 underline decoration-4 decoration-blue-100 underline-offset-8">ESTATE.</span>
-                  </h2>
-                  
-                  <p className="text-xl text-gray-500 font-medium leading-relaxed max-w-md">
-                    "You built the business for them. Now make sure it actually reaches them. The Heritage Vault bridges the gap between today and forever."
-                  </p>
-               </div>
+  return (
+    <section id="anonymity" className="py-40 px-6 bg-[#F9FAFB] text-black relative overflow-hidden">
+      {/* Light Ambient Accents */}
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.05)_0%,transparent_70%)] opacity-100" />
+      <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-blue-50 rounded-full blur-[120px]" />
+      
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="grid lg:grid-cols-2 gap-20 items-center">
+          <div className="space-y-12">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-3 text-blue-600 text-[10px] font-black uppercase tracking-[0.4em]">
+                <div className="w-2 h-2 bg-blue-600 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
+                Anonymity Protocol
+              </div>
+              <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9]">
+                PRIVACY <br/>
+                <span className="text-blue-600 italic-serif lowercase">Shield.</span>
+              </h2>
+              <p className="text-xl text-gray-500 font-medium leading-relaxed max-w-md">
+                "Anonymity is the ultimate insurance policy. If they can't find you, they can't serve you."
+              </p>
+            </div>
 
-               <div className="space-y-4 pt-4">
-                  {[
-                    'Estate Instructions',
-                    'Legacy Protocols',
-                    'Generational Triggers',
-                    'Heir Access Key'
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-4 bg-gray-50/80 p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
-                       <div className="w-5 h-5 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-600">
-                          <Check size={10} strokeWidth={4} />
-                       </div>
-                       <span className="text-xs font-black uppercase tracking-widest text-gray-600">{item}</span>
+            <div className="grid gap-6">
+              {tiers.map((tier, idx) => (
+                <div 
+                  key={idx}
+                  onMouseEnter={() => setHoveredTier(idx)}
+                  onMouseLeave={() => setHoveredTier(null)}
+                  className={`p-8 rounded-[32px] border transition-all duration-700 ${
+                    hoveredTier === idx 
+                      ? 'bg-white border-blue-100 scale-[1.02] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)]' 
+                      : 'bg-white/50 border-gray-100 opacity-80'
+                  }`}
+                >
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <tier.icon size={20} />
                     </div>
-                  ))}
-               </div>
-
-               <button onClick={() => handleSelection(willPackage)} className="group bg-[#1D1D1F] text-white pl-8 pr-2 py-2 rounded-full font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all shadow-xl flex items-center gap-4 w-fit">
-                  Finalize Estate Plan
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-black group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                     <ArrowRight size={16} />
+                    <h3 className="text-xl font-bold uppercase tracking-tight text-gray-900">{tier.title}</h3>
                   </div>
-               </button>
-            </div>
-
-            {/* Right Column: The Product Card */}
-            <div className="relative">
-               <div className="bg-gray-50/80 backdrop-blur-xl rounded-[32px] p-10 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-16 h-16 bg-[#1D1D1F] rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg">
-                     <Anchor size={28} />
-                  </div>
-                  
-                  <h3 className="text-3xl font-black uppercase tracking-tight text-black mb-2">The Heritage Vault</h3>
-                  <div className="flex items-baseline gap-2 mb-8">
-                     <span className="text-blue-600 font-black text-2xl">$199/yr</span>
-                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">/ One-time setup</span>
-                  </div>
-
-                  <p className="text-sm font-medium text-gray-500 leading-relaxed mb-10 italic">
-                     A secure bridge for your family. Encrypted instructions for your heirs + physical access keys.
-                  </p>
-
-                  <div className="space-y-4 mb-10">
-                     {['Encrypted Data Vault', 'Digital Memories', '24/7 Security Audit', 'Generational Access Key', 'Data Broker Shield'].map((f, i) => (
-                        <div key={i} className="flex items-center gap-3">
-                           <CheckCircle2 size={14} className="text-blue-600" />
-                           <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{f}</span>
+                  <div className="space-y-4">
+                    {tier.features.map((f, fIdx) => (
+                      <div key={fIdx} className="group/f transition-all duration-300 hover:scale-[1.08] hover:origin-left cursor-default">
+                        <div className="flex items-center justify-between pointer-events-none">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover/f:text-blue-600 transition-colors">
+                            {f.name}
+                          </span>
                         </div>
-                     ))}
+                        <p className="text-[10px] text-gray-500 mt-1 max-w-xs leading-relaxed group-hover/f:text-gray-900 transition-colors">{f.desc}</p>
+                      </div>
+                    ))}
                   </div>
-
-                  <div className="flex items-center justify-between pt-8 border-t border-gray-200">
-                     <span className="text-[9px] font-black uppercase tracking-widest text-gray-300">Protocol Entry</span>
-                     <button onClick={() => handleSelection(willPackage)} className="w-12 h-12 bg-[#1D1D1F] text-white rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
-                        <ArrowRight size={20} />
-                     </button>
-                  </div>
-               </div>
+                </div>
+              ))}
             </div>
-
           </div>
-      </div>
-    </div>
-  </section>
-);
 
-const PackageCard = ({ title, price, icon: Icon, description, features, active, onClick, badge, isDark }) => (
+          {/* Card Presentation: Vitreous Glass Aesthetic */}
+          <div className="relative group/card cursor-pointer" onClick={() => handleSelection(privacyPackage)}>
+             {/* Soft Blue Glow */}
+             <div className="absolute inset-0 bg-blue-100/50 blur-[100px] transition-all duration-1000 group-hover/card:bg-blue-200/50 scale-110" />
+             
+             <div className="bg-white/80 backdrop-blur-2xl rounded-[48px] p-12 border border-white shadow-[0_50px_100px_-30px_rgba(0,0,0,0.08)] relative transition-transform duration-700 group-hover/card:-translate-y-4">
+                <div className="w-20 h-20 bg-blue-600 text-white rounded-[24px] flex items-center justify-center mb-10 shadow-[0_20px_40px_-10px_rgba(59,130,246,0.4)] transition-transform duration-700 group-hover/card:rotate-6">
+                   <Fingerprint size={36} strokeWidth={1.5} />
+                </div>
+                
+                <h3 className="text-4xl font-black uppercase tracking-tighter mb-4 text-[#1D1D1F]">The Privacy Shield</h3>
+                <div className="flex items-baseline gap-2 mb-8">
+                   <span className="text-blue-600 font-black text-3xl">$499</span>
+                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">/ Secure Select</span>
+                </div>
+
+                <div className="space-y-4 mb-12">
+                   {privacyPackage.features.map((f, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                         <div className="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center">
+                            <Check size={12} className="text-blue-600" strokeWidth={4} />
+                         </div>
+                         <span className="text-[11px] font-bold uppercase tracking-widest text-gray-500">{f}</span>
+                      </div>
+                   ))}
+                </div>
+
+                <div className="flex items-center justify-between pt-10 border-t border-gray-100">
+                   <div className="space-y-1">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 block">System Architecture</span>
+                      <span className="text-[8px] font-medium text-blue-600/60 uppercase tracking-[0.2em]">Institutional Grade</span>
+                   </div>
+                   <div className="w-16 h-16 bg-[#1D1D1F] text-white rounded-2xl flex items-center justify-center group-hover/card:bg-blue-600 transition-all duration-500 shadow-lg">
+                      <ArrowRight size={24} />
+                   </div>
+                </div>
+             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const HeritageVault = ({ willPackage, handleSelection }) => {
+  const [activeItem, setActiveItem] = useState(0);
+  const [activeFeature, setActiveFeature] = useState(null);
+
+  const protocols = [
+    { 
+      label: 'Estate Instructions', 
+      desc: 'Encrypted step-by-step guides for your heirs to access accounts, unlock physical assets, and manage your legacy without a lawyer.' 
+    },
+    { 
+      label: 'Legacy Protocols', 
+      desc: 'Institutional-grade safety nets that trigger based on time or verified life events, ensuring your business stays operational.' 
+    },
+    { 
+      label: 'Generational Triggers', 
+      desc: 'Smart-contracts for your legacy. Automatically transfer specific data, keys, or access codes to the right person at the right time.' 
+    },
+    { 
+      label: 'Heir Access Key', 
+      desc: 'A physical obsidian-grade hardware key linked to your Zero-Knowledge Vault. The only bridge between your digital legacy and your family.' 
+    }
+  ];
+
+  const vaultFeatures = [
+    { name: 'Encrypted Data Vault', desc: 'A zero-knowledge repository. Secure documents with AES-256 encryption that even we cannot unlock.' },
+    { name: 'Digital Memories', desc: 'Securely store messages and media for your heirs, released only when your protocol triggers.' },
+    { name: '24/7 Security Audit', desc: 'Live monitoring of your vault. Every login and document view is recorded in an immutable audit trail.' },
+    { name: 'Generational Access Key', desc: 'Bypass probate with physical and digital keys designed for immediate legacy transfer.' },
+    { name: 'Digital Continuity Plan', desc: 'A comprehensive map of your digital life, ensuring no asset is lost or locked forever.' }
+  ];
+
+  return (
+    <section id="protocol" className="py-40 px-6 bg-[#F5F5F7] relative overflow-hidden">
+      {/* Technical Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-20%,#FFFFFF_0%,transparent_100%)] opacity-60" />
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="bg-white rounded-[40px] shadow-[0_40px_100px_-30px_rgba(0,0,0,0.12)] border border-gray-100 p-12 md:p-20 relative overflow-hidden group/window">
+            <div className="absolute -top-20 -right-20 w-96 h-96 bg-blue-50/50 rounded-full blur-3xl opacity-50 pointer-events-none" />
+
+            <div className="grid lg:grid-cols-2 gap-20 items-center">
+              <div className="space-y-12 relative z-10">
+                 <div className="space-y-8">
+                    <div className="inline-flex items-center gap-3 text-blue-600 text-[10px] font-black uppercase tracking-[0.3em]">
+                       <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
+                       Will • Trust • Estate
+                    </div>
+                    <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] text-black">
+                       WILL • TRUST <br/>
+                       <span className="text-blue-600 underline decoration-4 decoration-blue-100 underline-offset-8">ESTATE.</span>
+                    </h2>
+                    <p className="text-xl text-gray-500 font-medium leading-relaxed max-w-md">
+                      "You built the business for them. Now make sure it actually reaches them."
+                    </p>
+                 </div>
+
+                 <div className="space-y-4 pt-4">
+                    {protocols.map((item, i) => (
+                      <div 
+                        key={i} 
+                        onClick={() => setActiveItem(i === activeItem ? null : i)}
+                        className={`overflow-hidden transition-all duration-500 cursor-pointer rounded-2xl border ${
+                          activeItem === i 
+                            ? 'bg-blue-600 border-blue-600 shadow-xl scale-[1.02]' 
+                            : 'bg-gray-50/80 border-gray-100 hover:bg-gray-100'
+                        }`}
+                      >
+                         <div className="p-5 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                               <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+                                 activeItem === i ? 'bg-white text-blue-600' : 'bg-blue-600/10 text-blue-600'
+                               }`}>
+                                  <Check size={12} strokeWidth={4} />
+                               </div>
+                               <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${
+                                 activeItem === i ? 'text-white' : 'text-gray-600'
+                               }`}>{item.label}</span>
+                            </div>
+                            <ChevronDown size={14} className={`transition-transform duration-500 ${
+                              activeItem === i ? 'text-white rotate-180' : 'text-gray-300'
+                            }`} />
+                         </div>
+                         <div className={`transition-all duration-500 ease-in-out ${
+                           activeItem === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                         }`}>
+                            <div className="px-14 pb-5">
+                               <p className={`text-[11px] leading-relaxed font-medium transition-colors ${
+                                 activeItem === i ? 'text-white/80' : 'text-gray-500'
+                               }`}>
+                                  {item.desc}
+                               </p>
+                            </div>
+                         </div>
+                      </div>
+                    ))}
+                 </div>
+
+                 <button onClick={() => handleSelection(willPackage)} className="group bg-[#1D1D1F] text-white pl-8 pr-2 py-2 rounded-full font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all shadow-xl flex items-center gap-4 w-fit">
+                    Finalize Estate Plan
+                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-black group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                       <ArrowRight size={16} />
+                    </div>
+                 </button>
+              </div>
+
+              {/* Right Column: The Product Card */}
+              <div className="relative">
+                 <div className="bg-gray-50/80 backdrop-blur-xl rounded-[32px] p-10 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-16 h-16 bg-[#1D1D1F] rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg">
+                       <Anchor size={28} />
+                    </div>
+                    
+                    <h3 className="text-3xl font-black uppercase tracking-tight text-black mb-2">The Heritage Vault</h3>
+                    <div className="flex items-baseline gap-2 mb-8">
+                       <span className="text-blue-600 font-black text-2xl">$199/yr</span>
+                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">/ One-time setup</span>
+                    </div>
+
+                    <p className="text-sm font-medium text-gray-500 leading-relaxed mb-10 italic">
+                       A secure bridge for your family. Encrypted instructions for your heirs + physical access keys.
+                    </p>
+
+                    <div className="space-y-2 mb-10 relative">
+                       {vaultFeatures.map((f, i) => (
+                          <div 
+                            key={i} 
+                            className={`transition-all duration-500 rounded-2xl ${
+                              activeFeature === i ? 'bg-blue-600/5 ring-1 ring-blue-600/20' : ''
+                            }`}
+                          >
+                            <div 
+                              onClick={() => setActiveFeature(activeFeature === i ? null : i)}
+                              className="flex items-center justify-between cursor-pointer group/feat p-3"
+                            >
+                               <div className="flex items-center gap-3">
+                                  <CheckCircle2 size={14} className={activeFeature === i ? "text-blue-600 animate-pulse" : "text-blue-600 opacity-40 group-hover/feat:opacity-100 transition-opacity"} />
+                                  <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${activeFeature === i ? 'text-blue-600' : 'text-gray-400 group-hover/feat:text-gray-600'}`}>
+                                    {f.name}
+                                  </span>
+                               </div>
+                               <Plus size={12} className={`text-gray-300 transition-transform duration-500 ${activeFeature === i ? 'rotate-45 text-blue-600' : ''}`} />
+                            </div>
+
+                            <div className={`transition-all duration-500 ease-in-out px-10 overflow-hidden ${
+                              activeFeature === i ? 'max-h-24 pb-4 opacity-100' : 'max-h-0 opacity-0'
+                            }`}>
+                               <p className="text-[10px] font-medium leading-relaxed italic text-gray-500">
+                                 {f.desc}
+                               </p>
+                            </div>
+                          </div>
+                       ))}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-8 border-t border-gray-200">
+                       <span className="text-[9px] font-black uppercase tracking-widest text-gray-300">Protocol Entry</span>
+                       <button onClick={() => handleSelection(willPackage)} className="w-12 h-12 bg-[#1D1D1F] text-white rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+                          <ArrowRight size={20} />
+                       </button>
+                    </div>
+                 </div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const PackageCard = ({ title, price, icon: Icon, protectionLevel, description, features, active, onClick, badge, isDark }) => (
   <div 
     onClick={onClick} 
     className={`group relative transition-all duration-[0.8s] ease-out cursor-pointer p-10 rounded-[40px] border flex flex-col h-full animate-in fade-in slide-in-from-bottom-12 duration-1000 ${
@@ -153,10 +350,25 @@ const PackageCard = ({ title, price, icon: Icon, description, features, active, 
       </div>
     )}
     
-    <div className={`w-16 h-16 rounded-[20px] flex items-center justify-center mb-10 transition-all duration-700 ${
-      active ? 'bg-luminous-ink text-white rotate-6' : 'bg-white/80 text-gray-400 group-hover:text-luminous-ink'
-    } shadow-sm border border-black/5`}>
-      <Icon size={30} strokeWidth={1} />
+    <div className="flex justify-between items-start mb-10">
+      <div className={`w-16 h-16 rounded-[20px] flex items-center justify-center transition-all duration-700 ${
+        active ? 'bg-luminous-ink text-white rotate-6' : 'bg-white/80 text-gray-400 group-hover:text-luminous-ink'
+      } shadow-sm border border-black/5`}>
+        <Icon size={30} strokeWidth={1} />
+      </div>
+      
+      <div className="flex gap-1.5 pt-4">
+        {[1, 2, 3].map((lv) => (
+          <div 
+            key={lv} 
+            className={`w-2 h-2 rounded-full transition-all duration-500 ${
+              lv <= protectionLevel 
+                ? (active ? 'bg-luminous-blue shadow-[0_0_10px_rgba(0,122,255,0.5)]' : 'bg-luminous-ink') 
+                : 'bg-gray-200'
+            }`} 
+          />
+        ))}
+      </div>
     </div>
 
     <div className="space-y-4 mb-10 text-left">
@@ -237,7 +449,6 @@ export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [appUser, setAppUser] = useState(null);
-  const [showVibeGallery, setShowVibeGallery] = useState(false);
   const [showDoubleLLCExplainer, setShowDoubleLLCExplainer] = useState(false); // 2. Add showDoubleLLCExplainer state
 
   useEffect(() => {
@@ -278,27 +489,30 @@ export default function App() {
       title: "The Founder’s Shield", 
       price: "$249", 
       icon: ShieldCheck, 
+      includedProtocols: [1],
       description: "Institutional privacy for the modern founder. We keep your home address off the grid.", 
       plainEnglish: "Your personal address shouldn't be public. We use our secure Florida office for your official filings so you can build in private.",
-      features: ['Private Business Address', 'Mail Scanning Included', 'The Founder’s Guide', 'Heritage Intake Form'] 
+      features: ['Statutory Compliance', 'Private Business Address', 'Mail Scanning Included', 'Heritage Intake Form'] 
     },
     { 
       id: 'medical', 
       title: "The Clinician’s Charter", 
       price: "$499", 
       icon: HeartPulse, 
+      includedProtocols: [1, 2],
       description: "Dignified structures for medical professionals. Privacy for those who provide care.", 
       plainEnglish: "For doctors and practitioners. We handle the specialized paperwork needed for a Professional LLC while protecting your home privacy.",
-      features: ['Board-Ready Structure', 'Clinician Privacy Forms', 'Regulatory Assistance', 'Heritage Intake Form'] 
+      features: ['Advanced Privacy', 'Board-Ready Structure', 'Clinician Privacy Forms', 'Regulatory Assistance'] 
     },
     { 
       id: 'contractor', 
       title: "The Builder’s Blueprint", 
       price: "$599", 
       icon: Building2, 
+      includedProtocols: [1],
       description: "Solid foundations for trades and contractors. From site-work to state-filing.", 
       plainEnglish: "For those who build Florida. we handle your entity formation and help link your professional license to your new company.",
-      features: ['License Linking Support', 'Qualifier Certification', 'Permit-Ready Filing', 'Heritage Intake Form'] 
+      features: ['Statutory Compliance', 'License Linking Support', 'Qualifier Certification', 'Permit-Ready Filing'] 
     }
   ];
 
@@ -307,9 +521,22 @@ export default function App() {
     title: "The Heritage Vault", 
     price: "$199/yr", 
     icon: Anchor, 
+    includedProtocols: [3],
     description: "A secure bridge for your family. Encrypted instructions for your heirs.", 
     plainEnglish: "Make sure what you build stays with the people you love. A private, digital vault for your maps, keys, and final instructions.",
-    features: ['Encrypted Data Vault', 'Digital Memories (Coming Soon)', '24/7 Security Audit', 'Generational Access Key']
+    features: ['Encrypted Data Vault', 'Digital Memories', '24/7 Security Audit', 'Generational Access Key', 'Digital Continuity Plan']
+  };
+
+  const privacyPackage = {
+    id: 'privacy_shield',
+    title: "The Privacy Shield",
+    price: "$499",
+    icon: Fingerprint,
+    includedProtocols: [2],
+    description: "Full-spectrum anonymity for your business and personal identity.",
+    plainEnglish: "Don't let your business reveal your home. We scrub your name from public records and provide a secure wall between you and the public.",
+    features: ['Full Director Privacy', 'Private Physical Nexus', 'Data Broker Shield', 'Technical Buffer', 'Compliance Monitoring']
+
   };
 
   const handleSelection = (pkg) => {
@@ -333,7 +560,6 @@ export default function App() {
         onClose={() => setIsLoginOpen(false)} 
         onSuccess={handleDashboardTransition} 
       />
-      {showVibeGallery && <VibeGallery onClose={() => setShowVibeGallery(false)} />}
       <DoubleLLCExplainer isOpen={showDoubleLLCExplainer} onClose={() => setShowDoubleLLCExplainer(false)} /> {/* 4. Render DoubleLLCExplainer component */}
 
       <nav className={`fixed top-0 w-full z-50 h-24 transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-md border-b border-gray-100/50 shadow-sm' : 'bg-transparent'} flex items-center justify-between px-6 md:px-12`}>
@@ -381,12 +607,6 @@ export default function App() {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 Launch Entity <ChevronRight size={18} />
-              </button>
-              <button 
-                onClick={() => setShowVibeGallery(true)}
-                className="h-16 px-10 rounded-2xl vitreous-glass text-luminous-ink font-black uppercase tracking-widest hover:bg-luminous-ink hover:text-white transition-all flex items-center gap-3 shadow-xl border border-luminous-ink/5"
-              >
-                Strategy Audit <Monitor size={18} />
               </button>
             </div>
           </div>
@@ -455,6 +675,7 @@ export default function App() {
                                             title: 'The Sovereign Strategy',
                                             price: '$999',
                                             icon: Shield,
+                                            protectionLevel: 3,
                                             description: 'The ultimate privacy architecture. Dual-entity structure for absolute anonymity.',
                                             plainEnglish: 'We set up two companies for you. One in Florida to do business, and one in Wyoming to own the Florida company so your name never appears on Sunbiz.',
                                             features: ['Florida Operating LLC', 'Wyoming Holding LLC', 'Registered Agent for Both', 'EIN for Both', 'Inter-Company Agreement']
@@ -524,6 +745,8 @@ export default function App() {
 
         {/* REGISTERED AGENT CONSOLE (THE SOVEREIGN SLAB) */}
         <RegisteredAgentConsole />
+
+        <PrivacyShield privacyPackage={privacyPackage} handleSelection={handleSelection} />
 
         <HeritageVault willPackage={willPackage} handleSelection={handleSelection} />
       </main>

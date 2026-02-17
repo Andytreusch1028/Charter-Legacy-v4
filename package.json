@@ -23,6 +23,7 @@
     "@stripe/stripe-js": "^8.7.0",
     "@supabase/supabase-js": "^2.49.1",
     "dotenv": "^16.4.7",
+    "framer-motion": "^12.34.0",
     "lucide-react": "^0.344.0",
     "pdf-lib": "^1.17.1",
     "playwright": "^1.50.0",

@@ -244,37 +244,11 @@ const SpecSheet = ({ item, isOpen, onClose, onSuccess }) => {
                 <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">{item.title}</h2>
              </div>
              
-             <div className="space-y-4">
-                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Protocol Architecture:</p>
-                <div className="grid gap-4">
-                    {[
-                      { id: 1, name: 'Registered Agent Nexus', sub: 'Statutory Compliance & Legal Foundation' },
-                      { id: 2, name: 'Anonymity Shield', sub: 'Privacy Protection & Information Shield' },
-                      { id: 3, name: 'Heritage Protocol', sub: 'Legacy & Continuity Protocols' }
-                    ].filter(p => item.id === 'will' ? p.id === 3 : true)
-                     .map((p) => {
-                       const isActive = (item.includedProtocols || []).includes(p.id);
-                       return (
-                         <div key={p.id} className={`p-5 rounded-2xl border flex items-center justify-between transition-all ${
-                           isActive 
-                             ? 'bg-black text-white border-black shadow-lg scale-[1.02]' 
-                             : 'bg-gray-50 border-gray-100 opacity-40 blur-[0.5px]'
-                         }`}>
-                            <div>
-                               <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">{p.name}</p>
-                               <p className={`text-[9px] font-medium leading-none ${isActive ? 'text-gray-400' : 'text-gray-500'}`}>{p.sub}</p>
-                            </div>
-                            {isActive ? (
-                               <div className="w-6 h-6 rounded-full bg-[#00D084] flex items-center justify-center text-black">
-                                  <Check size={14} strokeWidth={4} />
-                               </div>
-                            ) : (
-                               <Lock size={14} className="text-gray-300" />
-                            )}
-                         </div>
-                       );
-                     })}
-                </div>
+             <div className="bg-[#F5F5F7] p-6 rounded-2xl border border-gray-100/50">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">What you're actually getting:</p>
+                <p className="text-base text-gray-600 font-medium leading-relaxed">
+                  "{item.plainEnglish}"
+                </p>
              </div>
 
              {/* FEDERAL COMPLIANCE TOGGLE - OPTION 2 */}

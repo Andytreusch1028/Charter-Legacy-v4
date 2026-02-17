@@ -1,0 +1,46 @@
+# Sovereign Access Coin: Image Generation Prompts
+Use these prompts in your rendering tool (Google Nanbanana, Midjourney, etc.) to visualize the parts.
+
+## PROMPT 1: The Cap (Top Face - Hero View)
+**Subject:** Top-down view of the "Cap" (Top Face) of the 3D printed Sovereign Coin.
+**Reference Style:** Matte Black Carbon Fiber finish with deep relief.
+**Geometry:** Circular disc, 50mm diameter.
+**Details:**
+- **Center Logo:** A **raised, thick Shield emblem** with a chamfered edge. Inside the shield is a **deeply recessed, classic Keyhole** shape. The stylized shield represents 'Access'.
+- **Rim Text:** DEBOSSED text running around the rim: **"SOVEREIGN // ACCESS // SOVEREIGN // ACCESS //"** (Repeated).
+- **Texture:** Visible "Carbon Fiber" texture (flecked matte black).
+- **Edge:** Deep, heavy **vertical knurling**.
+**Lighting:** Dramatic studio lighting. Cool blue rim light from the left, Warm gold rim light from the right. Dark background.
+
+---
+
+## PROMPT 2: The Base (Open Internal View)
+**Subject:** Top-down view of the "Base" part of the screw-top coin.
+**Material:** Matte Black Carbon Fiber PLA.
+**Geometry:** A circular disc, 50mm diameter.
+**Details:**
+- **Outer Wall:** Features fine **male screw threads (M45x1.5)** running along the outer vertical edge.
+- **Center:** A clean, square recessed area (indentation) in the middle of the flat floor. This recess is empty (ready for a sticker).
+- **Thickness:** The part looks thin (3mm).
+**Lighting:** Studio lighting from above to cast shadows into the square recess and highlight the ridges of the screw threads.
+
+---
+
+## PROMPT 3: The Cap (Internal Underside View)
+**Subject:** Bottom-up view of the "Cap" part (flipped over).
+**Material:** Matte Black Carbon Fiber.
+**Geometry:** Circular disc.
+**Details:**
+- **Inner Wall:** Features **female screw threads** on the *inside* of the rim, designed to screw onto the Base.
+- **Surface:** Smooth, flat internal surface.
+**Lighting:** Soft lighting to show the internal threading clearly.
+
+---
+
+## PROMPT 4: Exploded Assembly View
+**Subject:** An exploded view of the "Screw-Top Vault Coin".
+**Composition:**
+- **Bottom:** The Base part, flat on the ground, revealing the square recess with a **QR Code sticker** inside it.
+- **Top:** The Cap part, hovering just above the Base, ready to screw down.
+- **Context:** The M45 threads on the Base are clearly visible.
+**Style:** Technical product visualization, dark background, "spy gear" aesthetic.

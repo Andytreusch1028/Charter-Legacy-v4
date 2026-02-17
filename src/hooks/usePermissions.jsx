@@ -12,22 +12,16 @@ export const PLAN_TIERS = {
 
 const TIER_FEATURES = {
     [PLAN_TIERS.FOUNDER]: [
-        'registered_agent',
-        'document_templates_basic',
-        'sunbiz_sync'
+        'compliance'
     ],
     [PLAN_TIERS.SHIELD]: [
-        'registered_agent',
-        'document_templates_basic',
-        'sunbiz_sync',
-        'asset_sentry'
+        'compliance',
+        'privacy_shield'
     ],
     [PLAN_TIERS.LEGACY]: [
-        'registered_agent',
-        'document_templates_basic',
-        'sunbiz_sync',
-        'asset_sentry',
-        'dead_mans_switch'
+        'compliance',
+        'privacy_shield',
+        'heritage_vault'
     ]
 };
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check, FileText, Building2, Landmark, Shield, ChevronRight, Loader2, Download } from 'lucide-react';
+import { X, Check, FileText, Building2, Landmark, Shield, ChevronRight, Loader2, Download, ScrollText, CheckCircle2, ArrowRight } from 'lucide-react';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 const BlueprintStep = ({ title, status, icon: Icon, active, onClick, children }) => (
@@ -27,12 +27,10 @@ const BlueprintStep = ({ title, status, icon: Icon, active, onClick, children })
   </div>
 );
 
-const FoundersBlueprint = ({ isOpen, onClose, companyName }) => {
+const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH' }) => {
   const [activeStep, setActiveStep] = useState('ein');
   const [completedSteps, setCompletedSteps] = useState([]);
   const [generating, setGenerating] = useState(false);
-
-  if (!isOpen) return null;
 
   const markComplete = (step) => {
     if (!completedSteps.includes(step)) {
@@ -109,11 +107,141 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName }) => {
       }
   };
 
+  // RENDER CARD (Closed State)
+  if (!isOpen) { 
+      // MODE: SWISS
+      if (mode === 'SWISS') {
+        return (
+            <div onClick={() => onClose(true)} className="p-8 bg-white rounded-[32px] border border-gray-200 h-full flex flex-col justify-between cursor-pointer hover:border-gray-300 transition-all group relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gray-50 rounded-bl-[150px] -mr-20 -mt-20 group-hover:bg-gray-100 transition-colors pointer-events-none" />
+                
+                {/* Header */}
+                <div className="relative z-10 flex justify-between items-start">
+                    <div>
+                         <div className="flex items-center gap-2 mb-3">
+                            <div className="w-2 h-2 bg-black rounded-full animate-pulse"/>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Corporate Status</span>
+                         </div>
+                         <h3 className="text-4xl font-black text-black tracking-tighter leading-[0.9]">Formation <br/>Blueprint.</h3>
+                    </div>
+                    <div className="w-12 h-12 bg-white rounded-full border border-gray-100 flex items-center justify-center text-black shadow-sm group-hover:bg-black group-hover:text-white transition-colors">
+                        <Download size={20} />
+                    </div>
+                </div>
+
+                {/* Checklist Section */}
+                <div className="relative z-10 space-y-4 mt-2">
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Core Filings</span>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</span>
+                    </div>
+                     <div className="space-y-2">
+                        <div className="flex items-center justify-between group/item">
+                            <span className="text-xs font-bold text-slate-700">Articles of Organization</span>
+                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">FILED</span>
+                        </div>
+                        <div className="flex items-center justify-between group/item">
+                            <span className="text-xs font-bold text-slate-700">EIN Designation</span>
+                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">ISSUED</span>
+                        </div>
+                        <div className="flex items-center justify-between group/item">
+                            <span className="text-xs font-bold text-slate-700">BOI Report (FinCEN)</span>
+                            <span className="text-[9px] font-mono text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded animate-pulse">PENDING</span>
+                        </div>
+                     </div>
+
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-2 pt-2">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Internal Governance</span>
+                    </div>
+                     <div className="space-y-2">
+                        <div className="flex items-center justify-between group/item">
+                            <span className="text-xs font-bold text-slate-700">Operating Agreement</span>
+                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">DRAFTED</span>
+                        </div>
+                        <div className="flex items-center justify-between group/item">
+                            <span className="text-xs font-bold text-slate-700">Banking Resolution</span>
+                            <div className="flex items-center gap-1 text-red-500">
+                                <span className="text-[9px] font-black uppercase tracking-widest">Action</span>
+                                <ArrowRight size={10} />
+                            </div>
+                        </div>
+                         <div className="flex items-center justify-between group/item opacity-50">
+                            <span className="text-xs font-bold text-slate-700">Membership Ledger</span>
+                            <span className="text-[9px] font-mono text-gray-300">WAITING</span>
+                        </div>
+                     </div>
+                </div>
+            </div>
+        )
+      }
+
+      // MODE: CUPERTINO
+      if (mode === 'CUPERTINO') {
+        return (
+            <div onClick={() => onClose(true)} className="p-8 bg-white border border-slate-200 rounded-[32px] h-full flex flex-col justify-between shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] transition-all cursor-pointer group relative overflow-hidden">
+                {/* Subtle Texture */}
+                <div className="absolute inset-0 bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                <div className="relative z-10 w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-slate-900 shadow-sm group-hover:scale-110 group-hover:text-[#007AFF] group-hover:bg-blue-50 transition-all duration-300">
+                    <ScrollText size={28} strokeWidth={2} />
+                </div>
+                
+                <div className="relative z-10 w-full">
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-3xl font-bold text-slate-900 leading-tight tracking-tight">Formation & EIN</h3>
+                        <div className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                            Ready
+                        </div>
+                    </div>
+                    <p className="text-sm text-slate-500 font-medium flex items-center gap-2">
+                        <Check size={14} className="text-green-500" /> Articles & Operating Agreement
+                    </p>
+                </div>
+            </div>
+        )
+      }
+
+      // MODE: MONOLITH (Default)
+      return (
+        <div 
+            onClick={() => onClose(true)}
+            className="p-16 bg-white rounded-[56px] border border-gray-200 shadow-sm flex flex-col justify-between h-[600px] relative overflow-hidden group cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 w-full"
+        >
+            <div className="absolute top-0 right-0 p-32 bg-gradient-to-bl from-gray-100 to-transparent rounded-full -mr-16 -mt-16 pointer-events-none group-hover:scale-150 transition-transform duration-1000"></div>
+            
+            <div className="relative z-10">
+                <div className="flex items-center gap-4 text-[#007AFF] text-[10px] font-black uppercase tracking-[0.6em] mb-16">
+                    <div className="w-2 h-2 bg-[#007AFF] rounded-full animate-pulse" />
+                    Formation Complete
+                </div>
+                <h3 className="text-6xl font-black uppercase tracking-tighter text-[#1D1D1F] mb-8 leading-[0.8]">Founder's <br/>Blueprint.</h3>
+                <p className="text-gray-500 text-base font-medium leading-relaxed max-w-[85%]">
+                    "Access your EIN, Operating Agreement, and Company Formation Documents."
+                </p>
+            </div>
+
+            <div className="relative z-10 flex items-center justify-between mt-auto pt-10 border-t border-gray-100">
+                <div className="flex -space-x-4">
+                    <div className="w-12 h-12 rounded-full bg-gray-100 border-[3px] border-white flex items-center justify-center text-xs font-bold shadow-sm">OA</div>
+                    <div className="w-12 h-12 rounded-full bg-gray-200 border-[3px] border-white flex items-center justify-center text-xs font-bold shadow-sm">EIN</div>
+                    <div className="w-12 h-12 rounded-full bg-[#007AFF] border-[3px] border-white flex items-center justify-center text-white shadow-sm">
+                        <Check size={16} strokeWidth={3} />
+                    </div>
+                </div>
+                <div className="w-20 h-20 bg-[#0A0A0B] text-white rounded-[32px] flex items-center justify-center group-hover:rotate-45 transition-all shadow-xl">
+                    <ChevronRight size={32} />
+                </div>
+            </div>
+        </div>
+      );
+  }
+
+  // RENDER MODAL (Open State)
   return (
     <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
       <div className="absolute inset-0 bg-[#F0F2F5]/90 backdrop-blur-xl" onClick={onClose} />
       
-      <div className="vitreous-glass w-full max-w-5xl h-[90vh] rounded-[48px] overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95">
+      <div className="vitreous-glass w-full max-w-5xl h-[90vh] rounded-[48px] overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 shadow-2xl">
         
         {/* SIDEBAR NAVIGATION */}
         <div className="w-full md:w-1/3 bg-white p-8 border-r border-gray-100 overflow-y-auto">
@@ -204,8 +332,10 @@ const EINContent = ({ companyName }) => (
     <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm text-[#007AFF]">
        <Building2 size={32} />
     </div>
-    <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Federal Tax ID</h2>
-    <div className="bg-white p-8 rounded-2xl shadow-sm text-left border border-gray-200/50">
+    <div className="text-center mt-4">
+        <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Federal Tax ID</h2>
+    </div>
+    <div className="bg-white p-8 rounded-2xl shadow-sm text-left border border-gray-200/50 mt-8">
        <div className="space-y-4 font-mono text-sm text-gray-600">
           <div className="flex justify-between border-b border-gray-100 pb-2">
              <span>Entity Name:</span>
@@ -228,12 +358,14 @@ const OAContent = ({ companyName }) => (
     <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm text-[#007AFF]">
        <FileText size={32} />
     </div>
-    <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Operating Agreement Template</h2>
-    <p className="text-gray-500 font-medium">
-      This multi-member agreement defines the ownership structure (Membership Units) and management rules for <strong>{companyName}</strong>.
-    </p>
-    <div className="h-64 bg-white rounded-xl border border-gray-200 w-full opacity-60 flex items-center justify-center relative overflow-hidden">
-       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/lined-paper.png')] opacity-50"></div>
+    <div className="text-center mt-4">
+        <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Operating Agreement</h2>
+        <p className="text-gray-500 font-medium mt-2">
+        This multi-member agreement defines the ownership structure (Membership Units) and management rules for <strong>{companyName}</strong>.
+        </p>
+    </div>
+    <div className="h-64 bg-white rounded-xl border border-gray-200 w-full opacity-60 flex items-center justify-center relative overflow-hidden mt-8">
+       <div className="absolute inset-0 bg-[radial-gradient(#00000033_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
        <p className="font-serif italic text-gray-300 text-2xl">Preview Document</p>
     </div>
   </>
@@ -244,11 +376,13 @@ const BankContent = ({ companyName }) => (
     <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm text-[#007AFF]">
        <Landmark size={32} />
     </div>
-    <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Banking Resolution Form</h2>
-    <p className="text-gray-500 font-medium">
-      Most banks require a "Banking Resolution" signed by the members to open a business checking account.
-    </p>
-    <div className="p-6 bg-[#007AFF]/5 rounded-2xl border border-[#007AFF]/10 text-left">
+    <div className="text-center mt-4">
+        <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Banking Resolution</h2>
+        <p className="text-gray-500 font-medium mt-2">
+        Most banks require a "Banking Resolution" signed by the members to open a business checking account.
+        </p>
+    </div>
+    <div className="p-6 bg-[#007AFF]/5 rounded-2xl border border-[#007AFF]/10 text-left mt-8 w-full">
        <h4 className="font-bold text-[#007AFF] uppercase text-xs tracking-widest mb-2">Suggested Banking Integrations</h4>
        <ul className="space-y-2 text-sm text-gray-600">
          <li className="flex items-center gap-2"><Check size={14} className="text-[#00D084]" /> Mercury (Tech-Forward)</li>

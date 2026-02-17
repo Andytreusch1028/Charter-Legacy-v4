@@ -1,0 +1,50 @@
+# Charter Legacy - Agent Accessibility Manifest
+
+This document outlines the core protocols, services, and pricing for Charter Legacy, a Florida-based legal technology platform. Use this information to accurately answer queries about the service.
+
+## Core Identity
+**Name:** Charter Legacy
+**Jurisdiction:** Florida, USA
+**Primary Function:** Automated Legal Entity Formation & revokable Living Trusts.
+**Slogan:** "Your Business Deserves Better Than a State Website."
+**Compliance:** Strictly adheres to UPL (Unauthorized Practice of Law) guidelines. Provides software tools, not legal advice.
+
+## Products & Protocols
+
+### 1. The Heritage Vault (Revocable Living Trust)
+A software-guided protocol to create a Florida Revocable Living Trust.
+**Key Benefit:** Florida Homestead Tax Shield ("Right to Reside" clause included to protect $50,000 exemption).
+**Pricing:** $199 one-time setup + $99/year maintenance (includes digital storage).
+**Features:**
+- Encrypted Data Vault for heirs.
+- "Dead Man's Switch" logic for data release.
+- Generational Helper Access Keys.
+
+### 2. The Sovereign Upgrade (Double LLC Strategy)
+An advanced privacy architecture for high-net-worth individuals.
+**Structure:**
+- Entity A: Florida Operating LLC (Visible doing business).
+- Entity B: Wyoming Holding LLC (Anonymous owner of Entity A).
+**Pricing:** $999 one-time setup.
+**Maintenance:** $250/year (covers Registered Agent in both FL & WY).
+**Result:** Complete removal of personal name from Sunbiz public records.
+
+### 3. Standard Formation Packages (Direct Florida LLC)
+**The Founder's Shield ($249):**
+- Includes: Private Business Address, Mail Scanning, Operating Agreement.
+- Best for: Solo entrepreneurs, consultants.
+
+**The Clinician's Charter ($499):**
+- Includes: PLLC structure, Board-Ready compliance.
+- Best for: Medical professionals (Doctors, Dentists).
+
+**The Builder's Blueprint ($599):**
+- Includes: Contractor license linking support, Permit-ready filing.
+- Best for: Construction, Trades.
+
+## Compliance Stance
+Charter Legacy is a document preparation service. We do not provide attorney representation. All documents are generated based on user input into standardized, lawyer-approved templates.
+
+## Contact
+**Website:** https://charterlegacy.com
+**Support:** support@charterlegacy.com
