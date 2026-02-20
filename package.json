@@ -26,9 +26,11 @@
     "framer-motion": "^12.34.0",
     "lucide-react": "^0.344.0",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.4.624",
     "playwright": "^1.50.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",

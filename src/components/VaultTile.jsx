@@ -37,9 +37,22 @@ const VaultTile = ({ onClick, locked, mode = 'MONOLITH' }) => {
                             </p>
                         </div>
                         <div className="relative z-10 flex flex-col items-center justify-center gap-6 mt-auto">
-                            <div className="w-24 h-24 rounded-[32px] bg-[#111] border border-white/5 flex items-center justify-center text-gray-500 shadow-[0_0_30px_rgba(0,0,0,1)] group-hover:scale-110 group-hover:text-luminous-gold transition-all duration-500">
-                                <Lock size={32} strokeWidth={1.5} />
+                            {/* VAULT DOOR VISUAL */}
+                            <div className="w-56 h-56 rounded-full border-[3px] border-white/10 relative flex items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-black/50 overflow-hidden group-hover:border-luminous-gold/30 transition-all duration-700">
+                                {/* Rotating Ring 1 */}
+                                <div className="absolute inset-0 rounded-full border border-dashed border-white/20 animate-[spin_10s_linear_infinite]" />
+                                {/* Rotating Ring 2 (Counter) */}
+                                <div className="absolute inset-4 rounded-full border-[2px] border-white/5 animate-[spin_15s_linear_infinite_reverse]" />
+                                {/* Inner Circle */}
+                                <div className="absolute inset-12 rounded-full border border-white/10 bg-gradient-to-br from-gray-900 to-black flex items-center justify-center shadow-inner">
+                                    <div className="w-20 h-20 rounded-full bg-[#0A0A0B] border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                                        <Lock size={32} strokeWidth={1.5} className="text-gray-500 group-hover:text-luminous-gold transition-colors duration-500" />
+                                    </div>
+                                </div>
+                                {/* Glow Effect */}
+                                <div className="absolute inset-0 bg-luminous-gold/5 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                             </div>
+                            
                             <div className="space-y-2 text-center">
                                 <div className="px-4 py-1.5 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-[0.3em] text-gray-400">
                                     Restricted Protocol
@@ -54,10 +67,23 @@ const VaultTile = ({ onClick, locked, mode = 'MONOLITH' }) => {
                     <>
                         <div className="relative z-10">
                             <h3 className="text-3xl font-black text-white tracking-tight leading-none mb-2">Legacy Vault</h3>
-                            <p className="text-white/60 font-medium text-sm">Secure your Will & Trust</p>
+                            <p className="text-white/60 font-medium text-sm">The Operating System for Your Legacy</p>
                         </div>
-                        <div className="relative z-10 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-gray-500">
-                            <Lock size={16} />
+                        
+                        {/* MINI VAULT DOOR VISUAL */}
+                        <div className="relative z-10 w-24 h-24 rounded-full border-[2px] border-white/10 flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-black/50 overflow-hidden group-hover:border-luminous-gold/30 transition-all duration-700">
+                             {/* Rotating Ring 1 */}
+                             <div className="absolute inset-0 rounded-full border border-dashed border-white/20 animate-[spin_10s_linear_infinite]" />
+                             {/* Rotating Ring 2 (Counter) */}
+                             <div className="absolute inset-2 rounded-full border-[1.5px] border-white/5 animate-[spin_15s_linear_infinite_reverse]" />
+                             {/* Inner Circle */}
+                             <div className="absolute inset-6 rounded-full border border-white/10 bg-gradient-to-br from-gray-900 to-black flex items-center justify-center shadow-inner">
+                                 <div className="w-8 h-8 rounded-full bg-[#0A0A0B] border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                                     <Lock size={14} strokeWidth={1.5} className="text-gray-500 group-hover:text-luminous-gold transition-colors duration-500" />
+                                 </div>
+                             </div>
+                             {/* Glow Effect */}
+                             <div className="absolute inset-0 bg-luminous-gold/5 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                         </div>
                     </>
                 )}
@@ -129,7 +155,7 @@ const VaultTile = ({ onClick, locked, mode = 'MONOLITH' }) => {
                 <>
                     <div className="relative z-10">
                         <h3 className="text-3xl font-black text-white tracking-tight mb-2">Legacy Vault.</h3>
-                        <p className="text-white/60 font-medium text-sm">Secure your Will & Trust</p>
+                        <p className="text-white/60 font-medium text-sm">The Operating System for Your Legacy</p>
                     </div>
                     <div className="relative z-10 flex items-end justify-between">
                          <div className="font-mono text-2xl font-black tracking-widest text-white/40">364:23</div>
@@ -145,8 +171,11 @@ const VaultTile = ({ onClick, locked, mode = 'MONOLITH' }) => {
                         <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-slate-900 shadow-sm group-hover:scale-110 group-hover:bg-blue-50 group-hover:text-[#007AFF] transition-all duration-300">
                             <Lock size={24} />
                         </div>
-                        <div className="px-3 py-1 bg-white rounded-full border border-gray-100 shadow-sm text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                        <div className="px-3 py-1 bg-white rounded-full border border-gray-100 shadow-sm text-[10px] font-bold uppercase tracking-wider text-slate-500 group/tooltip relative">
                             Active
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-[9px] rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                Secure Storage
+                            </div>
                         </div>
                     </div>
                     
@@ -156,8 +185,8 @@ const VaultTile = ({ onClick, locked, mode = 'MONOLITH' }) => {
                     </div>
 
                     <div>
-                        <h3 className="text-3xl font-bold text-slate-900 leading-tight tracking-tight mb-2">Inheritance</h3>
-                        <p className="text-sm text-slate-500 font-medium">Secure your Will</p>
+                        <h3 className="text-2xl font-bold text-slate-900 leading-tight tracking-tight mb-1">Heritage Vault</h3>
+                        <p className="text-xs text-slate-500 font-medium">Secure Document Repository</p>
                     </div>
                 </>
              )}

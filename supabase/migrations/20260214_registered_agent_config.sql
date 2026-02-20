@@ -17,14 +17,17 @@ CREATE TABLE IF NOT EXISTS public.registered_agent_config (
 ALTER TABLE public.registered_agent_config ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+DROP POLICY IF EXISTS "Users can view own config" ON public.registered_agent_config;
 CREATE POLICY "Users can view own config"
     ON public.registered_agent_config FOR SELECT
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own config" ON public.registered_agent_config;
 CREATE POLICY "Users can update own config"
     ON public.registered_agent_config FOR UPDATE
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own config" ON public.registered_agent_config;
 CREATE POLICY "Users can insert own config"
     ON public.registered_agent_config FOR INSERT
     WITH CHECK (auth.uid() = user_id);
@@ -38,6 +41,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS on_config_updated ON public.registered_agent_config;
 CREATE TRIGGER on_config_updated
     BEFORE UPDATE ON public.registered_agent_config
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();

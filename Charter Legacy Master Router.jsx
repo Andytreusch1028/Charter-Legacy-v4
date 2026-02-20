@@ -19,7 +19,8 @@ import {
   Sparkles,
   RefreshCw,
   LogOut,
-  Target
+  Target,
+  Layout
 } from 'lucide-react';
 
 /**

@@ -20,7 +20,8 @@ export const createMockClient = () => {
     const db = {
         llcs: getStorage('mock_table_llcs'),
         profiles: getStorage('mock_table_profiles'),
-        wills: getStorage('mock_table_wills')
+        wills: getStorage('mock_table_wills'),
+        ra_service_log: getStorage('mock_table_ra_service_log')
     };
 
     const saveTable = (table) => {
@@ -63,6 +64,9 @@ export const createMockClient = () => {
             },
             signInWithOtp: async ({ email }) => {
                 await new Promise(r => setTimeout(r, MOCK_DELAY));
+                const user = { id: 'mock-user-otp', email, role: 'authenticated', aud: 'authenticated' };
+                const session = { user, access_token: 'mock_token_otp', refresh_token: 'mock_refresh_otp' };
+                setSession(session);
                 return { data: {}, error: null };
             },
             signOut: async () => {
@@ -70,16 +74,48 @@ export const createMockClient = () => {
                 localStorage.removeItem('mock_auth_session');
                 return { error: null };
             },
+            getUser: async () => {
+                const session = getSession();
+                return { data: { user: session?.user || null }, error: null };
+            },
             getSession: async () => {
                 const session = getSession();
                 return { data: { session }, error: null };
             },
+            updateUser: async ({ password }) => {
+                await new Promise(r => setTimeout(r, MOCK_DELAY));
+                // In mock mode, we just simulate success
+                return { data: { user: getSession()?.user }, error: null };
+            },
             onAuthStateChange: (callback) => {
-                // Simplified mock for one-time check
                 const session = getSession();
+                // We'll set up a listener to simulate real behavior if needed
+                const interval = setInterval(() => {
+                    const current = getSession();
+                    if (JSON.stringify(current) !== JSON.stringify(session)) {
+                        callback('SIGNED_IN', current);
+                    }
+                }, 1000);
+
                 callback('SIGNED_IN', session);
-                return { data: { subscription: { unsubscribe: () => {} } } };
+                return { data: { subscription: { unsubscribe: () => clearInterval(interval) } } };
             }
+        },
+
+        storage: {
+            from: (bucket) => ({
+                upload: async (path, file) => {
+                    console.log(`[Mock Storage] Uploading to ${bucket}/${path}`, file);
+                    await new Promise(r => setTimeout(r, 1000));
+                    return { data: { path }, error: null };
+                },
+                list: async (path) => {
+                    return { data: [], error: null };
+                },
+                remove: async (paths) => {
+                    return { data: [], error: null };
+                }
+            })
         },
 
         from: (table) => {
@@ -107,6 +143,11 @@ export const createMockClient = () => {
                 },
                 update: (data) => {
                     state.type = 'update';
+                    state.data = data;
+                    return builder;
+                },
+                upsert: (data) => {
+                    state.type = 'upsert';
                     state.data = data;
                     return builder;
                 },
@@ -165,6 +206,19 @@ export const createMockClient = () => {
                                 rows[idx] = { ...rows[idx], ...state.data };
                             });
                             resultData = filteredIndices.map(idx => rows[idx]);
+                            saveTable(table);
+                        } else if (state.type === 'upsert') {
+                            const dataArray = Array.isArray(state.data) ? state.data : [state.data];
+                            dataArray.forEach(newItem => {
+                                const idx = rows.findIndex(r => r.key === newItem.key);
+                                if (idx > -1) {
+                                    rows[idx] = { ...rows[idx], ...newItem, updated_at: new Date().toISOString() };
+                                } else {
+                                    rows.push({ id: crypto.randomUUID(), created_at: new Date().toISOString(), ...newItem });
+                                }
+                            });
+                            resultData = dataArray;
+                            db[table] = rows;
                             saveTable(table);
                         } else if (state.type === 'select') {
                             resultData = filteredRows;

@@ -11,16 +11,18 @@ import RegisteredAgentConsole from './RegisteredAgentConsole';
 import SuccessionSuite from './SuccessionSuite';
 import { AnimatePresence } from 'framer-motion';
 
-import DesignationProtocol from './DesignationProtocol';
-import AssetSentryTile from './components/AssetSentryTile';
-import SubscriptionGate from './components/SubscriptionGate';
+import ActiveProtectionTriad from './components/ActiveProtectionTriad';
 import VaultTile from './components/VaultTile';
+import ProbateSimulator from './components/ProbateSimulator';
+import DesignationProtocol from './DesignationProtocol';
+import SubscriptionGate from './components/SubscriptionGate';
 
 const DashboardZenith = ({ user, initialData }) => {
   const [loading, setLoading] = useState(true);
   const [llcData, setLlcData] = useState(initialData || null);
   const [activityLog, setActivityLog] = useState([]);
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
+  const [blueprintStep, setBlueprintStep] = useState('ein');
   const [isSuccessionOpen, setIsSuccessionOpen] = useState(false);
   const [isRAConsoleOpen, setIsRAConsoleOpen] = useState(false);
   
@@ -29,8 +31,6 @@ const DashboardZenith = ({ user, initialData }) => {
   
   // Steve Mode: Power Tools
   const [privacyMode, setPrivacyMode] = useState(false);
-  const [designMode, setDesignMode] = useState('MONOLITH'); // 'MONOLITH' | 'SWISS' | 'CUPERTINO'
-  const [focusMode, setFocusMode] = useState(false); // TRUE = NO SIDEBAR (Zenith Focus)
   
   // Agent Console Config
   const [autoDisposeMarketing, setAutoDisposeMarketing] = useState(true);
@@ -51,6 +51,45 @@ const DashboardZenith = ({ user, initialData }) => {
     alert("LLC Data copied to clipboard (JSON)");
   };
 
+  // Keyboard Shortcuts (Steve Mode)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+        // Ignore if typing in an input
+        if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+        switch(e.key.toLowerCase()) {
+            case 'b':
+                setIsBlueprintOpen(true);
+                break;
+            case 'v':
+                setIsSuccessionOpen(true);
+                break;
+            case 'r':
+                setIsRAConsoleOpen('dashboard');
+                break;
+            case 'p':
+                setIsRAConsoleOpen('privacy');
+                break;
+            case 'm':
+                setIsRAConsoleOpen('messaging');
+                break;
+            case 'escape':
+                setIsBlueprintOpen(false);
+                setIsSuccessionOpen(false);
+                setIsRAConsoleOpen(false);
+                setShowDesignation(false);
+                break;
+            default:
+                break;
+        }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const [newDocCount, setNewDocCount] = useState(0);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
@@ -68,29 +107,34 @@ const DashboardZenith = ({ user, initialData }) => {
             
             if (data) {
                 setLlcData(data);
-                // Check if we need to show designation wizard
                 if (data.llc_name.includes('Pending Formation') || data.llc_status === 'Setting Up') {
                     setShowDesignation(true);
                 }
             }
         }
 
-        // Mock Activity Log (Replace with real RPC call later)
+        // Fetch RA Alerts
+        const { count } = await supabase
+            .from('registered_agent_documents')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('viewed', false);
+        
+        setNewDocCount(count || 0);
+
+        // Mock Activity Log
         setActivityLog([
             { id: 1, message: "Privacy Protection Started", time: "Just now", icon: ShieldCheck },
             { id: 2, message: "Institutional Payment Verified", time: "1 min ago", icon: CheckCircle2 },
             { id: 3, message: "Identity Verification Active", time: "Action Required", icon: Fingerprint },
         ]);
 
-        // Simulate "Booting" sequence
         setTimeout(() => setLoading(false), 2000);
 
       } catch (err) {
         console.error("Dashboard Load Error:", err);
       } finally {
-        // FALLBACK FOR AUDITOR TEST / OFFLINE MODE
         if (!llcData && user?.email?.includes('auditor')) {
-            console.warn("Using Mock LLC Data for Auditor");
             const mockLLC = {
                 llc_name: 'Pending Formation - LLC Name TBD',
                 llc_status: 'Setting Up',
@@ -104,6 +148,32 @@ const DashboardZenith = ({ user, initialData }) => {
     };
 
     fetchData();
+
+    // Subscribe to new documents to update alert real-time
+    const channel = supabase
+      .channel('ra_doc_alerts')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'registered_agent_documents',
+        filter: `user_id=eq.${user.id}` 
+      }, () => {
+        // Re-fetch count on any change
+        const fetchCount = async () => {
+          const { count } = await supabase
+            .from('registered_agent_documents')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('viewed', false);
+          setNewDocCount(count || 0);
+        };
+        fetchCount();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user?.id]);
 
   const handleLogout = async () => {
@@ -156,31 +226,8 @@ const DashboardZenith = ({ user, initialData }) => {
             to { transform: translate(80px, 40px); }
         }
         
-        /* DESIGN TOGGLE UI */
-        .design-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
-            padding: 8px;
-            border-radius: 20px;
-            display: flex;
-            gap: 4px;
-            z-index: 100;
-            color: white;
-            font-size: 10px;
-            font-weight: 700;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .design-btn {
-            padding: 8px 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .design-btn:hover { background: rgba(255,255,255,0.1); }
-        .design-btn.active { background: white; color: black; }
+          
+        /* DESIGN TOGGLE REMOVED */
       `}</style>
       
       {/* Background Blobs */}
@@ -189,9 +236,9 @@ const DashboardZenith = ({ user, initialData }) => {
       <div className="fixed inset-0 dot-overlay opacity-[0.15] pointer-events-none" />
 
       {/* The Obsidian Slab */}
-      <div className={`vitreous-glass w-full max-w-screen-2xl min-h-screen md:min-h-[900px] rounded-[48px] flex flex-col md:flex-row relative z-10 border border-white/10 animate-in fade-in zoom-in-95 duration-1000 overflow-hidden shadow-[0_100px_200px_-50px_rgba(0,122,255,0.12)] transition-all ${focusMode ? 'max-w-6xl mx-auto' : ''}`}>
+      <div className={`vitreous-glass w-full max-w-screen-2xl min-h-screen md:min-h-[900px] rounded-[48px] flex flex-col md:flex-row relative z-10 border border-white/10 animate-in fade-in zoom-in-95 duration-1000 overflow-hidden shadow-[0_100px_200px_-50px_rgba(0,122,255,0.12)] transition-all`}>
         
-        <main className={`flex-1 p-12 md:p-24 lg:p-32 flex flex-col transition-all duration-700 ${focusMode ? 'items-center' : ''}`}>
+        <main className={`flex-1 p-12 md:p-24 lg:p-32 flex flex-col transition-all duration-700`}>
 
             {loading ? (
                 <div className="space-y-6 animate-pulse">
@@ -242,136 +289,99 @@ const DashboardZenith = ({ user, initialData }) => {
                                 </div>
                             </div>
 
-                            <button onClick={handleDemoAccess} className="mt-8 bg-white border-2 border-[#0A0A0B] text-[#0A0A0B] px-6 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-[#0A0A0B] hover:text-white transition-all shadow-lg flex items-center gap-2 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-500">
-                                <Eye size={16} /> Skip Setup (Preview Dashboard)
-                            </button>
+
 
                             <p className="mt-12 text-xs font-bold text-gray-400 uppercase tracking-widest opacity-60">
                                 Secure Initialization Sequence • 256-bit Encrypted
                             </p>
+
+                            {/* DEMO BYPASS BUTTON */}
+                            <button 
+                                onClick={handleDemoAccess}
+                                className="mt-8 bg-[#0A0A0B] text-white px-8 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:scale-105 transition-transform shadow-xl"
+                            >
+                                Open Dashboard
+                            </button>
                         </div>
                     ) : ( 
-                        /* --- ACTIVE STATE (FULL DASHBOARD) --- */
+                        /* --- ACTIVE STATE (FULL DASHBOARD: "Command Center") --- */
                         <>
                             {/* Focused Header Section */}
-                            <div className="flex flex-col mb-24">
+                            <div className="flex flex-col mb-16">
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="w-2.5 h-2.5 bg-luminous-blue rounded-full animate-pulse shadow-[0_0_15px_rgba(0,122,255,0.6)]"></div>
-                                    <span className="text-[10px] font-black uppercase tracking-[0.5em] text-luminous-blue">System Active</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.5em] text-luminous-blue">Command Center Active</span>
                                 </div>
-                                <h1 className="text-6xl md:text-[9.5rem] font-black uppercase tracking-tighter leading-[0.8] text-luminous-ink break-words max-w-5xl mb-12">
+                                <h1 className="text-6xl md:text-[8rem] font-black uppercase tracking-tighter leading-[0.8] text-luminous-ink break-words max-w-5xl mb-8">
                                     {llcData?.llc_name}.
                                 </h1>
-                                <p className="text-gray-400 font-medium text-2xl italic max-w-3xl leading-relaxed opacity-60">
-                                    "Institutional-grade privacy architecture verified. Your physical and digital nexus remains secure."
+                                <p className="text-gray-400 font-medium text-xl italic max-w-3xl leading-relaxed opacity-60">
+                                    "Unity Protocol Engaged. Monitoring Foundation, Protection, and Legacy systems."
                                 </p>
                             </div>
 
-                            {/* Action Area */}
-                            <div className="space-y-12">
-                                {/* PRIMARY CARDS */}
-                            {/* THE POWER TRINITY (Primary Action Grid) */}
-                            {/* THE POWER TRINITY (Primary Action Grid) */}
-                            {designMode === 'MONOLITH' && (
-                                <div className="grid xl:grid-cols-3 lg:grid-cols-2 gap-10 mb-24 animate-in fade-in duration-500">
-                                    <div className="h-[600px]">
+                            {/* UNITY TRIAD GRID (3 Columns) */}
+                            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-24 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                                
+                                {/* COLUMN 1: BUILD (The Foundation) */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 px-2 mb-2">
+                                        <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
+                                            <div className="font-black text-xs">01</div>
+                                        </div>
+                                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Build Foundation</h3>
+                                    </div>
+                                    
+                                    <div className="h-[500px]">
                                         <FoundersBlueprint 
                                             isOpen={false} 
-                                            onClose={() => setIsBlueprintOpen(true)} 
-                                            mode="MONOLITH"
+                                            onClose={(step) => {
+                                                setBlueprintStep(typeof step === 'string' ? step : 'ein');
+                                                setIsBlueprintOpen(true);
+                                            }} 
+                                            mode="SWISS" // Using SWISS mode for compactness in column
                                         />
                                     </div>
-
-                                    <VaultTile 
-                                        onClick={() => setIsSuccessionOpen(true)}
-                                        locked={!user?.permissions?.heritage_vault}
-                                        mode="MONOLITH"
-                                    />
-
-                                    <AssetSentryTile mode="MONOLITH" />
                                 </div>
-                            )}
 
-                            {designMode === 'SWISS' && (
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-24 animate-in fade-in duration-500">
-                                    <div className="lg:row-span-2 h-full min-h-[500px]">
-                                        <FoundersBlueprint 
-                                            isOpen={false} 
-                                            onClose={() => setIsBlueprintOpen(true)} 
-                                            mode="SWISS"
-                                        />
+                                {/* COLUMN 2: PROTECT (The Sentinel) */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 px-2 mb-2">
+                                        <div className="w-8 h-8 rounded-lg bg-luminous-blue/10 flex items-center justify-center text-luminous-blue">
+                                            <div className="font-black text-xs">02</div>
+                                        </div>
+                                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-luminous-blue">Active Protection</h3>
                                     </div>
+
+                                    <ActiveProtectionTriad
+                                        llcData={llcData}
+                                        onOpenRAConsole={() => setIsRAConsoleOpen(true)}
+                                        raAlertCount={newDocCount}
+                                    />
+                                </div>
+
+                                {/* COLUMN 3: PRESERVE (The Legacy) */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 px-2 mb-2">
+                                        <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600">
+                                            <div className="font-black text-xs">03</div>
+                                        </div>
+                                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-purple-600">Preserve Legacy</h3>
+                                    </div>
+
+                                    {/* Heritage Vault */}
                                     <div className="h-[280px]">
                                         <VaultTile 
                                             onClick={() => setIsSuccessionOpen(true)}
                                             locked={!user?.permissions?.heritage_vault}
-                                            mode="SWISS"
-                                        />
-                                    </div>
-                                    <div className="h-[280px]">
-                                        <AssetSentryTile 
-                                            mode="SWISS" 
-                                            onClick={() => setIsRAConsoleOpen(true)}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {designMode === 'CUPERTINO' && (
-                                <div className="space-y-6 mb-24 animate-in fade-in duration-500">
-                                    <div className="h-[180px]">
-                                        <FoundersBlueprint 
-                                            isOpen={false} 
-                                            onClose={() => setIsBlueprintOpen(true)} 
                                             mode="CUPERTINO"
                                         />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-6 h-[340px]">
-                                         <VaultTile 
-                                            onClick={() => setIsSuccessionOpen(true)}
-                                            locked={!user?.permissions?.heritage_vault}
-                                            mode="CUPERTINO"
-                                        />
-                                        <AssetSentryTile 
-                                            mode="CUPERTINO" 
-                                            onClick={() => setIsRAConsoleOpen(true)}
-                                        />
-                                    </div>
-                                </div>
-                            )}
 
-                            {/* INTEGRATED UTILITIES (Secondary Actions) */}
-                            <div className="grid lg:grid-cols-2 gap-16">
-                                <div className="p-16 bg-white/40 backdrop-blur-2xl rounded-[56px] border border-white/50 flex items-center justify-between group transition-all hover:bg-white hover:shadow-[0_60px_100px_-20px_rgba(0,122,255,0.1)] cursor-pointer">
-                                    <div className="flex items-center gap-12 flex-1">
-                                        <div className="w-24 h-24 bg-white rounded-[32px] shadow-sm flex items-center justify-center text-luminous-ink group-hover:text-luminous-blue transition-all group-hover:scale-110 shrink-0">
-                                            <FileText size={40} strokeWidth={1.5} />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[10px] font-black uppercase tracking-[0.6em] text-gray-400 mb-3 whitespace-nowrap">Service Hub</h4>
-                                            <p className="text-3xl font-black text-luminous-ink italic leading-none whitespace-nowrap">Scanned Archives</p>
-                                        </div>
-                                    </div>
-                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 group-hover:bg-luminous-blue group-hover:text-white transition-all shrink-0 ml-8">
-                                        <ChevronRight size={32} className="group-hover:translate-x-1 transition-transform" />
-                                    </div>
+                                    {/* New Probate Simulator */}
+                                    <ProbateSimulator />
                                 </div>
 
-                                <div className="p-16 bg-white/40 backdrop-blur-2xl rounded-[56px] border border-white/50 flex items-center justify-between group transition-all hover:bg-white hover:shadow-[0_60px_100px_-20px_rgba(0,122,255,0.1)] cursor-pointer">
-                                    <div className="flex items-center gap-12 flex-1">
-                                        <div className="w-24 h-24 bg-luminous-blue/10 rounded-[32px] flex items-center justify-center text-luminous-blue group-hover:bg-luminous-blue group-hover:text-white transition-all group-hover:scale-110 shrink-0">
-                                            <MessageSquare size={40} strokeWidth={1.5} />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[10px] font-black uppercase tracking-[0.6em] text-gray-400 mb-3 whitespace-nowrap">Institutional Uplink</h4>
-                                            <p className="text-3xl font-black text-luminous-ink italic leading-none whitespace-nowrap">Agent Comms Active</p>
-                                        </div>
-                                    </div>
-                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 group-hover:bg-luminous-blue group-hover:text-white transition-all shrink-0 ml-8">
-                                        <ChevronRight size={32} className="group-hover:translate-x-1 transition-transform" />
-                                    </div>
-                                </div>
-                            </div>
                             </div>
                         </>
                     )}
@@ -379,66 +389,7 @@ const DashboardZenith = ({ user, initialData }) => {
             )}
         </main>
 
-        {/* Sidebar Sentinel */}
-        {!focusMode && (
-            <aside className="w-full md:w-[480px] bg-white/60 backdrop-blur-3xl border-l border-white/20 p-16 flex flex-col animate-in slide-in-from-right duration-700">
-                <div className="flex items-center justify-between mb-20">
-                    <div className="text-[0.65rem] font-black uppercase tracking-[0.8em] text-luminous-ink opacity-20">
-                        System Activity
-                    </div>
-                    <button onClick={handleLogout} className="text-gray-300 hover:text-luminous-blue transition-all hover:rotate-12">
-                        <LogOut size={24} />
-                    </button>
-                </div>
 
-                <div className="flex-1 overflow-y-auto space-y-6 pr-4 custom-scrollbar">
-                    {activityLog.map((log) => (
-                        <div key={log.id} className="bg-white/90 p-10 rounded-[40px] shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-gray-100/30 flex gap-8 items-center transition-all hover:shadow-2xl group cursor-default">
-                            <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-luminous-ink group-hover:bg-blue-50 group-hover:text-luminous-blue transition-all shrink-0">
-                                <log.icon size={28} strokeWidth={1.5} />
-                            </div>
-                            <div className="min-w-0">
-                                <p className="text-base font-black text-[#0A0A0B] leading-tight mb-2 truncate">{log.message}</p>
-                                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{log.time}</p>
-                            </div>
-                        </div>
-                    ))}
-
-                    <div className="p-16 rounded-[40px] border border-dashed border-gray-200/50 flex flex-col items-center justify-center gap-6 text-gray-300 text-[10px] font-black uppercase tracking-[0.4em] mt-12">
-                        <div className="w-4 h-4 rounded-full bg-gray-100 animate-pulse" />
-                        Archive Standby
-                    </div>
-                </div>
-
-                <div className="pt-16 border-t border-gray-100 mt-auto">
-                    <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center text-luminous-ink font-black text-lg shadow-inner">
-                            {user?.email?.[0].toUpperCase() || "F"}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <p className={`text-base font-black text-[#0A0A0B] transition-all duration-300 truncate ${privacyMode ? 'blur-md select-none' : ''}`}>
-                                {user?.email || "Founder"}
-                            </p>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.5em] leading-none mt-2">Institutional Admin</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <button 
-                                onClick={() => {
-                                    setLlcData(null);
-                                    setShowDesignation(true);
-                                }}
-                                className="w-12 h-12 rounded-2xl flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all"
-                            >
-                                <RefreshCw size={24} />
-                            </button>
-                            <button className="w-12 h-12 rounded-2xl flex items-center justify-center text-gray-300 hover:text-[#0A0A0B] hover:bg-gray-50 transition-all">
-                                <Settings size={28} />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-        )}
 
       </div>
     </div>
@@ -449,6 +400,7 @@ const DashboardZenith = ({ user, initialData }) => {
               isOpen={isBlueprintOpen} 
               onClose={() => setIsBlueprintOpen(false)} 
               llcData={llcData} 
+              initialStep={blueprintStep}
           />
       )}
       </AnimatePresence>
@@ -478,19 +430,10 @@ const DashboardZenith = ({ user, initialData }) => {
               <RegisteredAgentConsole 
                   isModal={true}
                   onClose={() => setIsRAConsoleOpen(false)}
+                  initialTab={isRAConsoleOpen} // passing string value directly if it's not boolean 'true'
               />
           )}
       </AnimatePresence>
-
-      {/* DESIGN TOGGLE */}
-      <div className="design-toggle">
-        <div className={`design-btn ${designMode === 'MONOLITH' ? 'active' : ''}`} onClick={() => setDesignMode('MONOLITH')}>MONOLITH</div>
-        <div className={`design-btn ${designMode === 'SWISS' ? 'active' : ''}`} onClick={() => setDesignMode('SWISS')}>SWISS</div>
-        <div className={`design-btn ${designMode === 'CUPERTINO' ? 'active' : ''}`} onClick={() => setDesignMode('CUPERTINO')}>CUPERTINO</div>
-        <div className={`design-btn ${focusMode ? 'active' : ''} !bg-luminous-blue/20 !text-luminous-blue`} onClick={() => setFocusMode(!focusMode)}>
-            {focusMode ? 'SHOW SIDEBAR' : 'ZENITH FOCUS (NO SIDEBAR)'}
-        </div>
-      </div>
     </>
   );
 };

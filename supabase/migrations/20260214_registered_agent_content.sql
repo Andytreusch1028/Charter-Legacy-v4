@@ -26,10 +26,12 @@ ALTER TABLE public.registered_agent_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.registered_agent_messages ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+DROP POLICY IF EXISTS "Users can view own documents" ON public.registered_agent_documents;
 CREATE POLICY "Users can view own documents"
     ON public.registered_agent_documents FOR SELECT
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can view own messages" ON public.registered_agent_messages;
 CREATE POLICY "Users can view own messages"
     ON public.registered_agent_messages FOR SELECT
     USING (auth.uid() = user_id);
@@ -56,7 +58,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to seed content on new user signup
--- Note: This hooks into the same auth.users insert event as profile creation
+DROP TRIGGER IF EXISTS on_auth_user_created_content ON auth.users;
 CREATE TRIGGER on_auth_user_created_content
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.seed_registered_agent_content();

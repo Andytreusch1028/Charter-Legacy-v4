@@ -117,6 +117,44 @@ async function checkAuthAndLoadData() {
             await loadLLCs(session.user.id);
         }
     }
+    
+    // Start Ledger Pulse
+    loadTransparencyLedger();
+    setInterval(loadTransparencyLedger, 10000); // Pulse every 10s
+}
+
+let _transparencyLedger = [];
+
+// Transparency Ledger Loader: Fetches official logs from the bridge table
+async function loadTransparencyLedger() {
+    try {
+        if (!supabase && !window.CONFIG.MOCK_MODE) return;
+        
+        let data;
+        if (window.CONFIG.MOCK_MODE) {
+            // Fetch from mock local storage (the mockSupabase client handles this)
+            const { data: mockData } = await supabase
+                .from('ra_service_log')
+                .select('*')
+                .eq('client_id', 'mock-user-id') // Match the mock session ID
+                .order('created_at', { ascending: false });
+            data = mockData;
+        } else {
+            const { data: realData } = await supabase
+                .from('ra_service_log')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(5);
+            data = realData;
+        }
+
+        if (data) {
+            _transparencyLedger = data;
+            renderSovereignFeed(); // Re-render feed with new data
+        }
+    } catch (err) {
+        console.warn("Zenith: Ledger sync delayed.", err);
+    }
 }
 
 // LLC Data Loader
@@ -923,11 +961,19 @@ function renderSovereignFeed() {
     const hero = _allEntities.find(e => e.id === _currentEntityId);
     const isMedical = hero && hero.product_type === 'medical_pllc';
 
-    const logs = [
-        { msg: "Secure Document Access", time: "2m ago", icon: "MI" },
-        { msg: "Privacy Guard Check", time: "14m ago", icon: "SH" },
-        { msg: isMedical ? "Board Credential Sync" : "Compliance Baseline Verified", time: "1h ago", icon: isMedical ? "MD" : "LE" }
+    const systemLogs = [
+        { msg: "Secure Document Access", time: "Connected", icon: "MI" },
+        { msg: "Privacy Guard Check", time: "Verified", icon: "SH" }
     ];
+
+    // Combine system logs with official Transparency Ledger entries
+    const officialLogs = _transparencyLedger.map(log => ({
+        msg: log.document_name,
+        time: "OFFICIAL", // Mark as official
+        icon: "RA", // Registered Agent Icon
+        status: log.status,
+        timestamp: new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }));
 
 
     aside.innerHTML = `
@@ -955,9 +1001,26 @@ function renderSovereignFeed() {
         </div>
 
         <div class="sentinel-scroll">
-            <h2 class="side-title">Activity History</h2>
+            <h2 class="side-title">Transparency Ledger</h2>
+            <div style="font-size: 0.6rem; font-weight: 700; opacity: 0.25; margin-top: -1.5rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.2em;">Official Audit Trail</div>
+            
             <div style="display: flex; flex-direction: column; gap: 20px;">
-                ${logs.map(log => `
+                ${officialLogs.length > 0 ? officialLogs.map(log => `
+                    <div class="activity-card" style="border-left: 3px solid var(--accent-green); background: rgba(0, 208, 132, 0.02);">
+                        <div class="log-icon" style="font-weight: 900; color: var(--accent-green); font-size: 10px;">${log.icon}</div>
+                        <div class="log-content">
+                            <span class="log-msg" style="color: var(--obsidian-ink);">${log.msg}</span>
+                            <span class="log-time" style="color: var(--accent-green); opacity: 1;">${log.status} &bull; ${log.timestamp}</span>
+                        </div>
+                    </div>
+                `).join('') : `
+                    <div style="padding: 1rem; border: 1px dashed #eee; border-radius: 12px; text-align: center; opacity: 0.5;">
+                        <span style="font-size: 0.7rem; font-weight: 600;">No official service logs yet.</span>
+                    </div>
+                `}
+
+                <h2 class="side-title" style="margin-top: 20px;">System Activity</h2>
+                ${systemLogs.map(log => `
                     <div class="activity-card">
                         <div class="log-icon" style="font-weight: 900; color: var(--obsidian-ink); font-size: 10px;">${log.icon}</div>
                         <div class="log-content">

@@ -178,6 +178,14 @@
           "pattern": "Whenever starting a new build section in a roadmap, AUTOMATICALLY backup to GitHub without prompting.",
           "impact": "High - Data Safety and Workflow Efficiency",
           "reuse_guidance": "Before executing the first step of a new major phase/roadmap section, run the git add/commit/push cycle silently."
+        },
+        {
+          "id": "learning-024",
+          "date": "2026-02-17",
+          "success": "Power User Overlay Pattern (The Steve Protocol II)",
+          "pattern": "Implement 'Heads-Up' data injection (e.g., live counts, message previews) and global hotkeys (B, V, M) to empower expert users without decluttering the aesthetic for novices.",
+          "impact": "High - Efficiency & User Satisfaction",
+          "reuse_guidance": "Always add a keyboard layer and 'Data Injection' descriptors to static dashboard cards. Don't make users click to see if they have work to do."
         }
       ]
     },
@@ -191,6 +199,22 @@
           "clarification": "P.O. Box prohibition applies to BOTH principal_address AND registered_agent_address",
           "impact": "High - Statutory rejection prevention",
           "scrivener_note": "Ensure regex validation applies to both fields during Phase A Calibration."
+        }
+      ]
+    },
+    "governance_directives": {
+      "description": "The mandatory 'Bible' of the application. Decisions must align with these documents.",
+      "entries": [
+        {
+          "id": "learning-025",
+          "date": "2026-02-20",
+          "directive": "BIBLE_SYNC_MANDATORY",
+          "documents": [
+            "C:\\Users\\imali\\.gemini\\antigravity\\brain\\adead950-7f4a-413e-b41f-59f158a94717\\roadmap.md",
+            "C:\\Users\\imali\\.gemini\\antigravity\\brain\\adead950-7f4a-413e-b41f-59f158a94717\\architecture_review.md"
+          ],
+          "impact": "Critical - Design Consistency and User Intent",
+          "rule": "BEFORE STARTING ANY NEW TASK: Read the Roadmap and Architecture Review. If a proposed change is not explicitly sanctioned by these documents, HALT and request user permission via notify_user before editing code."
         }
       ]
     },
