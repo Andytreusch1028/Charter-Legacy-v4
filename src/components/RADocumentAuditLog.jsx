@@ -53,6 +53,7 @@ function maskIp(ip) {
 }
 
 function formatDateTime(iso) {
+    if (!iso) return '—';
     return new Date(iso).toLocaleString('en-US', {
         month: 'short', day: 'numeric', year: 'numeric',
         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
@@ -185,12 +186,16 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
                 else query = query.eq('actor_type', filter);
             }
 
-            // Apply Search (using FTS if available, or simple text match on action/email)
+            // Apply Search (using GIN-indexed FTS column)
             if (searchQuery.trim()) {
-                // Try FTS first if column exists (it should per migration)
-                // Fallback to ILIKE if FTS fails or for simple partial matches
-                const term = `%${searchQuery.trim()}%`;
-                query = query.or(`action.ilike.${term},actor_email.ilike.${term},outcome.ilike.${term}`);
+                const term = searchQuery.trim();
+                // If it's a single word, textSearch is great. 
+                // For phrases, we use the 'fts' column with ' & ' logic
+                const searchTerms = term.split(/\s+/).join(' & ');
+                query = query.textSearch('fts', searchTerms, {
+                    config: 'english',
+                    type: 'phrase'
+                });
             }
 
             // Apply Date Range
@@ -223,6 +228,33 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
                         title="Refresh Log"
                     >
                         <Clock size={16} className={loading ? 'animate-spin' : ''} />
+                    </button>
+                    <button
+                        onClick={async () => {
+                            if (rows.length === 0) return;
+                            setLoading(true);
+                            try {
+                                const { data: { user } } = await supabase.auth.getUser();
+                                await supabase.functions.invoke('ra-document-action', {
+                                    body: {
+                                        action: 'EMAIL_AUDIT_LOG',
+                                        data: {
+                                            recipient: user.email,
+                                            rows: rows.slice(0, 50), // Limit for email readability
+                                            filterContext: filter
+                                        }
+                                    }
+                                });
+                                alert(`Audit Log Summary (last 50 matches) sent to ${user.email}`);
+                            } catch (err) {
+                                alert('Failed to send email: ' + err.message);
+                            } finally {
+                                setLoading(false);
+                            }
+                        }}
+                        className="shrink-0 flex items-center gap-2 px-4 py-2 bg-luminous-blue text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-hacker-blue transition-colors"
+                    >
+                        <Mail size={12} /> Email Report
                     </button>
                     <button
                         onClick={() => exportCsv(rows, isAdmin)}

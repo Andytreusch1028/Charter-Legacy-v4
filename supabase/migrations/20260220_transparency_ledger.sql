@@ -29,12 +29,7 @@ CREATE POLICY "Staff can manage all document logs"
 ON public.ra_service_log
 FOR ALL
 USING (
-    EXISTS (
-        SELECT 1 FROM public.profiles
-        WHERE profiles.id = auth.uid()
-        AND (profiles.role = 'master_admin' OR profiles.role = 'ra_agent')
-    )
-    OR (auth.jwt() -> 'app_metadata' ->> 'staff_role' IN ('master_admin', 'ra_agent'))
+    (auth.jwt() -> 'app_metadata' ->> 'staff_role' IN ('master_admin', 'ra_agent'))
 );
 
 -- Realtime triggers

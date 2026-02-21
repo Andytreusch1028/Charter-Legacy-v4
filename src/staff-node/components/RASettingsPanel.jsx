@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Server, FolderOpen, Printer, AlertCircle, ShieldCheck, Lock } from 'lucide-react';
+import { Save, Server, FolderOpen, Printer, AlertCircle, ShieldCheck, Lock, Zap } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
-const RASettingsPanel = ({ onClose }) => {
+const RASettingsPanel = ({ 
+    onClose, 
+    watchFolder, 
+    setWatchFolder, 
+    setToast 
+}) => {
     const [settings, setSettings] = useState({
         node_id: '',
-        watch_folder: '',
+        watch_folder: watchFolder || '',
         printer_name: '',
-        context_info: ''
+        context_info: '',
+        tinyfish_api_key: ''
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -30,7 +36,8 @@ const RASettingsPanel = ({ onClose }) => {
                 node_id: '',
                 watch_folder: '',
                 printer_name: '',
-                context_info: ''
+                context_info: '',
+                tinyfish_api_key: ''
             };
             data?.forEach(row => {
                 config[row.key] = row.value;
@@ -106,9 +113,19 @@ const RASettingsPanel = ({ onClose }) => {
             setMsg({ type: 'success', text: 'Settings saved successfully' });
             // Cache locally for immediate use
             localStorage.setItem('ra_node_settings', JSON.stringify(settings));
+            localStorage.setItem('cl_watch_folder', settings.watch_folder);
+            
+            if (setWatchFolder) {
+                setWatchFolder(settings.watch_folder);
+            }
+            
+            if (setToast) {
+                setToast({ type: 'success', message: 'Node configuration synchronized.' });
+            }
         } catch (err) {
             console.error(err);
             setMsg({ type: 'error', text: 'Failed to save settings to cloud' });
+            if (setToast) setToast({ type: 'error', message: 'Sync failed.' });
         } finally {
             setSaving(false);
         }
@@ -222,6 +239,20 @@ const RASettingsPanel = ({ onClose }) => {
                                     placeholder="Repeat new key"
                                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-2 focus:ring-luminous-blue/20 focus:border-luminous-blue outline-none transition-all"
                                 />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                                    <Zap size={12} className="text-violet-500" /> TinyFish API Key
+                                </label>
+                                <input 
+                                    type="password" 
+                                    value={settings.tinyfish_api_key}
+                                    onChange={e => setSettings({...settings, tinyfish_api_key: e.target.value})}
+                                    placeholder="Enter TF-xxx key"
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-mono font-medium focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all"
+                                />
+                                <p className="text-[8px] text-gray-400 italic">Required for autonomous SunBiz filing protocols.</p>
                             </div>
 
                             <button 

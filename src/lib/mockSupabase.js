@@ -192,7 +192,7 @@ export const createMockClient = () => {
                         // 2. EXECUTE
                         if (state.type === 'insert') {
                             const newRows = (Array.isArray(state.data) ? state.data : [state.data]).map(d => ({
-                                id: crypto.randomUUID(),
+                                id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
                                 created_at: new Date().toISOString(),
                                 ...d
                             }));
