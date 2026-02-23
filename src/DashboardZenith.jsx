@@ -17,7 +17,6 @@ import VaultTile from './components/VaultTile';
 import ProbateSimulator from './components/ProbateSimulator';
 import DesignationProtocol from './DesignationProtocol';
 import SubscriptionGate from './components/SubscriptionGate';
-import AgentConsole from './components/AgentConsole';
 import BusinessSelector from './components/BusinessSelector';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,7 +28,6 @@ const DashboardZenith = ({ user, initialData }) => {
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [blueprintStep, setBlueprintStep] = useState('ein');
   const [isRAConsoleOpen, setIsRAConsoleOpen] = useState(false);
-  const [isAgentConsoleOpen, setIsAgentConsoleOpen] = useState(false);
   const navigate = useNavigate();
   const { openVault } = useSuccession();
   
@@ -46,10 +44,6 @@ const DashboardZenith = ({ user, initialData }) => {
   
   // Steve Mode: Power Tools
   const [privacyMode, setPrivacyMode] = useState(false);
-  
-  // Agent Console Config
-  const [autoDisposeMarketing, setAutoDisposeMarketing] = useState(true);
-  const [priorityForwarding, setPriorityForwarding] = useState(true);
 
   const handleExport = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(llcData, null, 2));
@@ -339,26 +333,9 @@ const DashboardZenith = ({ user, initialData }) => {
                     ) : ( 
                         /* --- ACTIVE STATE (FULL DASHBOARD: "Command Center") --- */
                         <>
-                            {/* Focused Header Section */}
+                             {/* Focused Header Section */}
                             <div className="flex flex-col mb-16 relative">
                                 <div className="absolute top-0 right-0 flex items-center gap-4">
-                                     {/* Agent Access Bypass (Dev Only) */}
-                                     {import.meta.env.DEV && (
-                                         <div className="flex gap-2">
-                                            <button 
-                                                onClick={() => navigate('/admin/growth')}
-                                                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 border border-purple-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-600 hover:text-white transition-all active:scale-95 shadow-sm"
-                                            >
-                                                AI Growth
-                                            </button>
-                                            <button 
-                                                onClick={() => setIsAgentConsoleOpen(true)}
-                                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all active:scale-95 shadow-sm"
-                                            >
-                                                <Shield size={14} /> Agent Access
-                                            </button>
-                                         </div>
-                                     )}
                                      <button 
                                         onClick={handleLogout}
                                         className="inline-flex items-center gap-2 px-4 py-2 border border-gray-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all active:scale-95"
@@ -496,16 +473,6 @@ const DashboardZenith = ({ user, initialData }) => {
               />
           )}
       </AnimatePresence>
-
-      {/* Dev-Only Agent Console */}
-      {import.meta.env.DEV && (
-        <AgentConsole 
-          isOpen={isAgentConsoleOpen}
-          onClose={() => setIsAgentConsoleOpen(false)}
-          user={user}
-          llcData={llcData}
-        />
-      )}
     </>
   );
 };
