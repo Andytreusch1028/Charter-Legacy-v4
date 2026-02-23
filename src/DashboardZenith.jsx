@@ -105,8 +105,12 @@ const DashboardZenith = ({ user, initialData }) => {
       if (!user) return;
       
       // Localhost Bypass: Auto-grant Heritage Vault permission
-      if (window.location.hostname === 'localhost' && user.permissions) {
-        user.permissions.heritage_vault = true;
+      if (window.location.hostname === 'localhost') {
+        if (user && !user.permissions) {
+          user.permissions = { heritage_vault: true };
+        } else if (user?.permissions) {
+          user.permissions.heritage_vault = true;
+        }
       }
 
       try {

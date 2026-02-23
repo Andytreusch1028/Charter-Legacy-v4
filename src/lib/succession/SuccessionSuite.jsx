@@ -18,7 +18,14 @@ const SuccessionSuite = ({ user }) => {
 
     // 1. Data Orchestration
     useEffect(() => {
-        if (!isOpen || !user) return;
+        if (!isOpen) return;
+
+        // If no user, we can't fetch but we shouldn't hang
+        if (!user) {
+            console.warn("SuccessionSuite: No user session detected. Vault offline.");
+            setIsLoading(false);
+            return;
+        }
 
         let isMounted = true;
         const safetyTimeout = setTimeout(() => {
@@ -26,7 +33,7 @@ const SuccessionSuite = ({ user }) => {
                 console.warn("SuccessionSuite: Data synchronization timed out. Falling back to local state.");
                 setIsLoading(false);
             }
-        }, 3500); // 3.5s Institutional Timeout
+        }, 5000); // 5s Institutional Timeout (slightly increased for stability)
 
         const loadSuccessionData = async () => {
             setIsLoading(true);

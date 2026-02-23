@@ -60,14 +60,14 @@ const TrustedHelpersCard = () => (
 );
 
 const AuditTrailCard = ({ auditLog }) => (
-    <div className="bg-[#1c1c1e]/50 border border-gray-800/50 rounded-[2.5rem] p-8 space-y-6">
+    <div className="bg-[#1c1c1e]/50 border border-zinc-800/50 rounded-[2.5rem] p-8 space-y-6">
         <div className="flex items-center gap-3">
             <History size={18} className="text-gray-500" />
             <h4 className="text-gray-500 font-bold text-xs uppercase tracking-widest">Audit Trail</h4>
         </div>
         <div className="space-y-4 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
             {auditLog.map((log, i) => (
-                <div key={i} className="border-l border-gray-800 pl-4 py-1">
+                <div key={i} className="border-l border-zinc-800 pl-4 py-1">
                     <div className="text-white text-[10px] font-bold uppercase">{log.action || 'Unknown Action'}</div>
                     <div className="text-gray-600 text-[9px] truncate">{log.details || log.time}</div>
                 </div>
@@ -79,7 +79,7 @@ const AuditTrailCard = ({ auditLog }) => (
 
 const LockedVaultView = ({ onUnlock }) => (
     <div className="flex flex-col items-center justify-center h-full text-center space-y-6 py-12">
-        <div className="w-20 h-20 bg-[#1c1c1e] rounded-full flex items-center justify-center border border-gray-800 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+        <div className="w-20 h-20 bg-[#1c1c1e] rounded-full flex items-center justify-center border border-zinc-800 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <Lock size={32} className="text-gray-600" />
         </div>
         <div>
@@ -122,13 +122,13 @@ const UnlockedVaultView = ({ docs, onLock, onAddArtifact }) => (
                     </button>
                 </div>
             )) : (
-                <div className="col-span-2 text-center py-20 border-2 border-dashed border-gray-800 rounded-[2rem] text-gray-600">
+                <div className="col-span-2 text-center py-20 border-2 border-dashed border-zinc-800 rounded-[2rem] text-gray-600">
                     No sovereign documents uploaded.
                 </div>
             )}
         </div>
         
-        <button onClick={onAddArtifact} className="w-full py-4 border-2 border-dashed border-gray-800 rounded-2xl text-gray-500 font-bold text-[10px] uppercase tracking-[0.2em] hover:border-[#d4af37] hover:text-[#d4af37] transition-all flex items-center justify-center gap-2">
+        <button onClick={onAddArtifact} className="w-full py-4 border-2 border-dashed border-zinc-800 rounded-2xl text-gray-500 font-bold text-[10px] uppercase tracking-[0.2em] hover:border-[#d4af37] hover:text-[#d4af37] transition-all flex items-center justify-center gap-2">
             <Plus size={16} /> Store New Artifact
         </button>
     </div>
@@ -165,13 +165,19 @@ const HeritageConsole = ({
     const activeWill = docs?.find(d => d.status === 'active' && d.label.includes('Will'));
     const activeTrust = docs?.find(d => d.status === 'active' && d.label.includes('Trust'));
     
-    const handleVaultUnlock = (pin) => {
-        if (validatePIN(pin)) {
-            setShowSecurityChallenge(false);
+    const handleVaultUnlock = async (pin) => {
+        try {
+            const isValid = await validatePIN(pin);
+            if (isValid) {
+                setShowSecurityChallenge(false);
+                setEnteredPIN('');
+            } else {
+                setEnteredPIN('');
+                alert("Invalid Vault Authentication. Decryption Sequence Failed.");
+            }
+        } catch(e) {
             setEnteredPIN('');
-        } else {
-            setEnteredPIN('');
-            alert("Invalid PIN. Access Denied.");
+            alert("Security Protocol Error: Handshake timed out.");
         }
     };
 
@@ -194,7 +200,7 @@ const HeritageConsole = ({
                 
                 {/* Protocol Focus (2/3 Width) */}
                 <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-gradient-to-br from-[#1c1c1e] to-[#0A0A0B] rounded-[3rem] border border-gray-800 border-t-4 border-t-[#d4af37] p-10 shadow-2xl relative overflow-hidden group">
+                    <div className="bg-gradient-to-br from-[#1c1c1e] to-[#0A0A0B] rounded-[3rem] border border-zinc-800 border-t-4 border-t-[#d4af37] p-10 shadow-2xl relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-[#d4af37]/5 rounded-bl-[10rem] pointer-events-none"></div>
                         
                         <div className="relative z-10">
@@ -265,7 +271,7 @@ const HeritageConsole = ({
                                 <h3 className="text-xl font-black text-white uppercase mb-2">Living Trust Protocol</h3>
                                 <p className="text-gray-500 text-[10px] leading-relaxed uppercase tracking-widest">Designed to Avoid Probate & Maintain Privacy</p>
                             </div>
-                            <div onClick={() => { setProtocolMode('will'); setShowProtocolSelector(false); setShowWizard(true); }} className="bg-[#0f0f10] border-2 border-gray-800 p-10 rounded-[3rem] cursor-pointer hover:border-white transition-all group">
+                            <div onClick={() => { setProtocolMode('will'); setShowProtocolSelector(false); setShowWizard(true); }} className="bg-[#0f0f10] border-2 border-zinc-800 p-10 rounded-[3rem] cursor-pointer hover:border-white transition-all group">
                                 <FileText size={48} className="mx-auto text-gray-500 mb-6 group-hover:text-white transition-colors" />
                                 <h3 className="text-xl font-black text-white uppercase mb-2">Heritage Will</h3>
                                 <p className="text-gray-500 text-[10px] leading-relaxed uppercase tracking-widest">Traditional Statutory Instructions</p>
@@ -306,7 +312,7 @@ const HeritageConsole = ({
                         
                         <div className="flex justify-center gap-4 mb-8">
                             {[0, 1, 2, 3].map(i => (
-                                <div key={i} className={`w-12 h-14 bg-black rounded-xl border flex items-center justify-center text-xl font-bold transition-all duration-300 ${enteredPIN.length === i ? 'border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'border-gray-800 text-white'}`}>
+                                <div key={i} className={`w-12 h-14 bg-black rounded-xl border flex items-center justify-center text-xl font-bold transition-all duration-300 ${enteredPIN.length === i ? 'border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'border-zinc-800 text-white'}`}>
                                     {enteredPIN.length > i ? (
                                         <div className="w-2 h-2 bg-[#d4af37] rounded-full animate-in zoom-in duration-300"></div>
                                     ) : (
@@ -320,6 +326,7 @@ const HeritageConsole = ({
                         <input 
                             autoFocus
                             type="text"
+                            inputMode="numeric"
                             pattern="\d*"
                             maxLength={4}
                             value={enteredPIN}
@@ -328,7 +335,7 @@ const HeritageConsole = ({
                                 setEnteredPIN(val);
                                 if (val.length === 4) setTimeout(() => handleVaultUnlock(val), 200);
                             }}
-                            className="fixed opacity-0 pointer-events-none"
+                            className="absolute inset-0 w-full h-full text-transparent caret-transparent bg-transparent outline-none border-none opacity-0 focus:outline-none z-10 cursor-default"
                         />
                         
                         <button onClick={() => setShowSecurityChallenge(false)} className="text-gray-600 hover:text-white uppercase font-black text-[9px] tracking-[0.3em]">Cancel</button>
