@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
     Activity, FileText, Settings, Loader2, Zap,
     Shield, CheckCircle2, X, Bell, MapPin, Clock,

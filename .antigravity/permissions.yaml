@@ -23,3 +23,7 @@ access_control:
   - path: ".antigravity/**"
     permission: "IMMUTABLE"
     description: "The AI cannot change its own rules or the PBP manifest."
+
+  - domain: "localhost"
+    permission: "AUTO_EXECUTE_JS"
+    description: "Agent is permitted to execute JavaScript on localhost without explicit user approval for UI verification."

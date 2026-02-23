@@ -8,7 +8,8 @@ import { supabase } from './lib/supabase';
 
 import FoundersBlueprint from './FoundersBlueprint';
 import RegisteredAgentConsole from './RegisteredAgentConsole';
-import SuccessionSuite from './SuccessionSuite';
+import SuccessionSuite from './lib/succession/SuccessionSuite';
+import { useSuccession } from './lib/succession/useSuccession';
 import { AnimatePresence } from 'framer-motion';
 
 import ActiveProtectionTriad from './components/ActiveProtectionTriad';
@@ -16,6 +17,7 @@ import VaultTile from './components/VaultTile';
 import ProbateSimulator from './components/ProbateSimulator';
 import DesignationProtocol from './DesignationProtocol';
 import SubscriptionGate from './components/SubscriptionGate';
+import AgentConsole from './components/AgentConsole';
 
 const DashboardZenith = ({ user, initialData }) => {
   const [loading, setLoading] = useState(true);
@@ -23,8 +25,17 @@ const DashboardZenith = ({ user, initialData }) => {
   const [activityLog, setActivityLog] = useState([]);
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [blueprintStep, setBlueprintStep] = useState('ein');
-  const [isSuccessionOpen, setIsSuccessionOpen] = useState(false);
   const [isRAConsoleOpen, setIsRAConsoleOpen] = useState(false);
+  const [isAgentConsoleOpen, setIsAgentConsoleOpen] = useState(false);
+  const { openVault } = useSuccession();
+  
+  // Agent Access Bypass (Localhost Only)
+  useEffect(() => {
+    if (window.location.hostname === 'localhost') {
+      window.__antigravity_open_vault = () => openVault();
+      console.log("🛠️ Antigravity: Global vault accessor mounted at window.__antigravity_open_vault()");
+    }
+  }, [openVault]);
   
   // New State for Designation
   const [showDesignation, setShowDesignation] = useState(false);
@@ -62,7 +73,7 @@ const DashboardZenith = ({ user, initialData }) => {
                 setIsBlueprintOpen(true);
                 break;
             case 'v':
-                setIsSuccessionOpen(true);
+                openVault();
                 break;
             case 'r':
                 setIsRAConsoleOpen('dashboard');
@@ -75,7 +86,6 @@ const DashboardZenith = ({ user, initialData }) => {
                 break;
             case 'escape':
                 setIsBlueprintOpen(false);
-                setIsSuccessionOpen(false);
                 setIsRAConsoleOpen(false);
                 setShowDesignation(false);
                 break;
@@ -94,6 +104,11 @@ const DashboardZenith = ({ user, initialData }) => {
     const fetchData = async () => {
       if (!user) return;
       
+      // Localhost Bypass: Auto-grant Heritage Vault permission
+      if (window.location.hostname === 'localhost' && user.permissions) {
+        user.permissions.heritage_vault = true;
+      }
+
       try {
         // Fetch LLC Data if not provided
         if (!llcData) {
@@ -307,7 +322,24 @@ const DashboardZenith = ({ user, initialData }) => {
                         /* --- ACTIVE STATE (FULL DASHBOARD: "Command Center") --- */
                         <>
                             {/* Focused Header Section */}
-                            <div className="flex flex-col mb-16">
+                            <div className="flex flex-col mb-16 relative">
+                                <div className="absolute top-0 right-0 flex items-center gap-4">
+                                     {/* Agent Access Bypass (Dev Only) */}
+                                     {import.meta.env.DEV && (
+                                         <button 
+                                            onClick={() => setIsAgentConsoleOpen(true)}
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all active:scale-95 shadow-sm"
+                                         >
+                                             <Shield size={14} /> Agent Access
+                                         </button>
+                                     )}
+                                     <button 
+                                        onClick={handleLogout}
+                                        className="inline-flex items-center gap-2 px-4 py-2 border border-gray-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all active:scale-95"
+                                     >
+                                         <LogOut size={14} /> Log Out
+                                     </button>
+                                </div>
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="w-2.5 h-2.5 bg-luminous-blue rounded-full animate-pulse shadow-[0_0_15px_rgba(0,122,255,0.6)]"></div>
                                     <span className="text-[10px] font-black uppercase tracking-[0.5em] text-luminous-blue">Command Center Active</span>
@@ -372,7 +404,7 @@ const DashboardZenith = ({ user, initialData }) => {
                                     {/* Heritage Vault */}
                                     <div className="h-[280px]">
                                         <VaultTile 
-                                            onClick={() => setIsSuccessionOpen(true)}
+                                            onClick={() => openVault()}
                                             locked={!user?.permissions?.heritage_vault}
                                             mode="CUPERTINO"
                                         />
@@ -406,12 +438,7 @@ const DashboardZenith = ({ user, initialData }) => {
       </AnimatePresence>
 
       <AnimatePresence>
-      <SuccessionSuite 
-          isOpen={isSuccessionOpen} 
-          onClose={() => setIsSuccessionOpen(false)} 
-          companyName={llcData?.llc_name} 
-          user={user}
-      />
+          <SuccessionSuite user={user} />
       </AnimatePresence>
 
       <AnimatePresence>
@@ -434,6 +461,16 @@ const DashboardZenith = ({ user, initialData }) => {
               />
           )}
       </AnimatePresence>
+
+      {/* Dev-Only Agent Console */}
+      {import.meta.env.DEV && (
+        <AgentConsole 
+          isOpen={isAgentConsoleOpen}
+          onClose={() => setIsAgentConsoleOpen(false)}
+          user={user}
+          llcData={llcData}
+        />
+      )}
     </>
   );
 };

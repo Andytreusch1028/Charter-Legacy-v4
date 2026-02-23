@@ -527,13 +527,13 @@ const RASentry = ({
                                      <span className="text-[10px] font-bold text-luminous-ink truncate max-w-[120px]">{watchFolder || 'Not Configured'}</span>
                                  </div>
                              </div>
-                             <button 
-                                onClick={triggerFolderPicker}
-                                className="p-2.5 bg-gray-50 text-gray-400 hover:text-luminous-blue hover:bg-luminous-blue/5 rounded-xl transition-all"
-                                title="Change Watch Folder"
-                             >
-                                 <SettingsIcon size={14} />
-                             </button>
+                              <button 
+                                 onClick={triggerFolderPicker}
+                                 className="p-2.5 bg-gray-50 text-gray-400 hover:text-luminous-blue hover:bg-luminous-blue/5 rounded-xl transition-all"
+                                 title="Change Watch Folder"
+                              >
+                                  <Upload size={14} />
+                              </button>
                              <div className="w-px h-6 bg-gray-100" />
                              <button 
                                 onClick={handleScanFolder}

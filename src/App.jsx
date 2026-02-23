@@ -7,7 +7,6 @@ import {
   FileCode, MessageSquare, Clock, FileText, Activity, Landmark, Users
 } from 'lucide-react';
 import FoundersBlueprint from './FoundersBlueprint';
-import SuccessionSuite from './SuccessionSuite';
 import DesignationProtocol from './DesignationProtocol';
 import LoginModal from './LoginModal';
 import DashboardZenith from './DashboardZenith';
@@ -449,7 +448,8 @@ export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [appUser, setAppUser] = useState(null);
-  const [showDoubleLLCExplainer, setShowDoubleLLCExplainer] = useState(false); // 2. Add showDoubleLLCExplainer state
+  const [showDoubleLLCExplainer, setShowDoubleLLCExplainer] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -481,6 +481,13 @@ export default function App() {
       setView('dashboard');
       setSelectedPackage(null);
       setIsLoginOpen(false);
+  };
+
+  const handleSignOut = async () => {
+      await supabase.auth.signOut();
+      setAppUser(null);
+      setView('landing');
+      window.location.reload();
   };
 
   const formationPackages = [
@@ -581,7 +588,57 @@ export default function App() {
           >
             {appUser ? "Open Dashboard" : "Client Login"}
           </button>
+          {appUser && (
+            <button 
+              onClick={handleSignOut}
+              className="px-6 py-3.5 border border-gray-100 rounded-full text-[9px] font-black uppercase tracking-widest text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all"
+            >
+              Sign Out
+            </button>
+          )}
         </div>
+
+        {/* Mobile menu button */}
+        <button 
+          className="lg:hidden p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+
+        {/* Mobile menu overlay */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden fixed inset-0 top-24 bg-white/95 backdrop-blur-xl z-[100] p-8 animate-in slide-in-from-right duration-300">
+            <div className="flex flex-col gap-8">
+              <button 
+                onClick={() => { document.getElementById('privacy').scrollIntoView({behavior:'smooth'}); setIsMobileMenuOpen(false); }} 
+                className="text-2xl font-black uppercase tracking-tighter text-left border-b border-gray-100 pb-4 text-luminous-blue"
+              >
+                Privacy Center
+              </button>
+              <button 
+                onClick={() => { document.getElementById('protocol').scrollIntoView({behavior:'smooth'}); setIsMobileMenuOpen(false); }} 
+                className="text-2xl font-black uppercase tracking-tighter text-left border-b border-gray-100 pb-4"
+              >
+                Heritage Vault
+              </button>
+              <button 
+                className="bg-[#1D1D1F] text-white px-8 py-6 rounded-3xl shadow-xl active:scale-95 transition-all text-sm font-black uppercase tracking-widest mt-4"
+                onClick={() => { setIsMobileMenuOpen(false); appUser ? setView('dashboard') : setIsLoginOpen(true); }}
+              >
+                {appUser ? "Open Dashboard" : "Client Login"}
+              </button>
+              {appUser && (
+                <button 
+                  onClick={handleSignOut}
+                  className="px-8 py-6 border border-red-50 text-red-500 rounded-3xl font-black uppercase tracking-widest text-sm hover:bg-red-50 transition-all"
+                >
+                  Sign Out
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       <main>

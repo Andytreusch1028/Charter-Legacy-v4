@@ -186,6 +186,22 @@
           "pattern": "Implement 'Heads-Up' data injection (e.g., live counts, message previews) and global hotkeys (B, V, M) to empower expert users without decluttering the aesthetic for novices.",
           "impact": "High - Efficiency & User Satisfaction",
           "reuse_guidance": "Always add a keyboard layer and 'Data Injection' descriptors to static dashboard cards. Don't make users click to see if they have work to do."
+        },
+        {
+          "id": "learning-026",
+          "date": "2026-02-17",
+          "success": "Standalone Internal Library Pattern (Plan C)",
+          "pattern": "Move complex feature logic to a dedicated `src/lib/[feature]` directory. Use a framework-agnostic `Registry.js` for state and a React Hook bridge for component interaction.",
+          "impact": "High - Decouples UI from business logic and improves state isolation.",
+          "reuse_guidance": "Mandatory for features that need global access (e.g., Suite-wide states) but should remain isolated from the main app state."
+        },
+        {
+          "id": "learning-027",
+          "date": "2026-02-17",
+          "success": "Stealth Input UI Pattern",
+          "pattern": "Overlay a hidden `opacity-0` input over stylized display nodes to create a 'Zero-Knowledge' hardware feel for PIN/Key entry.",
+          "impact": "Medium - Enhances security perception and aesthetic consistency.",
+          "reuse_guidance": "Use for any secure entry field (PIN, Passphrase) to maintain 'Obsidian' high-end hardware aesthetic."
         }
       ]
     },
@@ -257,7 +273,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 20,
-    "last_updated": "2026-02-14T05:50:00Z"
+    "total_learnings": 22,
+    "last_updated": "2026-02-17T17:00:00Z"
   }
 }

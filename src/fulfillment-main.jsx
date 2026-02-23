@@ -4,7 +4,7 @@ import FulfillmentPortal from './staff-node/FulfillmentPortal'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <FulfillmentPortal />
-  </React.StrictMode>,
+  // </React.StrictMode>,
 )

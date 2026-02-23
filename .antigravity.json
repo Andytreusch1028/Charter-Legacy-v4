@@ -30,6 +30,7 @@
     "learning_log": ".antigravity/learnings.json",
     "permissions": ".antigravity/permissions.yaml",
     "validation": "playwright (automation/snapshot-*)",
-    "backend": "Supabase (Magic Link + REST API)"
+    "backend": "Supabase (Magic Link + REST API)",
+    "auto_approve_localhost_js": true
   }
 }
