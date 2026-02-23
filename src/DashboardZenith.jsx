@@ -18,7 +18,7 @@ import ProbateSimulator from './components/ProbateSimulator';
 import DesignationProtocol from './DesignationProtocol';
 import SubscriptionGate from './components/SubscriptionGate';
 import AgentConsole from './components/AgentConsole';
-import AIGrowthConsole from './components/AIGrowthConsole';
+import { useNavigate } from 'react-router-dom';
 
 const DashboardZenith = ({ user, initialData }) => {
   const [loading, setLoading] = useState(true);
@@ -28,7 +28,7 @@ const DashboardZenith = ({ user, initialData }) => {
   const [blueprintStep, setBlueprintStep] = useState('ein');
   const [isRAConsoleOpen, setIsRAConsoleOpen] = useState(false);
   const [isAgentConsoleOpen, setIsAgentConsoleOpen] = useState(false);
-  const [isGrowthConsoleOpen, setIsGrowthConsoleOpen] = useState(false);
+  const navigate = useNavigate();
   const { openVault } = useSuccession();
   
   // Agent Access Bypass (Localhost Only)
@@ -334,7 +334,7 @@ const DashboardZenith = ({ user, initialData }) => {
                                      {import.meta.env.DEV && (
                                          <div className="flex gap-2">
                                             <button 
-                                                onClick={() => setIsGrowthConsoleOpen(true)}
+                                                onClick={() => navigate('/admin/growth')}
                                                 className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 border border-purple-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-600 hover:text-white transition-all active:scale-95 shadow-sm"
                                             >
                                                 AI Growth
@@ -478,18 +478,12 @@ const DashboardZenith = ({ user, initialData }) => {
 
       {/* Dev-Only Agent Console */}
       {import.meta.env.DEV && (
-        <>
-          <AgentConsole 
-            isOpen={isAgentConsoleOpen}
-            onClose={() => setIsAgentConsoleOpen(false)}
-            user={user}
-            llcData={llcData}
-          />
-          <AIGrowthConsole 
-            isOpen={isGrowthConsoleOpen}
-            onClose={() => setIsGrowthConsoleOpen(false)}
-          />
-        </>
+        <AgentConsole 
+          isOpen={isAgentConsoleOpen}
+          onClose={() => setIsAgentConsoleOpen(false)}
+          user={user}
+          llcData={llcData}
+        />
       )}
     </>
   );
