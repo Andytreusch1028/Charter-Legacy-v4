@@ -10,6 +10,8 @@ import DashboardZenith from './DashboardZenith';
 
 // Admin Zone
 import AIGrowthConsole from './zones/admin/AIGrowthConsole';
+import StaffLogin from './zones/admin/StaffLogin';
+import FulfillmentConsole from './zones/admin/FulfillmentConsole';
 
 export default function App() {
   const [appUser, setAppUser] = useState(null);
@@ -38,33 +40,66 @@ export default function App() {
     );
   }
 
-  // Basic RBAC Check for Admin Access
-  const isAdmin = appUser && (
-    appUser.email === 'treusch@example.com' || 
-    appUser.email?.includes('auditor') || 
-    // Fallback for localhost demo scenarios
-    window.location.hostname === 'localhost'
+  // Handle Dev Override for easy offline/local UI testing
+  const overrideRole = window.location.hostname === 'localhost' ? localStorage.getItem('DEV_ADMIN_BYPASS') : null;
+  const activeUser = overrideRole ? { email: `dev_${overrideRole}@localhost`, user_metadata: { role: overrideRole } } : appUser;
+
+  // Enhanced RBAC Check for Admin Access (Using Supabase metadata)
+  const isExecutive = activeUser && (
+    activeUser.user_metadata?.role === 'executive' ||
+    activeUser.email === 'treusch@example.com' ||
+    activeUser.email?.includes('auditor')
   );
+
+  const isFulfillment = activeUser && (
+    activeUser.user_metadata?.role === 'fulfillment'
+  );
+
+  const isStaff = isExecutive || isFulfillment;
 
   return (
     <BrowserRouter>
       <Routes>
-        {/* 1. Marketing Front Door */}
-        <Route path="/" element={<Landing appUser={appUser} />} />
+        {/* === MARKETING & FRONTWARD LOGIN (CUSTOMERS) === */}
+        <Route path="/" element={<Landing appUser={activeUser} />} />
         
-        {/* 2. Customer Playground (Zenith Dashboard) */}
+        {/* === CUSTOMER PLAYGROUND (ZENITH) === */}
         <Route 
           path="/app/*" 
-          element={appUser ? <DashboardZenith user={appUser} /> : <Navigate to="/" replace />} 
+          element={activeUser ? <DashboardZenith user={activeUser} /> : <Navigate to="/" replace />} 
         />
         
-        {/* 3. Executive / Admin Zone */}
+        {/* === BACKSTAGE: STAFF / EXECUTIVE LOGIN === */}
+        <Route 
+          path="/staff" 
+          element={
+            activeUser 
+              ? (isExecutive ? <Navigate to="/admin/growth" replace /> : isFulfillment ? <Navigate to="/admin/fulfillment" replace /> : <Navigate to="/app" replace />)
+              : <StaffLogin />
+          } 
+        />
+
+        {/* === EXECUTIVE / ADMIN ZONE === */}
         <Route 
           path="/admin/growth" 
           element={
-            isAdmin 
-              ? <AIGrowthConsole isOpen={true} onClose={() => window.location.href = '/app'} /> 
-              : <Navigate to="/app" replace />
+            isExecutive 
+              ? <AIGrowthConsole isOpen={true} onClose={async () => {
+                  localStorage.removeItem('DEV_ADMIN_BYPASS');
+                  await supabase.auth.signOut();
+                  window.location.href = '/staff';
+                }} /> 
+              : <Navigate to="/staff" replace /> 
+          } 
+        />
+        
+        {/* === FULFILLMENT ZONE === */}
+        <Route 
+          path="/admin/fulfillment" 
+          element={
+            isStaff 
+              ? <FulfillmentConsole /> 
+              : <Navigate to="/staff" replace /> 
           } 
         />
 
