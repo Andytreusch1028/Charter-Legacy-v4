@@ -6,6 +6,7 @@ export default function FulfillmentConsole() {
   const [activeTab, setActiveTab] = useState('ALL');
   const [llcs, setLlcs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState(null);
 
   useEffect(() => {
     fetchFulfillmentQueue();
@@ -40,6 +41,26 @@ export default function FulfillmentConsole() {
     localStorage.removeItem('DEV_ADMIN_BYPASS');
     await supabase.auth.signOut();
     window.location.href = '/staff';
+  };
+
+  const handleProcess = async (llc) => {
+    setProcessingId(llc.id);
+    try {
+        const { data, error } = await supabase.functions.invoke('sunbiz-e-file', {
+            body: { llc_id: llc.id }
+        });
+        
+        if (error) throw error;
+        if (!data.success) throw new Error(data.error);
+
+        alert("Success: " + data.message);
+        await fetchFulfillmentQueue(); // Refresh the grid
+    } catch (err) {
+        console.error("Scrivener Engine Error:", err);
+        alert("Automation Failed: " + err.message);
+    } finally {
+        setProcessingId(null);
+    }
   };
 
   const getFilteredData = () => {
@@ -160,9 +181,13 @@ export default function FulfillmentConsole() {
                                  {new Date(llc.created_at).toLocaleDateString()}
                              </div>
                           </td>
-                          <td className="px-6 py-5 text-right space-x-2">
-                             <button className="px-3 py-1.5 bg-[#2A2A2E] hover:bg-white hover:text-black text-gray-300 rounded text-[9px] font-black uppercase tracking-widest transition-all">
-                                 Process
+                          <td className="px-6 py-5 text-right space-x-2 w-48">
+                             <button 
+                                 onClick={() => handleProcess(llc)}
+                                 disabled={processingId === llc.id}
+                                 className="px-3 py-1.5 bg-[#2A2A2E] hover:bg-white hover:text-black text-gray-300 rounded text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50 min-w-[70px]"
+                             >
+                                 {processingId === llc.id ? <Loader2 size={12} className="animate-spin inline" /> : 'Process'}
                              </button>
                              <button className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500 hover:text-white text-blue-500 border border-blue-500/20 rounded text-[9px] font-black uppercase tracking-widest transition-all">
                                  Upload Doc

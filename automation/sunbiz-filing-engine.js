@@ -163,8 +163,33 @@ async function executePlaywright(llcData, taskId, protocol = 'llc_formation') {
     }
 
     if (mainSubmitSelector) {
+        scrivenerLog('Phase B.3', 'Sending final form payload...');
         await page.click(mainSubmitSelector);
+
+        // ============================================
+        // PHASE C: Financial Finality (Prepaid Account)
+        // ============================================
+        if (protocol === 'llc_formation') {
+            scrivenerLog('Phase C', 'Authorizing Sunbiz Prepaid E-File Account...');
+            // Wait for payment selection screen
+            await page.waitForSelector('input[value="sunbiz_efile_account"]', { timeout: 15000 }).catch(() => null);
+            
+            // If the payment screen appears, process the Prepaid Auth
+            if (await page.isVisible('input[value="sunbiz_efile_account"]')) {
+                await page.check('input[value="sunbiz_efile_account"]');
+                await page.fill('input[name="prepaid_account_number"]', process.env.SUNBIZ_PREPAID_ACCOUNT || '000000');
+                await page.fill('input[name="prepaid_account_pin"]', process.env.SUNBIZ_PREPAID_PIN || '0000');
+                
+                scrivenerLog('Phase C', 'Prepaid Account credentials injected. Authorizing payment ($125)...');
+                await page.click('input[value="Authorize Payment"]');
+            } else {
+                scrivenerLog('Phase C', 'Skipped (No payment screen detected or already paid).');
+            }
+        }
+
         await page.waitForSelector('.confirmation-number', { timeout: 45000 });
+        const trackingId = await page.textContent('.confirmation-number').catch(() => 'UNKNOWN');
+        scrivenerLog('Phase C', `Success! Tracking ID: ${trackingId}`);
     }
 
     return { success: true };
@@ -200,7 +225,12 @@ async function fileLLCWithSunbiz(llcIdentifier, protocol = 'llc_formation') {
         filing_status: 'TRANSMITTED',
         filed_at: new Date().toISOString()
       }).eq('id', taskId);
-      await generateCustomerPackage(llcData);
+      
+      try {
+          await generateCustomerPackage(llcData);
+      } catch (pkgErr) {
+          scrivenerLog('Engine', 'WARN: Package gen failed', pkgErr);
+      }
     }
     
     return result;
