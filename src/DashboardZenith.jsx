@@ -18,6 +18,7 @@ import ProbateSimulator from './components/ProbateSimulator';
 import DesignationProtocol from './DesignationProtocol';
 import SubscriptionGate from './components/SubscriptionGate';
 import AgentConsole from './components/AgentConsole';
+import AIGrowthConsole from './components/AIGrowthConsole';
 
 const DashboardZenith = ({ user, initialData }) => {
   const [loading, setLoading] = useState(true);
@@ -27,6 +28,7 @@ const DashboardZenith = ({ user, initialData }) => {
   const [blueprintStep, setBlueprintStep] = useState('ein');
   const [isRAConsoleOpen, setIsRAConsoleOpen] = useState(false);
   const [isAgentConsoleOpen, setIsAgentConsoleOpen] = useState(false);
+  const [isGrowthConsoleOpen, setIsGrowthConsoleOpen] = useState(false);
   const { openVault } = useSuccession();
   
   // Agent Access Bypass (Localhost Only)
@@ -330,12 +332,20 @@ const DashboardZenith = ({ user, initialData }) => {
                                 <div className="absolute top-0 right-0 flex items-center gap-4">
                                      {/* Agent Access Bypass (Dev Only) */}
                                      {import.meta.env.DEV && (
-                                         <button 
-                                            onClick={() => setIsAgentConsoleOpen(true)}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all active:scale-95 shadow-sm"
-                                         >
-                                             <Shield size={14} /> Agent Access
-                                         </button>
+                                         <div className="flex gap-2">
+                                            <button 
+                                                onClick={() => setIsGrowthConsoleOpen(true)}
+                                                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 border border-purple-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-600 hover:text-white transition-all active:scale-95 shadow-sm"
+                                            >
+                                                AI Growth
+                                            </button>
+                                            <button 
+                                                onClick={() => setIsAgentConsoleOpen(true)}
+                                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all active:scale-95 shadow-sm"
+                                            >
+                                                <Shield size={14} /> Agent Access
+                                            </button>
+                                         </div>
                                      )}
                                      <button 
                                         onClick={handleLogout}
@@ -468,12 +478,18 @@ const DashboardZenith = ({ user, initialData }) => {
 
       {/* Dev-Only Agent Console */}
       {import.meta.env.DEV && (
-        <AgentConsole 
-          isOpen={isAgentConsoleOpen}
-          onClose={() => setIsAgentConsoleOpen(false)}
-          user={user}
-          llcData={llcData}
-        />
+        <>
+          <AgentConsole 
+            isOpen={isAgentConsoleOpen}
+            onClose={() => setIsAgentConsoleOpen(false)}
+            user={user}
+            llcData={llcData}
+          />
+          <AIGrowthConsole 
+            isOpen={isGrowthConsoleOpen}
+            onClose={() => setIsGrowthConsoleOpen(false)}
+          />
+        </>
       )}
     </>
   );

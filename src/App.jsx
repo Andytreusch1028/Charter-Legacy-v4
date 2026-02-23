@@ -15,6 +15,7 @@ import RegisteredAgentConsole from './RegisteredAgentConsole';
 import SpecSheet from './SpecSheet';
 import DoubleLLCExplainer from './DoubleLLCExplainer';
 import PlanManager from './components/PlanManager';
+import { useHeroVariant } from './hooks/useHeroVariant';
 
 /**
  * CHARTER LEGACY v3.1.0 // THE "RULE OF THREE" REVERSION
@@ -451,6 +452,9 @@ export default function App() {
   const [showDoubleLLCExplainer, setShowDoubleLLCExplainer] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // A/B Testing Rotation & Tracking
+  const { variant, trackClick } = useHeroVariant();
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -650,21 +654,49 @@ export default function App() {
             </div>
             
             <h1 className="text-6xl md:text-[9.5rem] font-black tracking-tighter leading-[0.85] uppercase text-luminous-ink animate-in zoom-in-95 duration-1000">
-              Your Business.<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-luminous-ink via-[#4A4A4A] to-luminous-ink bg-[length:200%_auto] animate-prism-shimmer">Private.</span>
+              {variant.rawTitle}<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-luminous-ink via-[#4A4A4A] to-luminous-ink bg-[length:200%_auto] animate-prism-shimmer">{variant.titleHighlight}</span>
             </h1>
             
-            <p className="max-w-2xl mx-auto text-xl md:text-2xl text-gray-400 font-medium italic leading-relaxed tracking-wide animate-in slide-in-from-bottom-8 fade-in duration-1000 delay-200">
-              Your home belongs to your family, not the public record. We handle the paperwork and keep your residential address private.
+            <p className="max-w-2xl mx-auto text-xl md:text-2xl text-gray-400 font-medium italic leading-relaxed tracking-wide animate-in slide-in-from-bottom-8 fade-in duration-1000 delay-200" key={variant.id}>
+              {variant.subHeading}
             </p>
 
             <div className="pt-12 flex flex-col md:flex-row items-center justify-center gap-5 animate-in slide-in-from-bottom-8 fade-in duration-1000 delay-300">
               <button 
-                onClick={() => setView('packages')}
+                onClick={() => {
+                  trackClick();
+                  setView('packages');
+                }}
                 className="group relative h-16 px-12 rounded-2xl bg-luminous-ink text-white font-black uppercase tracking-[0.2em] transition-all hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] flex items-center gap-3 shadow-2xl overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 Launch Entity <ChevronRight size={18} />
               </button>
+            </div>
+
+            {/* Micro Three Features - Ultra Minimal */}
+            <div className="pt-24 w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 text-left animate-in fade-in duration-1000 delay-500">
+               <div className="space-y-4">
+                  <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-luminous-ink border border-gray-100">
+                     <Zap size={18} strokeWidth={1.5} />
+                  </div>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-luminous-ink">1. Start</h4>
+                  <p className="text-sm font-medium italic text-gray-400 leading-relaxed">Automated statutory filings, operating agreements, and FINCEN BOI compliance right out of the box.</p>
+               </div>
+               <div className="space-y-4">
+                  <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-luminous-ink border border-gray-100">
+                     <ShieldCheck size={18} strokeWidth={1.5} />
+                  </div>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-luminous-ink">2. Shield</h4>
+                  <p className="text-sm font-medium italic text-gray-400 leading-relaxed">Our zero-nexus office separates your personal residence from the public record.</p>
+               </div>
+               <div className="space-y-4">
+                  <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-luminous-ink border border-gray-100">
+                     <Anchor size={18} strokeWidth={1.5} />
+                  </div>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-luminous-ink">3. Sustain</h4>
+                  <p className="text-sm font-medium italic text-gray-400 leading-relaxed">Integrated succession planning and encrypted legacy handover for when you retire.</p>
+               </div>
             </div>
           </div>
         </section>
