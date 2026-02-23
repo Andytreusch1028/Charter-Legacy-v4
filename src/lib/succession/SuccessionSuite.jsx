@@ -20,16 +20,27 @@ const SuccessionSuite = ({ user }) => {
     useEffect(() => {
         if (!isOpen || !user) return;
 
+        let isMounted = true;
+        const safetyTimeout = setTimeout(() => {
+            if (isMounted) {
+                console.warn("SuccessionSuite: Data synchronization timed out. Falling back to local state.");
+                setIsLoading(false);
+            }
+        }, 3500); // 3.5s Institutional Timeout
+
         const loadSuccessionData = async () => {
             setIsLoading(true);
             try {
+                // Institutional Fetch
                 const { data: dbProtocols, error } = await charterSupabase
                     .from('wills')
                     .select('*')
                     .eq('user_id', user.id)
                     .order('created_at', { ascending: false });
 
-                if (dbProtocols && dbProtocols.length > 0) {
+                if (error) throw error;
+
+                if (isMounted && dbProtocols && dbProtocols.length > 0) {
                     const latest = dbProtocols[0];
                     setActiveProtocolData(latest.protocol_data);
 
@@ -42,19 +53,28 @@ const SuccessionSuite = ({ user }) => {
                     setLegalDocs([dbDoc]);
                 }
 
-                setAuditLog([
-                    { action: 'PROTOCOL_READ', details: 'Succession system heartbeat detected', time: 'Just now' },
-                    { action: 'AUTH_VERIFIED', details: 'Heritage permissions confirmed', time: 'Just now' }
-                ]);
+                if (isMounted) {
+                    setAuditLog([
+                        { action: 'PROTOCOL_READ', details: 'Succession system heartbeat detected', time: 'Just now' },
+                        { action: 'AUTH_VERIFIED', details: 'Heritage permissions confirmed', time: 'Just now' }
+                    ]);
+                }
 
             } catch (err) {
                 console.error("Succession Data Error:", err);
             } finally {
-                setIsLoading(false);
+                if (isMounted) {
+                    setIsLoading(false);
+                    clearTimeout(safetyTimeout);
+                }
             }
         };
 
         loadSuccessionData();
+        return () => { 
+            isMounted = false; 
+            clearTimeout(safetyTimeout); 
+        };
     }, [isOpen, user]);
 
     // 2. Event Handlers
