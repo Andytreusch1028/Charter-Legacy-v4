@@ -268,20 +268,34 @@ const DashboardZenith = ({ user, initialData }) => {
                     </div>
                 </div>
             ) : (
-                <div className="animate-in slide-in-from-bottom-8 duration-700">
+                <AnimatePresence mode="wait">
                     
                     {/* --- MULTIPLE LLC INTERSTITIAL --- */}
                     {!llcData && allLlcs.length > 1 ? (
-                        <div className="-m-12 md:-m-24 lg:-m-32">
+                        <motion.div 
+                           key="selector"
+                           initial={{ opacity: 0, scale: 0.98, filter: 'blur(10px)' }}
+                           animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                           exit={{ opacity: 0, scale: 1.02, filter: 'blur(10px)' }}
+                           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                           className="-m-12 md:-m-24 lg:-m-32"
+                        >
                            <BusinessSelector llcs={allLlcs} onSelect={(selectedLlc) => {
                               setLlcData(selectedLlc);
                               if (selectedLlc.llc_name.includes('Pending Formation') || selectedLlc.llc_status === 'Setting Up') {
                                   setShowDesignation(true);
                               }
                            }} />
-                        </div>
+                        </motion.div>
                     ) : !llcData || llcData?.llc_status === 'Setting Up' ? (
-                        <div className="max-w-2xl text-left pt-10">
+                        <motion.div 
+                            key="setup"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.5 }}
+                            className="max-w-2xl text-left pt-10"
+                        >
                             <div className="w-16 h-16 bg-luminous-ink rounded-2xl mb-12 shadow-2xl flex items-center justify-center text-white rotate-3">
                                 <ShieldCheck size={32} strokeWidth={1.5} />
                             </div>
@@ -329,10 +343,17 @@ const DashboardZenith = ({ user, initialData }) => {
                             >
                                 Open Dashboard
                             </button>
-                        </div>
+                        </motion.div>
                     ) : ( 
                         /* --- ACTIVE STATE (FULL DASHBOARD: "Command Center") --- */
-                        <>
+                        <motion.div
+                            key="dashboard"
+                            initial={{ opacity: 0, scale: 0.98, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.98, y: -20 }}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            className="w-full"
+                        >
                              {/* Focused Header Section */}
                             <div className="flex flex-col mb-16 relative">
                                 <div className="absolute top-0 right-0 flex items-center gap-4">
@@ -427,9 +448,9 @@ const DashboardZenith = ({ user, initialData }) => {
                                 </div>
 
                             </div>
-                        </>
+                        </motion.div>
                     )}
-                </div>
+                </AnimatePresence>
             )}
         </main>
 
