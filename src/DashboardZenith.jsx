@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Shield, Clock, FileText, CheckCircle2, AlertCircle, 
   ChevronRight, Lock, Activity, RefreshCw, LogOut, Settings,
-  Copy, Download, Eye, EyeOff, MessageSquare, ShieldCheck, Fingerprint, Trash2, Scale
+  Copy, Download, Eye, EyeOff, MessageSquare, ShieldCheck, Fingerprint, Trash2, Scale, Building2
 } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
@@ -18,11 +18,13 @@ import ProbateSimulator from './components/ProbateSimulator';
 import DesignationProtocol from './DesignationProtocol';
 import SubscriptionGate from './components/SubscriptionGate';
 import AgentConsole from './components/AgentConsole';
+import BusinessSelector from './components/BusinessSelector';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardZenith = ({ user, initialData }) => {
   const [loading, setLoading] = useState(true);
   const [llcData, setLlcData] = useState(initialData || null);
+  const [allLlcs, setAllLlcs] = useState([]);
   const [activityLog, setActivityLog] = useState([]);
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [blueprintStep, setBlueprintStep] = useState('ein');
@@ -122,14 +124,15 @@ const DashboardZenith = ({ user, initialData }) => {
                 .from('llcs')
                 .select('*')
                 .eq('user_id', user.id)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .single();
+                .order('created_at', { ascending: false });
             
-            if (data) {
-                setLlcData(data);
-                if (data.llc_name.includes('Pending Formation') || data.llc_status === 'Setting Up') {
-                    setShowDesignation(true);
+            if (data && data.length > 0) {
+                setAllLlcs(data);
+                if (data.length === 1) {
+                    setLlcData(data[0]);
+                    if (data[0].llc_name.includes('Pending Formation') || data[0].llc_status === 'Setting Up') {
+                        setShowDesignation(true);
+                    }
                 }
             }
         }
@@ -273,8 +276,17 @@ const DashboardZenith = ({ user, initialData }) => {
             ) : (
                 <div className="animate-in slide-in-from-bottom-8 duration-700">
                     
-                    {/* --- ZERO STATE (SETUP MODE) --- */}
-                    {!llcData || llcData?.llc_status === 'Setting Up' ? (
+                    {/* --- MULTIPLE LLC INTERSTITIAL --- */}
+                    {!llcData && allLlcs.length > 1 ? (
+                        <div className="-m-12 md:-m-24 lg:-m-32">
+                           <BusinessSelector llcs={allLlcs} onSelect={(selectedLlc) => {
+                              setLlcData(selectedLlc);
+                              if (selectedLlc.llc_name.includes('Pending Formation') || selectedLlc.llc_status === 'Setting Up') {
+                                  setShowDesignation(true);
+                              }
+                           }} />
+                        </div>
+                    ) : !llcData || llcData?.llc_status === 'Setting Up' ? (
                         <div className="max-w-2xl text-left pt-10">
                             <div className="w-16 h-16 bg-luminous-ink rounded-2xl mb-12 shadow-2xl flex items-center justify-center text-white rotate-3">
                                 <ShieldCheck size={32} strokeWidth={1.5} />
@@ -353,6 +365,15 @@ const DashboardZenith = ({ user, initialData }) => {
                                      >
                                          <LogOut size={14} /> Log Out
                                      </button>
+
+                                     {allLlcs.length > 1 && (
+                                         <button 
+                                            onClick={() => setLlcData(null)}
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#1D1D1F] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform active:scale-95 shadow-lg"
+                                         >
+                                             <Building2 size={14} /> Switch Entity
+                                         </button>
+                                     )}
                                 </div>
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="w-2.5 h-2.5 bg-luminous-blue rounded-full animate-pulse shadow-[0_0_15px_rgba(0,122,255,0.6)]"></div>
