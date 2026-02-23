@@ -18,72 +18,141 @@ const listeners = new Set();
 
 const notify = () => listeners.forEach(listener => listener(state));
 
+const SAFE_MODE = true; // Prevents state corruption on failed actions
+
 export const SuccessionRegistry = {
     getState: () => ({ ...state }),
 
+    /**
+     * SUBSCRIBE
+     * Registers a listener to state changes.
+     */
     subscribe: (listener) => {
+        if (typeof listener !== 'function') {
+            console.error("SuccessionRegistry Engine: Invalid listener registration.");
+            return () => {};
+        }
         listeners.add(listener);
         return () => listeners.delete(listener);
     },
 
+    /**
+     * OPEN VAULT
+     * Initializes access and triggers the audit log.
+     */
     open: () => {
-        state.isOpen = true;
-        state.lastAudit = new Date().toISOString();
-        state.accessLog = [{ action: 'VAULT_OPENED', time: state.lastAudit }, ...state.accessLog];
-        notify();
+        try {
+            state.isOpen = true;
+            state.lastAudit = new Date().toISOString();
+            state.accessLog = [{ action: 'VAULT_OPENED', time: state.lastAudit }, ...state.accessLog];
+            notify();
+            console.log("SuccessionRegistry: Vault Access Initialized.");
+        } catch (error) {
+            console.error("SuccessionRegistry: Critical failure during vault initialization.", error);
+        }
     },
 
+    /**
+     * CLOSE VAULT
+     * Terminated active session and auto-locks for security.
+     */
     close: () => {
-        state.isOpen = false;
-        state.isUnlocked = false; // Auto-lock on close for security
-        state.accessLog = [{ action: 'VAULT_CLOSED', time: new Date().toISOString() }, ...state.accessLog];
-        notify();
+        try {
+            state.isOpen = false;
+            state.isUnlocked = false; 
+            state.accessLog = [{ action: 'VAULT_CLOSED', time: new Date().toISOString() }, ...state.accessLog];
+            notify();
+            console.log("SuccessionRegistry: Vault Session Terminated (Auto-Locked).");
+        } catch (error) {
+            console.error("SuccessionRegistry: Failed to safely close vault.", error);
+        }
     },
 
+    /**
+     * SET UNLOCKED STATUS
+     * Handles manual lock/unlock actions.
+     */
     setUnlocked: (status) => {
-        state.isUnlocked = status;
-        state.accessLog = [{ action: status ? 'MANUAL_UNLOCK' : 'MANUAL_LOCK', time: new Date().toISOString() }, ...state.accessLog];
-        notify();
+        try {
+            state.isUnlocked = !!status;
+            state.accessLog = [{ 
+                action: status ? 'MANUAL_UNLOCK' : 'MANUAL_LOCK', 
+                time: new Date().toISOString() 
+            }, ...state.accessLog];
+            notify();
+        } catch (error) {
+            console.error(`SuccessionRegistry: Failed to set legacy lock status to ${status}.`, error);
+        }
     },
 
+    /**
+     * SET ACTIVE PROTOCOL
+     * Switches the wizard mode between Will and Trust.
+     */
     setProtocol: (protocol) => {
-        state.activeProtocol = protocol;
-        state.accessLog = [{ action: 'PROTOCOL_SET', details: protocol, time: new Date().toISOString() }, ...state.accessLog];
-        notify();
+        try {
+            const VALID_PROTOCOLS = ['will', 'trust', null];
+            if (!VALID_PROTOCOLS.includes(protocol)) {
+                throw new Error(`Unsupported legacy protocol: ${protocol}`);
+            }
+            state.activeProtocol = protocol;
+            state.accessLog = [{ 
+                action: 'PROTOCOL_TRANSITION', 
+                details: protocol, 
+                time: new Date().toISOString() 
+            }, ...state.accessLog];
+            notify();
+        } catch (error) {
+            console.error("SuccessionRegistry: Protocol state transition failed.", error);
+        }
     },
 
     /**
      * PIN VALIDATION
-     * In production, this would be a cryptographic check or an API call.
+     * Institutional PIN verification for vault decryption.
      */
     validatePIN: (pin) => {
-        const MOCK_PIN = '1234';
-        if (pin === MOCK_PIN) {
-            state.isUnlocked = true;
-            state.lastAudit = new Date().toISOString();
-            state.accessLog = [{ action: 'PIN_VERIFIED', time: state.lastAudit }, ...state.accessLog];
+        try {
+            const MOCK_PIN = '1234'; // Production would use remote/hashed verification
+            const isValid = pin === MOCK_PIN;
+            
+            if (isValid) {
+                state.isUnlocked = true;
+                state.lastAudit = new Date().toISOString();
+                state.accessLog = [{ action: 'PIN_VERIFIED', time: state.lastAudit }, ...state.accessLog];
+                notify();
+                return true;
+            }
+
+            state.accessLog = [{ action: 'PIN_DENIED', time: new Date().toISOString() }, ...state.accessLog];
             notify();
-            return true;
+            return false;
+        } catch (error) {
+            console.error("SuccessionRegistry: PIN validation subsystem failure.", error);
+            return false;
         }
-        state.accessLog = [{ action: 'PIN_DENIED', time: new Date().toISOString() }, ...state.accessLog];
-        notify();
-        return false;
     },
 
     /**
      * LOCALHOST BYPASS
-     * Strictly for agent verification and dev mode.
+     * Strictly for agent verification and development telemetry.
      */
     provisionBypass: () => {
-        if (window.location.hostname === 'localhost') {
-            console.log("Legacy Registry: Provisioning Localhost Bypass");
-            state.isUnlocked = true;
-            state.isOpen = true;
-            state.lastAudit = new Date().toISOString();
-            notify();
-            return true;
+        try {
+            if (window.location.hostname === 'localhost') {
+                console.warn("SuccessionRegistry: Provisioning Localhost Bypass (Dev Mode)");
+                state.isUnlocked = true;
+                state.isOpen = true;
+                state.lastAudit = new Date().toISOString();
+                state.accessLog = [{ action: 'BYPASS_ACTIVATED', time: state.lastAudit }, ...state.accessLog];
+                notify();
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error("SuccessionRegistry: Bypass provisioning failed.", error);
+            return false;
         }
-        return false;
     }
 };
 

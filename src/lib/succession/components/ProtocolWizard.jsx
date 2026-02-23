@@ -2,6 +2,82 @@ import React, { useState } from 'react';
 import { X, Shield, History, Brain, ArrowRight, FileDown } from 'lucide-react';
 import { LegalDocPreview, TrustDocPreview } from './LegalArtifacts';
 
+// --- UI SUB-COMPONENTS ---
+
+const ProtocolHeader = ({ isTrust, onClose }) => (
+    <div className="bg-[#0A0A0B] p-6 border-b border-gray-800 flex justify-between items-center">
+        <div>
+             <h3 className="text-white font-black uppercase tracking-tight text-xl flex items-center gap-2">
+                <Brain className="text-[#d4af37]" /> {isTrust ? 'Heritage Trust Protocol' : 'Official Will Drafter'}
+            </h3>
+        </div>
+        <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors"><X size={24}/></button>
+    </div>
+);
+
+const StepProgress = ({ current, total }) => (
+    <div className="w-full bg-gray-900 h-1">
+        <div 
+            className="bg-[#d4af37] h-full transition-all duration-500 ease-out" 
+            style={{ width: `${(current / total) * 100}%` }}
+        ></div>
+    </div>
+);
+
+const ProtocolActions = ({ step, totalSteps, isStepValid, onBack, onNext, onFinalize }) => (
+    <div className="p-6 border-t border-gray-800 bg-[#0A0A0B] flex justify-between items-center">
+        {step > 1 ? (
+            <button onClick={onBack} className="text-gray-400 font-bold uppercase tracking-widest hover:text-white transition-colors">
+                Back
+            </button>
+        ) : <div />}
+        
+        {step < totalSteps ? (
+            <button 
+                disabled={!isStepValid} 
+                onClick={onNext} 
+                className="bg-white text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:bg-[#d4af37] transition-all disabled:opacity-50"
+            >
+                Next Step <ArrowRight size={14} className="inline ml-1" />
+            </button>
+        ) : (
+            <button 
+                onClick={onFinalize} 
+                className="bg-[#d4af37] text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-lg flex items-center gap-2 group overflow-hidden relative"
+            >
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                <FileDown size={14} className="relative z-10" /> 
+                <span className="relative z-10">Approve & Finalize</span>
+            </button>
+        )}
+    </div>
+);
+
+// --- STEP RENDERERS ---
+
+const FormInput = ({ label, value, onChange, placeholder, isTextArea = false, type = "text", subLabel }) => (
+    <div className="animate-in slide-in-from-right duration-500">
+        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">{label}</label>
+        {isTextArea ? (
+            <textarea 
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors min-h-[120px]"
+                placeholder={placeholder}
+            />
+        ) : (
+            <input 
+                type={type}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
+                placeholder={placeholder}
+            />
+        )}
+        {subLabel && <p className="text-gray-600 text-[10px] mt-2 font-medium uppercase tracking-tighter">{subLabel}</p>}
+    </div>
+);
+
 /**
  * PROTOCOL WIZARD (Library Version)
  */
@@ -39,10 +115,10 @@ const ProtocolWizard = ({ onClose, onComplete, mode = 'will', initialData }) => 
                 case 2: 
                     if (data.initialTrustees === 'Corporate Trustee' && !data.corporateTrusteeName) return false;
                     if (data.initialTrustees === 'Self & Spouse (Joint)' && !data.jointTrusteeName) return false;
-                    return data.initialTrustees;
-                case 3: return data.successorTrustee;
-                case 4: return data.trustBeneficiaries;
-                case 5: return data.safetyNetExecutor;
+                    return !!data.initialTrustees;
+                case 3: return !!data.successorTrustee;
+                case 4: return !!data.trustBeneficiaries;
+                case 5: return !!data.safetyNetExecutor;
                 default: return true;
             }
         }
@@ -51,8 +127,8 @@ const ProtocolWizard = ({ onClose, onComplete, mode = 'will', initialData }) => 
             case 2: 
                 if (data.maritalStatus === 'Married' && !data.spouseName) return false;
                 return true; 
-            case 3: return data.executorName;
-            case 4: return data.beneficiaryName;
+            case 3: return !!data.executorName;
+            case 4: return !!data.beneficiaryName;
             default: return true;
         }
     };
@@ -60,40 +136,24 @@ const ProtocolWizard = ({ onClose, onComplete, mode = 'will', initialData }) => 
     const renderStep = () => {
         if (isTrust) {
             switch(step) {
-                case 1: // GRANTOR
+                case 1:
                     return (
-                        <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Grantor (The Founder)</label>
-                                <input 
-                                    value={data.fullName}
-                                    onChange={(e) => handleChange('fullName', e.target.value)}
-                                    className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                    placeholder="Your Full Legal Name"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">County of Venue</label>
-                                <input 
-                                    value={data.county}
-                                    onChange={(e) => handleChange('county', e.target.value)}
-                                    className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                    placeholder="e.g. Miami-Dade"
-                                />
-                            </div>
+                        <div className="space-y-6">
+                            <FormInput label="Grantor (Founding Identity)" value={data.fullName} onChange={(val) => handleChange('fullName', val)} placeholder="Your Full Legal Name" />
+                            <FormInput label="Residence / Venue" value={data.county} onChange={(val) => handleChange('county', val)} placeholder="e.g. Miami-Dade" />
                         </div>
                     );
-                case 2: // TRUSTEES
+                case 2:
                     return (
-                        <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                            <div className="p-4 bg-[#d4af37]/10 rounded-xl border border-[#d4af37]/20 flex items-start gap-3">
+                        <div className="space-y-6">
+                             <div className="p-4 bg-[#d4af37]/10 rounded-xl border border-[#d4af37]/20 flex items-start gap-3">
                                 <Shield size={24} className="text-[#d4af37] flex-shrink-0" />
                                 <div>
-                                    <h5 className="text-[#d4af37] font-bold text-xs uppercase mb-1">Initial Trustee (The Guardian)</h5>
-                                    <p className="text-gray-400 text-[10px] leading-relaxed">By default, you are the Initial Trustee. This ensures you maintain 100% control over all assets during your lifetime.</p>
+                                    <h5 className="text-[#d4af37] font-bold text-xs uppercase mb-1">Guardian Protocol</h5>
+                                    <p className="text-gray-400 text-[10px] leading-relaxed">By default, you maintain 100% sovereign control over all assets.</p>
                                 </div>
                             </div>
-                            <div>
+                            <div className="animate-in slide-in-from-right duration-500">
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Initial Trustee Designation</label>
                                 <select 
                                     value={data.initialTrustees}
@@ -105,91 +165,23 @@ const ProtocolWizard = ({ onClose, onComplete, mode = 'will', initialData }) => 
                                     <option>Corporate Trustee</option>
                                 </select>
                             </div>
-
                             {data.initialTrustees === 'Corporate Trustee' && (
-                                <div className="animate-in fade-in slide-in-from-top-2">
-                                    <label className="text-xs font-bold text-[#d4af37] uppercase tracking-widest mb-2 block">Corporate Trustee Name</label>
-                                    <input 
-                                        value={data.corporateTrusteeName}
-                                        onChange={(e) => handleChange('corporateTrusteeName', e.target.value)}
-                                        className="w-full bg-black/40 border border-[#d4af37]/50 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                        placeholder="e.g. Northern Trust, NA"
-                                    />
-                                    <p className="text-gray-600 text-[10px] mt-2 italic">Ensure the full legal entity name of the institution is provided.</p>
-                                </div>
+                                <FormInput label="Institution Name" value={data.corporateTrusteeName} onChange={(val) => handleChange('corporateTrusteeName', val)} placeholder="e.g. Northern Trust, NA" subLabel="Use full statutory name." />
                             )}
-
                             {data.initialTrustees === 'Self & Spouse (Joint)' && (
-                                <div className="animate-in fade-in slide-in-from-top-2">
-                                    <label className="text-xs font-bold text-[#d4af37] uppercase tracking-widest mb-2 block">Co-Trustee (Spouse) Name</label>
-                                    <input 
-                                        value={data.jointTrusteeName}
-                                        onChange={(e) => handleChange('jointTrusteeName', e.target.value)}
-                                        className="w-full bg-black/40 border border-[#d4af37]/50 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                        placeholder="Full Name of Co-Trustee"
-                                    />
-                                </div>
+                                <FormInput label="Co-Trustee (Spouse)" value={data.jointTrusteeName} onChange={(val) => handleChange('jointTrusteeName', val)} placeholder="Full Name of Co-Trustee" />
                             )}
                         </div>
                     );
-                case 3: // SUCCESSION
-                    return (
-                        <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Successor Trustee</label>
-                                <input 
-                                    value={data.successorTrustee}
-                                    onChange={(e) => handleChange('successorTrustee', e.target.value)}
-                                    className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                    placeholder="Primary Successor Name"
-                                />
-                                <p className="text-gray-600 text-[10px] mt-2">This person manages the trust only after you pass or become incapacitated.</p>
-                            </div>
-                        </div>
-                    );
-                case 4: // DISTRIBUTION
-                    return (
-                        <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Trust Beneficiaries</label>
-                                <textarea 
-                                    value={data.trustBeneficiaries}
-                                    onChange={(e) => handleChange('trustBeneficiaries', e.target.value)}
-                                    className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors min-h-[120px]"
-                                    placeholder="List names and percentages (e.g. Jane Doe 50%, John Doe 50%)"
-                                />
-                            </div>
-                        </div>
-                    );
-                case 5: // SAFETY-NET WILL
-                    return (
-                        <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                            <div className="bg-[#d4af37]/5 border border-[#d4af37]/20 rounded-2xl p-6">
-                                <div className="flex items-center gap-3 mb-4 text-[#d4af37]">
-                                    <History size={20} />
-                                    <h4 className="font-black uppercase text-sm">Safety-Net Sync (Pour-Over)</h4>
-                                </div>
-                                <p className="text-gray-400 text-xs leading-relaxed mb-6">
-                                    This "Pour-Over" Will form is a standard safety-net instrument. It is designed so that any assets remain titled in your individual name at the time of death are automatically "poured" into the Trust for distribution according to the Trust's private terms.
-                                </p>
-                                <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 block">Safety-Net Executor</label>
-                                    <input 
-                                        value={data.safetyNetExecutor}
-                                        onChange={(e) => handleChange('safetyNetExecutor', e.target.value)}
-                                        className="w-full bg-black/40 border border-gray-700 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                        placeholder="Full Name of Representative"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    );
-                case 6:
-                    return (
-                        <div className="animate-in zoom-in-95 duration-500">
-                             <TrustDocPreview data={data} />
-                        </div>
-                    );
+                case 3: case 4: case 5:
+                    const stepProfiles = {
+                        3: { label: 'Successor Trustee', field: 'successorTrustee', placeholder: 'Primary Successor Name', sub: 'Manages assets only if you pass or become incapacitated.' },
+                        4: { label: 'Trust Beneficiaries', field: 'trustBeneficiaries', placeholder: 'Names and % (e.g. Jane Doe 100%)', isText: true },
+                        5: { label: 'Safety-Net Executor', field: 'safetyNetExecutor', placeholder: 'Representative Name', sub: 'Handles assets not yet titled in the Trust.' }
+                    };
+                    const p = stepProfiles[step];
+                    return <FormInput label={p.label} value={data[p.field]} onChange={(v) => handleChange(p.field, v)} placeholder={p.placeholder} subLabel={p.sub} isTextArea={p.isText} />;
+                case 6: return <div className="animate-in zoom-in-95 duration-500"><TrustDocPreview data={data} /></div>;
                 default: return null;
             }
         }
@@ -197,26 +189,9 @@ const ProtocolWizard = ({ onClose, onComplete, mode = 'will', initialData }) => 
         switch(step) {
             case 1:
                 return (
-                    <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Full Legal Name</label>
-                            <input 
-                                value={data.fullName}
-                                onChange={(e) => handleChange('fullName', e.target.value)}
-                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                placeholder="e.g. Jonathan Doe"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">County of Residence</label>
-                            <input 
-                                value={data.county}
-                                onChange={(e) => handleChange('county', e.target.value)}
-                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                placeholder="e.g. Miami-Dade"
-                            />
-                            <p className="text-gray-600 text-[10px] mt-2">* Must be a Florida resident for this form.</p>
-                        </div>
+                    <div className="space-y-6">
+                        <FormInput label="Legal Name" value={data.fullName} onChange={(v) => handleChange('fullName', v)} placeholder="e.g. Jonathan Doe" />
+                        <FormInput label="County / Jurisdiction" value={data.county} onChange={(v) => handleChange('county', v)} placeholder="e.g. Miami-Dade" subLabel="Must be a Florida resident." />
                     </div>
                 );
             case 2:
@@ -240,114 +215,55 @@ const ProtocolWizard = ({ onClose, onComplete, mode = 'will', initialData }) => 
                                 ))}
                             </div>
                         </div>
-
-                        {data.maritalStatus === 'Married' && (
-                            <div className="animate-in fade-in slide-in-from-top-2">
-                                <label className="text-xs font-bold text-[#d4af37] uppercase tracking-widest mb-2 block">Spouse's Full Name</label>
-                                <input 
-                                    value={data.spouseName}
-                                    onChange={(e) => handleChange('spouseName', e.target.value)}
-                                    className="w-full bg-black/40 border border-[#d4af37]/50 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                    placeholder="e.g. Jane Doe"
-                                />
-                            </div>
-                        )}
-
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Children (Legal Heirs)</label>
-                            <textarea 
-                                value={data.childrenNames}
-                                onChange={(e) => {
-                                    handleChange('childrenNames', e.target.value);
-                                }}
-                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors min-h-[100px]"
-                                placeholder="List full names of all children, separated by commas. Leave blank if none."
-                            />
-                        </div>
+                        {data.maritalStatus === 'Married' && <FormInput label="Spouse Full Name" value={data.spouseName} onChange={(v) => handleChange('spouseName', v)} placeholder="Full Name" />}
+                        <FormInput label="Children (Legal Heirs)" value={data.childrenNames} onChange={(v) => handleChange('childrenNames', v)} placeholder="Full names, separated by commas." isTextArea={true} />
                     </div>
                 );
-            case 3:
+            case 3: case 4:
+                const willSteps = {
+                    3: { label: 'Executor (Personal Representative)', field: 'executorName', placeholder: 'Name of Executor' },
+                    4: { label: 'Primary Beneficiary', field: 'beneficiaryName', placeholder: 'Name of Primary Heir' }
+                };
+                const ws = willSteps[step];
                 return (
-                    <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Personal Representative (Executor)</label>
-                            <input 
-                                value={data.executorName}
-                                onChange={(e) => handleChange('executorName', e.target.value)}
-                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                placeholder="Full Name of Executor"
-                            />
-                        </div>
+                    <div className="space-y-6">
+                        <FormInput label={ws.label} value={data[ws.field]} onChange={(v) => handleChange(ws.field, v)} placeholder={ws.placeholder} />
+                        {step === 4 && <FormInput label="Relationship" value={data.beneficiaryRelation} onChange={(v) => handleChange('beneficiaryRelation', v)} placeholder="e.g. Daughter" />}
                     </div>
                 );
-            case 4:
-                return (
-                    <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Primary Beneficiary</label>
-                            <input 
-                                value={data.beneficiaryName}
-                                onChange={(e) => handleChange('beneficiaryName', e.target.value)}
-                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                placeholder="Full Name of Beneficiary"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Relationship</label>
-                            <input 
-                                value={data.beneficiaryRelation}
-                                onChange={(e) => handleChange('beneficiaryRelation', e.target.value)}
-                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                placeholder="e.g. Son, Daughter, Friend"
-                            />
-                        </div>
-                    </div>
-                );
-            case 5:
-                return (
-                    <div className="animate-in zoom-in-95 duration-500">
-                        <LegalDocPreview data={data} />
-                    </div>
-                );
+            case 5: return <div className="animate-in zoom-in-95 duration-500"><LegalDocPreview data={data} /></div>;
             default: return null;
         }
     };
 
+
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
-        <div className="bg-[#1c1c1e] w-full max-w-3xl rounded-3xl border border-[#d4af37]/30 shadow-2xl overflow-hidden flex flex-col relative h-[85vh]">
-            <div className="bg-[#0A0A0B] p-6 border-b border-gray-800 flex justify-between items-center">
-                <div>
-                     <h3 className="text-white font-black uppercase tracking-tight text-xl flex items-center gap-2">
-                        <Brain className="text-[#d4af37]" /> {isTrust ? 'Heritage Trust Protocol' : 'Official Will Drafter'}
-                    </h3>
+            <div className="bg-[#1c1c1e] w-full max-w-3xl rounded-3xl border border-[#d4af37]/30 shadow-2xl overflow-hidden flex flex-col relative h-[85vh]">
+                <ProtocolHeader isTrust={isTrust} onClose={onClose} />
+                <StepProgress current={step} total={totalSteps} />
+                
+                <div className="flex-1 p-8 overflow-y-auto custom-scrollbar flex flex-col items-center justify-start w-full">
+                    <div className="w-full max-w-2xl">
+                        <h4 className="text-[#d4af37] font-bold uppercase tracking-widest text-xs mb-6 text-center">
+                            Institutional Step {step} of {totalSteps}
+                        </h4>
+                        {renderStep()}
+                    </div>
                 </div>
-                <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors"><X size={24}/></button>
-            </div>
-            <div className="w-full bg-gray-900 h-1">
-                <div className="bg-[#d4af37] h-full transition-all duration-500 ease-out" style={{ width: `${(step / totalSteps) * 100}%` }}></div>
-            </div>
-            <div className="flex-1 p-8 overflow-y-auto custom-scrollbar flex flex-col items-center justify-start w-full">
-                <div className="w-full max-w-2xl">
-                    <h4 className="text-[#d4af37] font-bold uppercase tracking-widest text-xs mb-6 text-center">Step {step} of {totalSteps}</h4>
-                    {renderStep()}
-                </div>
-            </div>
-            <div className="p-6 border-t border-gray-800 bg-[#0A0A0B] flex justify-between items-center">
-                {step > 1 ? <button onClick={() => setStep(step - 1)} className="text-gray-400 font-bold uppercase tracking-widest">Back</button> : <div />}
-                {step < totalSteps ? (
-                    <button disabled={!isStepValid()} onClick={() => setStep(step + 1)} className="bg-white text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:bg-[#d4af37] transition-all disabled:opacity-50">Next Step <ArrowRight size={14} /></button>
-                ) : (
-                    <button onClick={() => {
+
+                <ProtocolActions 
+                    step={step} 
+                    totalSteps={totalSteps} 
+                    isStepValid={isStepValid()} 
+                    onBack={() => setStep(step - 1)} 
+                    onNext={() => setStep(step + 1)} 
+                    onFinalize={() => {
                         console.log("Finalizing Protocol:", data);
                         onComplete({ ...data, type: isTrust ? 'Trust' : 'Will', finalizedAt: new Date().toISOString() });
-                    }} className="bg-[#d4af37] text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-lg flex items-center gap-2 group overflow-hidden relative">
-                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                        <FileDown size={14} className="relative z-10" /> <span className="relative z-10">Approve & Finalize</span>
-                    </button>
-                )}
+                    }} 
+                />
             </div>
-        </div>
         </div>
     );
 };

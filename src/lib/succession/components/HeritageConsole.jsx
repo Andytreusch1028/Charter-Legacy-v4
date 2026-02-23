@@ -8,6 +8,132 @@ import ProtocolWizard from './ProtocolWizard';
 import { LegalDocPreview, TrustDocPreview } from './LegalArtifacts';
 import { useSuccession } from '../useSuccession';
 
+// --- SUB-COMPONENTS (Institutional Refactor) ---
+
+const SecurityHealthCard = ({ isUnlocked }) => (
+    <div className="bg-gradient-to-br from-[#1c1c1e] to-black border border-[#d4af37]/20 rounded-[2.5rem] p-8 relative overflow-hidden group">
+        <div className="absolute -right-8 -top-8 w-24 h-24 bg-[#d4af37]/5 rounded-full blur-3xl group-hover:bg-[#d4af37]/10 transition-colors"></div>
+        <div className="relative z-10">
+            <div className="flex justify-between items-center mb-6">
+                <h4 className="text-gray-500 font-bold text-[10px] uppercase tracking-[0.2em]">Security Health</h4>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${isUnlocked ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500 animate-pulse'}`}>
+                    {isUnlocked ? 'SECURE' : 'LOCKED'}
+                </span>
+            </div>
+            <div className="flex items-end gap-2 mb-4">
+                <span className="text-4xl font-black text-white italic">AA+</span>
+                <span className="text-gray-600 text-[10px] font-bold uppercase mb-1">Institutional</span>
+            </div>
+            {/* Simple Progress Bar */}
+            <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden mb-6">
+                <div className="bg-gradient-to-r from-[#d4af37] to-white h-full w-[88%] shadow-[0_0_10px_rgba(212,175,55,0.5)]"></div>
+            </div>
+            <p className="text-[9px] text-gray-500 leading-relaxed font-medium uppercase tracking-widest">
+                Your legacy protocol is operating at peak efficiency. Multi-signature nodes are synchronized.
+            </p>
+        </div>
+    </div>
+);
+
+const TrustedHelpersCard = () => (
+    <div className="bg-black/40 border border-white/5 rounded-[2.5rem] p-8 space-y-6 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+            <Users size={18} className="text-[#d4af37]" />
+            <h4 className="text-white font-bold text-xs uppercase tracking-widest">Trusted Helpers</h4>
+        </div>
+        <div className="space-y-4">
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-[#d4af37]/30 transition-all">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-[#d4af37]/10 text-[#d4af37] rounded-lg flex items-center justify-center font-black text-xs">S</div>
+                    <div>
+                        <div className="text-white text-[10px] font-bold uppercase tracking-tight">Sarah (Spouse)</div>
+                        <div className="text-gray-500 text-[8px] uppercase tracking-widest">Master Beneficiary</div>
+                    </div>
+                </div>
+                <ShieldCheck size={14} className="text-green-500 opacity-50" />
+            </div>
+            <button className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-gray-400 text-[9px] font-bold uppercase tracking-widest hover:text-white hover:border-[#d4af37]/50 transition-all active:scale-95">
+                <Plus size={10} className="inline mr-1" /> Provision Agent
+            </button>
+        </div>
+    </div>
+);
+
+const AuditTrailCard = ({ auditLog }) => (
+    <div className="bg-[#1c1c1e]/50 border border-gray-800/50 rounded-[2.5rem] p-8 space-y-6">
+        <div className="flex items-center gap-3">
+            <History size={18} className="text-gray-500" />
+            <h4 className="text-gray-500 font-bold text-xs uppercase tracking-widest">Audit Trail</h4>
+        </div>
+        <div className="space-y-4 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+            {auditLog.map((log, i) => (
+                <div key={i} className="border-l border-gray-800 pl-4 py-1">
+                    <div className="text-white text-[10px] font-bold uppercase">{log.action || 'Unknown Action'}</div>
+                    <div className="text-gray-600 text-[9px] truncate">{log.details || log.time}</div>
+                </div>
+            ))}
+            {auditLog.length === 0 && <p className="text-gray-700 text-[9px] uppercase italic">No recent activity.</p>}
+        </div>
+    </div>
+);
+
+const LockedVaultView = ({ onUnlock }) => (
+    <div className="flex flex-col items-center justify-center h-full text-center space-y-6 py-12">
+        <div className="w-20 h-20 bg-[#1c1c1e] rounded-full flex items-center justify-center border border-gray-800 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+            <Lock size={32} className="text-gray-600" />
+        </div>
+        <div>
+            <h4 className="text-white font-bold text-lg uppercase tracking-tight">Vault Locked</h4>
+            <p className="text-gray-500 text-xs mt-1 uppercase tracking-widest">Master Identity Required</p>
+        </div>
+        <button 
+            onClick={onUnlock} 
+            className="px-10 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white/10 transition-all"
+        >
+            Unlock with PIN
+        </button>
+    </div>
+);
+
+const UnlockedVaultView = ({ docs, onLock, onAddArtifact }) => (
+    <div className="animate-in fade-in zoom-in-95 duration-500 space-y-8">
+        <div className="flex justify-between items-center mb-6">
+            <h4 className="text-[#d4af37] font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                <Unlock size={14} /> Decrypted Storage
+            </h4>
+            <button onClick={onLock} className="text-gray-500 hover:text-white text-[9px] font-bold uppercase tracking-widest">Lock Vault</button>
+        </div>
+        
+        {/* Document List */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {docs.length > 0 ? docs.map(doc => (
+                <div key={doc.id} className="p-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between group hover:border-[#d4af37]/30 transition-all">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-[#d4af37]">
+                            <FileText size={20} />
+                        </div>
+                        <div>
+                            <div className="text-white text-[11px] font-black uppercase tracking-tight">{doc.label}</div>
+                            <div className="text-gray-500 text-[9px] uppercase tracking-widest">{doc.date}</div>
+                        </div>
+                    </div>
+                    <button className="p-2 text-gray-500 hover:text-white transition-colors">
+                        <FileDown size={14} />
+                    </button>
+                </div>
+            )) : (
+                <div className="col-span-2 text-center py-20 border-2 border-dashed border-gray-800 rounded-[2rem] text-gray-600">
+                    No sovereign documents uploaded.
+                </div>
+            )}
+        </div>
+        
+        <button onClick={onAddArtifact} className="w-full py-4 border-2 border-dashed border-gray-800 rounded-2xl text-gray-500 font-bold text-[10px] uppercase tracking-[0.2em] hover:border-[#d4af37] hover:text-[#d4af37] transition-all flex items-center justify-center gap-2">
+            <Plus size={16} /> Store New Artifact
+        </button>
+    </div>
+);
+
 /**
  * HERITAGE CONSOLE (Library Version)
  * 
@@ -23,7 +149,7 @@ const HeritageConsole = ({
     auditLog = [],
     activeProtocolData
 }) => {
-    const { isUnlocked, unlockVault, lockVault, validatePIN } = useSuccession();
+    const { isUnlocked, unlockVault, lockVault, validatePIN, accessLog } = useSuccession();
     
     // UI Local State
     const [showWizard, setShowWizard] = useState(false);
@@ -48,6 +174,7 @@ const HeritageConsole = ({
             alert("Invalid PIN. Access Denied.");
         }
     };
+
 
     return (
         <div className="space-y-12 animate-in fade-in duration-700 max-w-5xl mx-auto pb-24">
@@ -106,127 +233,22 @@ const HeritageConsole = ({
                     {/* Vault Access Area */}
                     <div className="bg-[#0A0A0B] border-4 border-double border-gray-900 rounded-[3rem] p-10 shadow-inner relative min-h-[400px]">
                         {!isUnlocked ? (
-                            <div className="flex flex-col items-center justify-center h-full text-center space-y-6 py-12">
-                                <div className="w-20 h-20 bg-[#1c1c1e] rounded-full flex items-center justify-center border border-gray-800 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-                                    <Lock size={32} className="text-gray-600" />
-                                </div>
-                                <div>
-                                    <h4 className="text-white font-bold text-lg uppercase tracking-tight">Vault Locked</h4>
-                                    <p className="text-gray-500 text-xs mt-1 uppercase tracking-widest">Master Identity Required</p>
-                                </div>
-                                <button 
-                                    onClick={() => setShowSecurityChallenge(true)} 
-                                    className="px-10 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white/10 transition-all"
-                                >
-                                    Unlock with PIN
-                                </button>
-                            </div>
+                            <LockedVaultView onUnlock={() => setShowSecurityChallenge(true)} />
                         ) : (
-                            <div className="animate-in fade-in zoom-in-95 duration-500 space-y-8">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h4 className="text-[#d4af37] font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                                        <Unlock size={14} /> Decrypted Storage
-                                    </h4>
-                                    <button onClick={lockVault} className="text-gray-500 hover:text-white text-[9px] font-bold uppercase tracking-widest">Lock Vault</button>
-                                </div>
-                                
-                                {/* Document List */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {docs.length > 0 ? docs.map(doc => (
-                                        <div key={doc.id} className="p-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between group hover:border-[#d4af37]/30 transition-all">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-[#d4af37]">
-                                                    <FileText size={20} />
-                                                </div>
-                                                <div>
-                                                    <div className="text-white text-[11px] font-black uppercase tracking-tight">{doc.label}</div>
-                                                    <div className="text-gray-500 text-[9px] uppercase tracking-widest">{doc.date}</div>
-                                                </div>
-                                            </div>
-                                            <button className="p-2 text-gray-500 hover:text-white transition-colors">
-                                                <FileDown size={14} />
-                                            </button>
-                                        </div>
-                                    )) : (
-                                        <div className="col-span-2 text-center py-20 border-2 border-dashed border-gray-800 rounded-[2rem] text-gray-600">
-                                            No sovereign documents uploaded.
-                                        </div>
-                                    )}
-                                </div>
-                                
-                                <button className="w-full py-4 border-2 border-dashed border-gray-800 rounded-2xl text-gray-500 font-bold text-[10px] uppercase tracking-[0.2em] hover:border-[#d4af37] hover:text-[#d4af37] transition-all flex items-center justify-center gap-2">
-                                    <Plus size={16} /> Store New Artifact
-                                </button>
-                            </div>
+                            <UnlockedVaultView 
+                                docs={docs} 
+                                onLock={lockVault} 
+                                onAddArtifact={() => console.log("Artifact Upload Protocol Engaged")} 
+                            />
                         )}
                     </div>
                 </div>
 
                 {/* Sidebar Stats (1/3 Width) */}
                 <div className="space-y-8">
-                    {/* Security Health Score */}
-                    <div className="bg-gradient-to-br from-[#1c1c1e] to-black border border-[#d4af37]/20 rounded-[2.5rem] p-8 relative overflow-hidden group">
-                        <div className="absolute -right-8 -top-8 w-24 h-24 bg-[#d4af37]/5 rounded-full blur-3xl group-hover:bg-[#d4af37]/10 transition-colors"></div>
-                        <div className="relative z-10">
-                            <div className="flex justify-between items-center mb-6">
-                                <h4 className="text-gray-500 font-bold text-[10px] uppercase tracking-[0.2em]">Security Health</h4>
-                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${isUnlocked ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500 animate-pulse'}`}>
-                                    {isUnlocked ? 'SECURE' : 'LOCKED'}
-                                </span>
-                            </div>
-                            <div className="flex items-end gap-2 mb-4">
-                                <span className="text-4xl font-black text-white italic">AA+</span>
-                                <span className="text-gray-600 text-[10px] font-bold uppercase mb-1">Institutional</span>
-                            </div>
-                            {/* Simple Progress Bar */}
-                            <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden mb-6">
-                                <div className="bg-gradient-to-r from-[#d4af37] to-white h-full w-[88%] shadow-[0_0_10px_rgba(212,175,55,0.5)]"></div>
-                            </div>
-                            <p className="text-[9px] text-gray-500 leading-relaxed font-medium uppercase tracking-widest">
-                                Your legacy protocol is operating at peak efficiency. Multi-signature nodes are synchronized.
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Trusted Helpers Card */}
-                    <div className="bg-black/40 border border-white/5 rounded-[2.5rem] p-8 space-y-6 backdrop-blur-md">
-                        <div className="flex items-center gap-3">
-                            <Users size={18} className="text-[#d4af37]" />
-                            <h4 className="text-white font-bold text-xs uppercase tracking-widest">Trusted Helpers</h4>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-[#d4af37]/30 transition-all">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-[#d4af37]/10 text-[#d4af37] rounded-lg flex items-center justify-center font-black text-xs">S</div>
-                                    <div>
-                                        <div className="text-white text-[10px] font-bold uppercase tracking-tight">Sarah (Spouse)</div>
-                                        <div className="text-gray-500 text-[8px] uppercase tracking-widest">Master Beneficiary</div>
-                                    </div>
-                                </div>
-                                <ShieldCheck size={14} className="text-green-500 opacity-50" />
-                            </div>
-                            <button className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-gray-400 text-[9px] font-bold uppercase tracking-widest hover:text-white hover:border-[#d4af37]/50 transition-all active:scale-95">
-                                <Plus size={10} className="inline mr-1" /> Provision Agent
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Audit Trail Card */}
-                    <div className="bg-[#1c1c1e]/50 border border-gray-800/50 rounded-[2.5rem] p-8 space-y-6">
-                        <div className="flex items-center gap-3">
-                            <History size={18} className="text-gray-500" />
-                            <h4 className="text-gray-500 font-bold text-xs uppercase tracking-widest">Audit Trail</h4>
-                        </div>
-                        <div className="space-y-4 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                            {auditLog.map((log, i) => (
-                                <div key={i} className="border-l border-gray-800 pl-4 py-1">
-                                    <div className="text-white text-[10px] font-bold uppercase">{log.action}</div>
-                                    <div className="text-gray-600 text-[9px] truncate">{log.details}</div>
-                                </div>
-                            ))}
-                            {auditLog.length === 0 && <p className="text-gray-700 text-[9px] uppercase italic">No recent activity.</p>}
-                        </div>
-                    </div>
+                    <SecurityHealthCard isUnlocked={isUnlocked} />
+                    <TrustedHelpersCard />
+                    <AuditTrailCard auditLog={accessLog || []} />
                 </div>
             </div>
 
@@ -284,8 +306,12 @@ const HeritageConsole = ({
                         
                         <div className="flex justify-center gap-4 mb-8">
                             {[0, 1, 2, 3].map(i => (
-                                <div key={i} className={`w-12 h-14 bg-black rounded-xl border flex items-center justify-center text-xl font-bold ${enteredPIN.length === i ? 'border-[#d4af37]' : 'border-gray-800 text-white'}`}>
-                                    {enteredPIN.length > i ? '•' : ''}
+                                <div key={i} className={`w-12 h-14 bg-black rounded-xl border flex items-center justify-center text-xl font-bold transition-all duration-300 ${enteredPIN.length === i ? 'border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'border-gray-800 text-white'}`}>
+                                    {enteredPIN.length > i ? (
+                                        <div className="w-2 h-2 bg-[#d4af37] rounded-full animate-in zoom-in duration-300"></div>
+                                    ) : (
+                                        <div className="w-1 h-1 bg-gray-800 rounded-full"></div>
+                                    )}
                                 </div>
                             ))}
                         </div>

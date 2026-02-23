@@ -202,6 +202,22 @@
           "pattern": "Overlay a hidden `opacity-0` input over stylized display nodes to create a 'Zero-Knowledge' hardware feel for PIN/Key entry.",
           "impact": "Medium - Enhances security perception and aesthetic consistency.",
           "reuse_guidance": "Use for any secure entry field (PIN, Passphrase) to maintain 'Obsidian' high-end hardware aesthetic."
+        },
+        {
+          "id": "learning-028",
+          "date": "2026-02-18",
+          "success": "Institutional Sub-Component Pattern",
+          "pattern": "Decompose large complex components (e.g., HeritageConsole, ProtocolWizard) into specialized internal sub-components (AuditTrailCard, StepRenderer) within the same file if tightly coupled, or separate files if reusable.",
+          "impact": "High - Significantly improves readability and Qodo-style modularity.",
+          "reuse_guidance": "Use when a component exceeds 300 lines or contains distinct UI sections (sidebars vs. main content)."
+        },
+        {
+          "id": "learning-029",
+          "date": "2026-02-18",
+          "success": "Reactive Audit Log Pattern",
+          "pattern": "Implement a framework-agnostic `accessLog` array in the core Registry. Automatically push activities from all state-mutating methods and notify listeners to ensure high-fidelity UI audit trails.",
+          "impact": "High - Provides zero-configuration security visibility and real-time user feedback.",
+          "reuse_guidance": "Mandatory for all high-security vaults or sensitive data management modules."
         }
       ]
     },
@@ -273,7 +289,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 22,
-    "last_updated": "2026-02-17T17:00:00Z"
+    "total_learnings": 24,
+    "last_updated": "2026-02-18T10:00:00Z"
   }
 }
