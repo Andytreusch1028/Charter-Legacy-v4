@@ -303,7 +303,26 @@ const FormationFactory = ({
                     setFormations(prev => prev.map(f => f.id === formation.id ? { ...f, status: 'DRAFT_SAVED' } : f));
                     
                     // Mark as filed in DB
-                    supabase.from('llcs').update({ llc_status: 'TRANSMITTED', filed_at: new Date().toISOString() }).eq('id', formation.id).then();
+                    await supabase.from('llcs').update({ llc_status: 'TRANSMITTED', filed_at: new Date().toISOString() }).eq('id', formation.id);
+
+                    // Dispatch Action Audit Email receipt
+                    try {
+                        await supabase.functions.invoke('send-action-audit', {
+                            body: {
+                                action_type: 'SUNBIZ_FILING_COMPLETE',
+                                entity_id: formation.id,
+                                user_id: formation.client_id, // Map client UUID to email
+                                details: { tracking_number: 'N/A' } // Can parse from payload if provided
+                            }
+                        });
+                        setAutomationLogs(prev => [...prev.slice(-49), {
+                            timestamp: new Date().toLocaleTimeString(),
+                            message: `Action Audit Email dispatched to client via Secure Exchange.`,
+                            type: 'system'
+                        }]);
+                    } catch (emailErr) {
+                        console.error('[Action Ledger] Failed to send audit email:', emailErr);
+                    }
                 }
             },
             onError: async (err) => {

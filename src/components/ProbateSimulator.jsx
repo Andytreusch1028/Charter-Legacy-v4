@@ -10,7 +10,7 @@ const ProbateSimulator = () => {
       {/* Trigger Card */}
       <div 
         onClick={() => setIsOpen(true)}
-        className="group relative overflow-hidden rounded-[24px] bg-[#1c1c1e] border-2 border-dashed border-white/10 p-8 cursor-pointer hover:border-[#d4af37]/30 hover:bg-[#d4af37]/5 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex flex-col h-[155px]"
+        className="group relative overflow-hidden rounded-[24px] bg-[#1c1c1e] border-2 border-dashed border-white/10 p-5 cursor-pointer hover:border-[#d4af37]/30 hover:bg-[#d4af37]/5 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex flex-col h-[155px]"
       >
         <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-[#d4af37]/10 text-[#d4af37] rounded-xl border border-[#d4af37]/20 group-hover:scale-110 transition-transform">
