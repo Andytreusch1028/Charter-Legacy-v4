@@ -3,9 +3,10 @@ import {
     Zap, Clock, CheckCircle2, AlertTriangle, Search, Filter,
     FileText, User, Activity, ExternalLink, ShieldCheck, X, 
     Terminal, Play, StopCircle, RefreshCw, ChevronRight, Lock,
-    Edit3, Camera, Save, ArrowLeftCircle
+    Edit3, Camera, Save, ArrowLeftCircle, Server
 } from 'lucide-react';
 import { tinyfish } from '../../lib/tinyfish';
+import DiagnosticFlightRecorder from '../components/DiagnosticFlightRecorder';
 
 // Tinyfish API Key (Provisioned via Secure Bridge)
 const TINYFISH_KEY = window.localStorage.getItem('TINYFISH_KEY') || 'sk-tinyfish-_900RKNoZIA38xSHqFNhUl957VIGUMXw';
@@ -16,64 +17,84 @@ const FormationFactory = ({
 }) => {
     const [viewMode, setViewMode] = useState('queue');
     const [searchQuery, setSearchQuery] = useState('');
-    const [formations, setFormations] = useState([
-        { 
-            id: 'F-1001', 
-            client_id: 'c81d4fae-7dec-11d0-a765-00a0c91e6bf6',
-            entityName: 'AETHER NEXUS LLC', 
-            type: 'LLC', 
-            status: 'AWAITING_REVIEW', 
-            submitted: '2h ago', 
-            owner: 'Julian Voss', 
-            priority: 'high',
-            filingOptions: { effectiveDate: '', certOfStatus: false, certifiedCopy: true },
-            principalAddress: { street: '123 Sky Way', suite: 'Unit 402', city: 'DeLand', state: 'FL', zip: '32724' },
-            mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
-            registeredAgent: { 
-                type: 'INDIVIDUAL', 
-                firstName: 'Charter', 
-                lastName: 'Legacy LLC', 
-                street: '456 Guardian Way', 
-                city: 'DeLand', 
-                state: 'FL', 
-                zip: '32724' 
-            },
-            correspondence: { name: 'Julian Voss', email: 'voss@aeon.ventures' },
-            authPersonnel: [
-                { title: 'MGR', firstName: 'Julian', lastName: 'Voss', street: '123 Sky Way', city: 'DeLand', state: 'FL', zip: '32724' }
-            ]
-        },
-        { 
-            id: 'F-1004', 
-            client_id: 'd81d4fae-7dec-11d0-a765-00a0c91e6bf6',
-            entityName: 'QUANTUM HORIZON GROUP LLC', 
-            type: 'LLC', 
-            status: 'AWAITING_REVIEW', 
-            submitted: '15m ago', 
-            owner: 'Elena Vance', 
-            priority: 'high',
-            filingOptions: { effectiveDate: '2026-03-01', certOfStatus: true, certifiedCopy: true },
-            principalAddress: { street: '789 Innovation Dr', suite: 'Bldg 5', city: 'Orlando', state: 'FL', zip: '32801' },
-            mailingAddress: { isSame: false, street: 'PO BOX 4422', suite: '', city: 'Orlando', state: 'FL', zip: '32802' },
-            registeredAgent: { 
-                type: 'BUSINESS', 
-                businessName: 'CHARTER LEGACY RA SERVICES',
-                signature: 'ELENA VANCE',
-                street: '456 Guardian Way', 
-                city: 'DeLand', 
-                state: 'FL', 
-                zip: '32724' 
-            },
-            correspondence: { name: 'Elena Vance', email: 'elena@quantumhorizon.io' },
-            authPersonnel: [
-                { title: 'MGR', firstName: 'Elena', lastName: 'Vance', street: '789 Innovation Dr', city: 'Orlando', state: 'FL', zip: '32801' },
-                { title: 'AMBR', firstName: 'Gordon', lastName: 'Freeman', street: '101 Black Mesa Rd', city: 'Orlando', state: 'FL', zip: '32804' },
-                { title: 'AMBR', firstName: 'Alyx', lastName: 'Vance', street: '789 Innovation Dr', city: 'Orlando', state: 'FL', zip: '32801' }
-            ]
-        },
-        { id: 'F-1002', client_id: 'e81d4fae-7dec-11d0-a765-00a0c91e6bf6', entityName: 'Sterling Heights Corp', type: 'C-Corp', status: 'DRAFTING', submitted: '5h ago', owner: 'Sarah Chen', priority: 'medium' },
-        { id: 'F-1003', client_id: 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6', entityName: 'Green Horizon Ventures', type: 'LLC', status: 'AWAITING_REVIEW', submitted: 'Just now', owner: 'Marcus Aurelius', priority: 'low' }
-    ]);
+    const [formations, setFormations] = useState([]);
+
+    useEffect(() => {
+        const fetchQueue = async () => {
+            const { data, error } = await supabase
+                .from('llcs')
+                .select(`
+                    id, user_id, llc_name, llc_status, created_at, principal_address,
+                    profiles!llcs_user_id_fkey ( full_name, role )
+                `)
+                .order('created_at', { ascending: false });
+
+            if (data) {
+                const mapped = data
+                    .filter(llc => !['FILED', 'TRANSMITTED', 'Active'].includes(llc.llc_status))
+                    .map(llc => {
+                        const isPLLC = llc.llc_name?.includes('PLLC') || llc.llc_name?.includes('Professional');
+                        const addrParts = llc.principal_address?.split(',') || [];
+                        
+                        return {
+                            id: llc.id,
+                            client_id: llc.user_id,
+                            entityName: llc.llc_name || 'Unnamed Entity',
+                            type: isPLLC ? 'PLLC' : 'LLC',
+                            status: llc.llc_status || 'AWAITING_REVIEW',
+                            submitted: new Date(llc.created_at).toLocaleDateString(),
+                            owner: llc.profiles?.full_name || 'Client',
+                            priority: 'high',
+                            filingOptions: { effectiveDate: '', certOfStatus: false, certifiedCopy: true },
+                            principalAddress: { 
+                                street: addrParts[0]?.trim() || '123 Business Way', 
+                                suite: '', 
+                                city: addrParts[1]?.trim() || 'Miami', 
+                                state: 'FL', 
+                                zip: addrParts[2]?.trim() || '33101' 
+                            },
+                            mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
+                            registeredAgent: { 
+                                type: 'BUSINESS', 
+                                businessName: 'Charter Legacy Services LLC',
+                                firstName: '',
+                                lastName: '',
+                                signature: 'Charter Legacy Services LLC', // Auth sign
+                                street: '456 Guardian Way', 
+                                city: 'DeLand', 
+                                state: 'FL', 
+                                zip: '32724' 
+                            },
+                            correspondence: { name: llc.profiles?.full_name || 'Client', email: 'legal@charterlegacy.com' },
+                            authPersonnel: [
+                                { title: 'MGR', firstName: (llc.profiles?.full_name || 'Authorized').split(' ')[0], lastName: (llc.profiles?.full_name || 'Person').split(' ')[1] || 'Person', street: addrParts[0]?.trim() || '123 Business Way', city: addrParts[1]?.trim() || 'Miami', state: 'FL', zip: addrParts[2]?.trim() || '33101' }
+                            ]
+                        };
+                    });
+                let finalFormations = mapped;
+                if (finalFormations.length === 0 && window.location.hostname === 'localhost') {
+                    finalFormations = [{
+                        id: 'mock-llc-for-testing-123',
+                        client_id: 'mock-client-id',
+                        entityName: 'Charter Legacy Test Entity LLC',
+                        type: 'LLC',
+                        status: 'AWAITING_REVIEW',
+                        submitted: new Date().toLocaleDateString(),
+                        owner: 'Demo User',
+                        priority: 'high',
+                        filingOptions: { effectiveDate: '', certOfStatus: false, certifiedCopy: true },
+                        principalAddress: { street: '123 Test St', suite: '', city: 'Miami', state: 'FL', zip: '33101' },
+                        mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
+                        registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: 'Charter Legacy Services LLC', street: '456 Guardian Way', city: 'DeLand', state: 'FL', zip: '32724' },
+                        correspondence: { name: 'Demo User', email: 'legal@charterlegacy.com' },
+                        authPersonnel: [{ title: 'MGR', firstName: 'Demo', lastName: 'User', street: '123 Test St', city: 'Miami', state: 'FL', zip: '33101' }]
+                    }];
+                }
+                setFormations(finalFormations);
+            }
+        };
+        fetchQueue();
+    }, [supabase]);
 
     // -- AUTOMATION STATE --
     const [activeAutomation, setActiveAutomation] = useState(null); // The formation being processed
@@ -86,6 +107,10 @@ const FormationFactory = ({
     const [showKeyPrompt, setShowKeyPrompt] = useState(!TINYFISH_KEY);
     const [handoffUrl, setHandoffUrl] = useState(null);
     const [showFullSnapshot, setShowFullSnapshot] = useState(false);
+    
+    // Flight Recorder State
+    const [activeFlightRecorder, setActiveFlightRecorder] = useState(null); // stores { id, name }
+    
     const automationAbort = useRef(null);
     const logEndRef = useRef(null);
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -190,7 +215,7 @@ const FormationFactory = ({
         const goal = `Navigate to https://dos.myflorida.com/sunbiz/start-e-filing/efile-articles-of-organization/. 
         1. Start LLC E-Filing.
         2. FILL FILING INFORMATION:
-           - LLC Name: "${formation.entityName}"
+           - LLC Name: "${formation.entityName}"${formation.type === 'PLLC' ? '\n           - Professional Purpose: "Professional Services"' : ''}
            - Effective Date: "${formation.filingOptions?.effectiveDate || 'Today'}"
            - Certificate of Status ($5): ${formation.filingOptions?.certOfStatus ? 'Check yes' : 'Leave unchecked'}
            - Certified Copy ($30): ${formation.filingOptions?.certifiedCopy ? 'Check yes' : 'Leave unchecked'}
@@ -243,17 +268,22 @@ const FormationFactory = ({
                 }]);
                 lastEventRef.current = Date.now();
 
-                // Bridge 1: Sync to Transparency Ledger
+                // Bridge 1: Sync to Universal Action Ledger
                 if (data.event === 'navigation' || data.event === 'field_filled' || data.event === 'completed') {
                     try {
-                        await supabase.from('ra_service_log').insert({
-                            client_id: formation.client_id || '00000000-0000-0000-0000-000000000000',
-                            status: data.event?.toUpperCase() || 'AUTOMATION_SYNC',
-                            staff_notes: `[PROTOCOL TINYFISH] ${message}`,
-                            document_hash: formation.id
+                        await supabase.from('system_events_ledger').insert({
+                            entity_id: formation.id,
+                            client_id: formation.client_id || null, // Will map to user UUID if logged in
+                            actor_id: 'TINYFISH_BOT',
+                            actor_type: 'TINYFISH_BOT',
+                            event_category: 'FILING_AUTOMATION',
+                            event_type: 'SUNBIZ_TELEMETRY',
+                            severity: data.event === 'completed' ? 'SUCCESS' : 'INFO',
+                            customer_facing_message: data.event === 'completed' ? `Automated filing sequence finalized for ${formation.entityName}.` : null,
+                            internal_payload: { step: data.event, message: message, url: data.payload?.url }
                         });
                     } catch (syncErr) {
-                        console.error('[Transparency Bridge] Failed to sync event:', syncErr);
+                        console.error('[Action Ledger] Failed to sync event:', syncErr);
                     }
                 }
 
@@ -271,9 +301,12 @@ const FormationFactory = ({
                     setHandoffUrl(data.payload?.takeoverUrl || data.payload?.url || null);
                     clearInterval(timerRef.current);
                     setFormations(prev => prev.map(f => f.id === formation.id ? { ...f, status: 'DRAFT_SAVED' } : f));
+                    
+                    // Mark as filed in DB
+                    supabase.from('llcs').update({ llc_status: 'TRANSMITTED', filed_at: new Date().toISOString() }).eq('id', formation.id).then();
                 }
             },
-            onError: (err) => {
+            onError: async (err) => {
                 setAutomationState('ERROR');
                 clearInterval(timerRef.current);
                 setAutomationLogs(prev => [...prev, {
@@ -281,6 +314,23 @@ const FormationFactory = ({
                     message: `PROTOCOL ABORTED: ${err.message}`,
                     type: 'error'
                 }]);
+                
+                // Log Critical Error & System Snapshot
+                try {
+                    await supabase.from('system_events_ledger').insert({
+                        entity_id: formation.id,
+                        client_id: formation.client_id || null,
+                        actor_id: 'SYSTEM',
+                        actor_type: 'SYSTEM',
+                        event_category: 'FILING_AUTOMATION',
+                        event_type: 'SUNBIZ_EXCEPTION',
+                        severity: 'CRITICAL',
+                        customer_facing_message: 'Our automation engine encountered a temporary roadblock with the State portal. Our staff has been alerted.',
+                        internal_payload: { error: err.message, stack: err.stack },
+                        system_snapshot: formation
+                    });
+                } catch (auditErr) {}
+                
                 setToast({ type: 'error', message: 'Automation Failure: Check Logs' });
             }
         });
@@ -297,17 +347,21 @@ const FormationFactory = ({
             type: 'error'
         }]);
 
-        // Audit Trail: Sync revocation to Transparency Ledger
+        // Audit Trail: Sync revocation to Universal Action Ledger
         if (activeAutomation) {
             try {
-                await supabase.from('ra_service_log').insert({
-                    client_id: activeAutomation.client_id || '00000000-0000-0000-0000-000000000000',
-                    status: 'PROTOCOL_TERMINATED',
-                    staff_notes: `[EMERGENCY STOP] Manual termination of Sunbiz bridge. Session invalidated.`,
-                    document_hash: activeAutomation.id
+                await supabase.from('system_events_ledger').insert({
+                    entity_id: activeAutomation.id,
+                    client_id: activeAutomation.client_id || null,
+                    actor_id: 'CURRENT_OPERATOR_ID', // Replaced dynamically later if connected
+                    actor_type: 'STAFF',
+                    event_category: 'FILING_AUTOMATION',
+                    event_type: 'MANUAL_ABORT',
+                    severity: 'WARNING',
+                    internal_payload: { reason: 'Emergency Stop trigger by operator' }
                 });
             } catch (err) {
-                console.error('[Audit Bridge] Failed to log revocation:', err);
+                console.error('[Action Ledger] Failed to log revocation:', err);
             }
         }
     };
@@ -674,16 +728,23 @@ const FormationFactory = ({
                                         setEditingSpec({ ...formation });
                                         setShowSpecEditor(true);
                                     }}
-                                    className="flex-1 py-3 bg-gray-50 text-luminous-ink rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
+                                    className="flex-[2] py-3 bg-gray-50 text-luminous-ink rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
                                 >
                                     <FileText size={14} /> View Spec
                                 </button>
                                 <button 
                                     onClick={() => formation.status === 'FILED' ? null : startAutomation(formation)}
-                                    className="flex-1 py-3 bg-luminous-blue text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-luminous-blue/20 transition-all flex items-center justify-center gap-2"
+                                    className="flex-[3] py-3 bg-luminous-blue text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-luminous-blue/20 transition-all flex items-center justify-center gap-2"
                                 >
                                     {formation.status === 'FILED' ? 'Download Receipt' : 'File (Automated)'}
                                     <Zap size={12} className={formation.status !== 'FILED' ? 'animate-pulse' : ''} />
+                                </button>
+                                <button 
+                                    onClick={() => setActiveFlightRecorder({ id: formation.id, name: formation.entityName })}
+                                    className="flex-[1] py-3 bg-[#1A1F2E] text-white/50 hover:text-white rounded-xl flex items-center justify-center transition-colors group border border-white/5"
+                                    title="View Action Ledger"
+                                >
+                                    <Terminal size={14} className="group-hover:text-luminous-blue transition-colors" />
                                 </button>
                             </div>
                         </div>
@@ -731,6 +792,16 @@ const FormationFactory = ({
                         </div>
                     </div>
                 </div>
+            )}
+            
+            {/* Steve Protocol: Diagnostic Flight Recorder Slide-out */}
+            {activeFlightRecorder && (
+                <DiagnosticFlightRecorder 
+                    entityId={activeFlightRecorder.id}
+                    entityName={activeFlightRecorder.name}
+                    setToast={setToast}
+                    onClose={() => setActiveFlightRecorder(null)}
+                />
             )}
         </div>
     );

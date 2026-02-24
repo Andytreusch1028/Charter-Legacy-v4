@@ -1,5 +1,6 @@
 {
   "reminders": [
-    "When moving the Dynamic Hero Strategy to production, update the fetch URLs in src/hooks/useHeroVariant.js to point to the actual Java Spring Boot Growth Engine endpoints instead of localhost:8080 mock URLs."
+    "When moving the Dynamic Hero Strategy to production, update the fetch URLs in src/hooks/useHeroVariant.js to point to the actual Java Spring Boot Growth Engine endpoints instead of localhost:8080 mock URLs.",
+    "CRITICAL PRE-DEPLOYMENT: Ensure the DEV_ADMIN_BYPASS localStorage override buttons and logic are completely removed from src/App.jsx and src/zones/admin/StaffLogin.jsx to prevent security vulnerabilities in production."
   ]
 }

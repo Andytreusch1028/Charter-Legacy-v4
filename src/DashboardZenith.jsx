@@ -10,7 +10,7 @@ import FoundersBlueprint from './FoundersBlueprint';
 import RegisteredAgentConsole from './RegisteredAgentConsole';
 import SuccessionSuite from './lib/succession/SuccessionSuite';
 import { useSuccession } from './lib/succession/useSuccession';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import ActiveProtectionTriad from './components/ActiveProtectionTriad';
 import VaultTile from './components/VaultTile';
@@ -18,6 +18,7 @@ import ProbateSimulator from './components/ProbateSimulator';
 import DesignationProtocol from './DesignationProtocol';
 import SubscriptionGate from './components/SubscriptionGate';
 import BusinessSelector from './components/BusinessSelector';
+import BusinessStoryTimeline from './components/BusinessStoryTimeline';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardZenith = ({ user, initialData }) => {
@@ -225,36 +226,15 @@ const DashboardZenith = ({ user, initialData }) => {
   return (
     <>
 
-      <div className="min-h-screen bg-luminous text-luminous-ink font-sans antialiased flex items-center justify-center p-4 md:p-10 relative overflow-hidden">
-        <style>{`
-        .bg-blob {
-            position: fixed;
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(0, 122, 255, 0.03) 0%, rgba(0, 122, 255, 0) 70%);
-            border-radius: 50%;
-            z-index: 0;
-            filter: blur(120px);
-            animation: move 25s infinite alternate;
-        }
-        .blob-1 { top: -15%; left: -10%; }
-        .blob-2 { bottom: -15%; right: -10%; background: radial-gradient(circle, rgba(212, 175, 55, 0.03) 0%, rgba(212, 175, 55, 0) 70%); }
-        @keyframes move {
-            from { transform: translate(0, 0); }
-            to { transform: translate(80px, 40px); }
-        }
-        
-          
-        /* DESIGN TOGGLE REMOVED */
-      `}</style>
+      <div className="min-h-screen bg-[#0A0A0B] text-white font-sans antialiased flex items-center justify-center p-4 md:p-10 relative overflow-hidden">
       
-      {/* Background Blobs */}
-      <div className="bg-blob blob-1"></div>
-      <div className="bg-blob blob-2"></div>
-      <div className="fixed inset-0 dot-overlay opacity-[0.15] pointer-events-none" />
+      {/* Dark Mode Background Effects */}
+      <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-luminous-blue/10 rounded-full blur-[150px] pointer-events-none opacity-50" />
+      <div className="absolute bottom-0 right-1/4 w-[800px] h-[800px] bg-[#d4af37]/5 rounded-full blur-[150px] pointer-events-none opacity-50" />
+      <div className="fixed inset-0 dot-overlay opacity-10 pointer-events-none invert" />
 
       {/* The Obsidian Slab */}
-      <div className={`vitreous-glass w-full max-w-screen-2xl min-h-screen md:min-h-[900px] rounded-[48px] flex flex-col md:flex-row relative z-10 border border-white/10 animate-in fade-in zoom-in-95 duration-1000 overflow-hidden shadow-[0_100px_200px_-50px_rgba(0,122,255,0.12)] transition-all`}>
+      <div className={`w-full max-w-screen-2xl min-h-screen md:min-h-[900px] rounded-[48px] flex flex-col md:flex-row relative z-10 border border-white/5 bg-black/40 backdrop-blur-3xl animate-in fade-in zoom-in-95 duration-1000 overflow-hidden shadow-[0_0_100px_rgba(0,122,255,0.05)] transition-all`}>
         
         <main className={`flex-1 p-12 md:p-24 lg:p-32 flex flex-col transition-all duration-700`}>
 
@@ -296,11 +276,11 @@ const DashboardZenith = ({ user, initialData }) => {
                             transition={{ duration: 0.5 }}
                             className="max-w-2xl text-left pt-10"
                         >
-                            <div className="w-16 h-16 bg-luminous-ink rounded-2xl mb-12 shadow-2xl flex items-center justify-center text-white rotate-3">
+                            <div className="w-16 h-16 bg-[#1c1c1e] rounded-2xl mb-12 shadow-2xl flex items-center justify-center text-[#d4af37] border border-white/5 rotate-3">
                                 <ShieldCheck size={32} strokeWidth={1.5} />
                             </div>
                             
-                            <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-luminous-ink mb-8 leading-[0.9]">
+                            <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-white mb-8 leading-[0.9]">
                                 Secure Your<br/><span className="text-luminous-blue">Foundation.</span>
                             </h1>
                             
@@ -308,23 +288,22 @@ const DashboardZenith = ({ user, initialData }) => {
                                 "The path to institutional privacy is one signature away. Let us finalize the architecture of your Florida entity."
                             </p>
 
-                            {/* The ONE Main Action */}
                             <div 
                                onClick={() => setShowDesignation(true)}
-                               className="bg-white/50 p-2 rounded-[2.5rem] shadow-2xl border border-white/80 hover:scale-[1.01] transition-transform cursor-pointer group mb-12"
+                               className="bg-white/5 p-2 rounded-[2.5rem] shadow-2xl border border-white/10 hover:scale-[1.02] transition-transform cursor-pointer group mb-12"
                             >
-                                <div className="bg-luminous-ink text-white rounded-[2rem] p-8 md:p-14 flex flex-col md:flex-row items-center justify-between gap-12 relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-luminous-blue/10 rounded-bl-full pointer-events-none"></div>
+                                <div className="bg-[#1c1c1e] text-white rounded-[2rem] p-8 md:p-14 flex flex-col md:flex-row items-center justify-between gap-12 relative overflow-hidden border border-white/5">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-luminous-blue/10 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
                                     <div className="text-left relative z-10">
-                                        <div className="flex items-center gap-3 mb-4 text-luminous-blue font-bold uppercase tracking-[0.3em] text-[10px]">
-                                            <div className="w-2.5 h-2.5 bg-luminous-blue rounded-full animate-pulse shadow-[0_0_15px_rgba(0,122,255,0.8)]"></div>
+                                        <div className="flex items-center gap-3 mb-4 text-[#d4af37] font-bold uppercase tracking-[0.3em] text-[10px]">
+                                            <div className="w-2.5 h-2.5 bg-[#d4af37] rounded-full animate-pulse shadow-[0_0_15px_rgba(212,175,55,0.8)]"></div>
                                             Strategy Required
                                         </div>
-                                        <h3 className="text-4xl font-black uppercase tracking-tight mb-4 leading-none">Initialize Charter</h3>
-                                        <p className="text-gray-400 font-medium italic">Naming, Addresses, and Privacy Protocols.</p>
+                                        <h3 className="text-4xl font-black uppercase tracking-tight mb-4 leading-none text-white">Initialize Charter</h3>
+                                        <p className="text-gray-500 font-medium italic">Naming, Addresses, and Privacy Protocols.</p>
                                     </div>
                                     
-                                    <button className="bg-white text-luminous-ink px-12 py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-luminous-blue hover:text-white transition-all flex items-center gap-3 text-xs shadow-xl whitespace-nowrap relative z-10">
+                                    <button className="bg-white text-black px-12 py-6 rounded-2xl font-black uppercase tracking-widest group-hover:bg-[#d4af37] transition-all flex items-center gap-3 text-xs shadow-[0_0_30px_rgba(255,255,255,0.1)] group-hover:shadow-[0_0_40px_rgba(212,175,55,0.4)] whitespace-nowrap relative z-10">
                                         Begin Entry <ChevronRight size={18} />
                                     </button>
                                 </div>
@@ -359,7 +338,7 @@ const DashboardZenith = ({ user, initialData }) => {
                                 <div className="absolute top-0 right-0 flex items-center gap-4">
                                      <button 
                                         onClick={handleLogout}
-                                        className="inline-flex items-center gap-2 px-4 py-2 border border-gray-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all active:scale-95"
+                                        className="inline-flex items-center gap-2 px-4 py-2 border border-zinc-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 transition-all active:scale-95"
                                      >
                                          <LogOut size={14} /> Log Out
                                      </button>
@@ -367,7 +346,7 @@ const DashboardZenith = ({ user, initialData }) => {
                                      {allLlcs.length > 1 && (
                                          <button 
                                             onClick={() => setLlcData(null)}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#1D1D1F] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform active:scale-95 shadow-lg"
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#1c1c1e] border border-zinc-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-white transition-all active:scale-95 shadow-lg"
                                          >
                                              <Building2 size={14} /> Switch Entity
                                          </button>
@@ -377,11 +356,11 @@ const DashboardZenith = ({ user, initialData }) => {
                                     <div className="w-2.5 h-2.5 bg-luminous-blue rounded-full animate-pulse shadow-[0_0_15px_rgba(0,122,255,0.6)]"></div>
                                     <span className="text-[10px] font-black uppercase tracking-[0.5em] text-luminous-blue">Command Center Active</span>
                                 </div>
-                                <h1 className="text-6xl md:text-[8rem] font-black uppercase tracking-tighter leading-[0.8] text-luminous-ink break-words max-w-5xl mb-8">
+                                <h1 className="text-6xl md:text-[8rem] font-black uppercase tracking-tighter leading-[0.8] text-white break-words max-w-5xl mb-8">
                                     {llcData?.llc_name}.
                                 </h1>
-                                <p className="text-gray-400 font-medium text-xl italic max-w-3xl leading-relaxed opacity-60">
-                                    "Unity Protocol Engaged. Monitoring Foundation, Protection, and Legacy systems."
+                                <p className="text-gray-500 font-medium text-xl italic max-w-3xl leading-relaxed opacity-80">
+                                    "Unity Protocol Engaged. Monitoring Governance, Abstraction, and Legacy systems."
                                 </p>
                             </div>
 
@@ -412,10 +391,10 @@ const DashboardZenith = ({ user, initialData }) => {
                                 {/* COLUMN 2: PROTECT (The Sentinel) */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3 px-2 mb-2">
-                                        <div className="w-8 h-8 rounded-lg bg-luminous-blue/10 flex items-center justify-center text-luminous-blue">
+                                        <div className="w-8 h-8 rounded-lg bg-luminous-blue/10 border border-luminous-blue/20 flex items-center justify-center text-luminous-blue">
                                             <div className="font-black text-xs">02</div>
                                         </div>
-                                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-luminous-blue">Active Protection</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-luminous-blue shadow-luminous-blue/20 drop-shadow-[0_0_10px_rgba(0,122,255,0.5)]">Ongoing Compliance</h3>
                                     </div>
 
                                     <ActiveProtectionTriad
@@ -428,10 +407,10 @@ const DashboardZenith = ({ user, initialData }) => {
                                 {/* COLUMN 3: PRESERVE (The Legacy) */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3 px-2 mb-2">
-                                        <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600">
+                                        <div className="w-8 h-8 rounded-lg bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center text-[#d4af37]">
                                             <div className="font-black text-xs">03</div>
                                         </div>
-                                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-purple-600">Preserve Legacy</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] shadow-[#d4af37]/20 drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">Preserve Legacy</h3>
                                     </div>
 
                                     {/* Heritage Vault */}
@@ -447,6 +426,11 @@ const DashboardZenith = ({ user, initialData }) => {
                                     <ProbateSimulator />
                                 </div>
 
+                            </div>
+                            
+                            {/* --- THE BUSINESS STORY (JONY IVE NARRATIVE LEDGER) --- */}
+                            <div className="w-full max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-12 duration-1000">
+                                <BusinessStoryTimeline llcData={llcData} />
                             </div>
                         </motion.div>
                     )}

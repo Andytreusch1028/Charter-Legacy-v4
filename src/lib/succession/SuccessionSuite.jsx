@@ -129,7 +129,7 @@ const SuccessionSuite = ({ user }) => {
                 </div>
 
                 {/* Main Viewport */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-10 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,0.05)_0%,transparent_70%)]">
+                <div className="flex-1 overflow-y-auto no-scrollbar p-10 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,0.05)_0%,transparent_70%)]">
                     {isLoading ? (
                         <div className="h-full flex flex-col items-center justify-center space-y-4">
                             <div className="w-12 h-12 border-4 border-[#d4af37]/20 border-t-[#d4af37] rounded-full animate-spin"></div>

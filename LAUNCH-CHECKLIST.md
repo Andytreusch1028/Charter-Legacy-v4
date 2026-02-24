@@ -247,6 +247,31 @@ vercel --prod
 
 ---
 
+## 📱 PHASE 2: NATIVE COMPANION APP (Zenith Vault)
+
+_Note: The native app is a post-launch retention tool, NOT a top-of-funnel acquisition tool._
+
+### 1. App Scope & Requirements
+
+- [ ] Read-only access to Heritage Vault (PDF viewing)
+- [ ] Push Notifications for Privacy Shield Breaches
+- [ ] Push Notifications for Registered Agent Service of Process
+- [ ] Biometric Authentication (FaceID / TouchID) requirement for launch
+
+### 2. Development Stack
+
+- [ ] Evaluate React Native vs. Swift/Kotlin based on internal resource bandwidth
+- [ ] Ensure Supabase Auth works seamlessly across Web and Native using identical JWT sessions
+- [ ] Replicate Obsidian CSS aesthetics accurately in mobile native components
+
+### 3. Apple App Store / Google Play Compliance
+
+- [ ] Write UPL-safe descriptions for App Store submissions (avoiding terms like "Legal Services" or "Drafting")
+- [ ] Ensure no digital goods/subscriptions are sold _inside_ the native app to avoid 30% platform tax (all commerce stays on Web)
+- [ ] Prepare highly polished dark-mode screenshots for the app stores
+
+---
+
 ## 📞 SUPPORT RESOURCES
 
 ### Supabase

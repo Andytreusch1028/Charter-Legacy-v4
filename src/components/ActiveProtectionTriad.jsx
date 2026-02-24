@@ -11,41 +11,43 @@ import PrivacyShieldConsole from './PrivacyShieldConsole';
 
 const ShieldCard = ({ icon: Icon, label, sublabel, status, statusColor, detail, cta, onClick, accentColor = 'blue' }) => {
     const accents = {
-        blue:   { bg: 'bg-blue-500/10',   text: 'text-blue-500',   hover: 'hover:bg-blue-500', badge: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500 shadow-[0_0_8px_#3b82f6]' },
-        green:  { bg: 'bg-emerald-500/10', text: 'text-emerald-500', hover: 'hover:bg-emerald-500', badge: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500 shadow-[0_0_8px_#10b981]' },
-        purple: { bg: 'bg-purple-500/10',  text: 'text-purple-500',  hover: 'hover:bg-purple-500', badge: 'bg-purple-100 text-purple-700', dot: 'bg-purple-500 shadow-[0_0_8px_#8b5cf6]' },
+        blue:   { bg: 'bg-blue-500/10',   text: 'text-blue-500',   hover: 'hover:bg-blue-500', dot: 'bg-blue-500 shadow-[0_0_8px_#3b82f6]' },
+        green:  { bg: 'bg-emerald-500/10', text: 'text-emerald-500', hover: 'hover:bg-emerald-500', dot: 'bg-emerald-500 shadow-[0_0_8px_#10b981]' },
+        purple: { bg: 'bg-[#d4af37]/10',  text: 'text-[#d4af37]',  hover: 'hover:bg-[#d4af37]', dot: 'bg-[#d4af37] shadow-[0_0_8px_#d4af37]' },
     };
     const a = accents[accentColor];
 
     return (
         <div
             onClick={onClick}
-            className="group relative bg-white border border-slate-100 rounded-[20px] p-4 cursor-pointer hover:shadow-lg hover:border-slate-200 transition-all duration-300 hover:-translate-y-0.5"
+            className="group relative bg-[#1c1c1e] border border-white/5 rounded-[24px] p-5 cursor-pointer hover:shadow-[0_10px_40px_rgba(0,0,0,0.5)] hover:border-white/10 transition-all duration-300 hover:scale-[1.02] active:scale-95 overflow-hidden flex flex-col h-[155px]"
         >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform opacity-0 group-hover:opacity-100"></div>
+            
             {/* Top row */}
-            <div className="flex items-start justify-between mb-3">
-                <div className={`w-10 h-10 rounded-xl ${a.bg} flex items-center justify-center ${a.text} group-hover:scale-110 transition-transform`}>
+            <div className="flex items-start justify-between mb-3 relative z-10">
+                <div className={`w-10 h-10 rounded-xl ${a.bg} border border-white/5 flex items-center justify-center ${a.text} group-hover:scale-110 transition-transform`}>
                     <Icon size={18} />
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <div className={`w-2 h-2 rounded-full ${a.dot}`} />
+                    <div className={`w-2 h-2 rounded-full ${a.dot} animate-pulse`} />
                     <span className={`text-[9px] font-black uppercase tracking-widest ${a.text}`}>{status}</span>
                 </div>
             </div>
 
-            {/* Labels */}
-            <div className="mb-2">
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{label}</p>
-                <p className="text-sm font-black text-slate-900 leading-tight">{sublabel}</p>
+            {/* Labels and Detail */}
+            <div className="mb-auto relative z-10">
+                <div className="flex items-baseline gap-2 mb-0.5">
+                    <p className="text-sm font-black text-white leading-tight truncate">{sublabel}</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-gray-500 truncate">{label}</p>
+                </div>
+                <p className="text-[10px] text-gray-400 font-medium leading-snug truncate">{detail}</p>
             </div>
 
-            {/* Detail line */}
-            <p className="text-[10px] text-slate-400 font-medium leading-snug mb-3">{detail}</p>
-
             {/* CTA */}
-            <div className={`flex items-center justify-between pt-2.5 border-t border-slate-100`}>
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-700 transition-colors">{cta}</span>
-                <ArrowRight size={12} className={`${a.text} group-hover:translate-x-1 transition-transform`} />
+            <div className={`flex items-center justify-between pt-3 mt-3 border-t border-white/5 relative z-10`}>
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors">{cta}</span>
+                <ArrowRight size={14} className={`${a.text} group-hover:translate-x-1 transition-transform`} />
             </div>
         </div>
     );

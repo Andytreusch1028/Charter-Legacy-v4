@@ -65,7 +65,7 @@ const AuditTrailCard = ({ auditLog }) => (
             <History size={18} className="text-gray-500" />
             <h4 className="text-gray-500 font-bold text-xs uppercase tracking-widest">Audit Trail</h4>
         </div>
-        <div className="space-y-4 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="space-y-4 max-h-[200px] overflow-y-auto pr-2 no-scrollbar">
             {auditLog.map((log, i) => (
                 <div key={i} className="border-l border-zinc-800 pl-4 py-1">
                     <div className="text-white text-[10px] font-bold uppercase">{log.action || 'Unknown Action'}</div>
@@ -214,7 +214,7 @@ const HeritageConsole = ({
                             <p className="text-gray-400 text-sm mb-8 leading-relaxed max-w-md">
                                 {activeWill || activeTrust 
                                     ? "Your legal infrastructure is active. Your family can access these instructions according to your Veto Protocol."
-                                    : "You have not yet established a succession plan. Our high-tech scrivener can assist in drafting a Will or Living Trust."}
+                                    : "You have not yet established a succession plan. Initialize the system to compile your self-directed Will or Living Trust infrastructure."}
                             </p>
 
                             <div className="flex gap-4">

@@ -492,7 +492,7 @@ export default function Landing({ appUser }) {
       includedProtocols: [1],
       description: "Institutional privacy for the modern founder. We keep your home address off the grid.", 
       plainEnglish: "Your personal address shouldn't be public. We use our secure Florida office for your official filings so you can build in private.",
-      features: ['Statutory Compliance', 'Private Business Address', 'Mail Scanning Included', 'Heritage Intake Form'] 
+      features: ['Statutory Compliance', 'Federal BOI Reporting', 'Mail Scanning Included', 'Heritage Intake Form'] 
     },
     { 
       id: 'medical', 
@@ -502,7 +502,7 @@ export default function Landing({ appUser }) {
       includedProtocols: [1, 2],
       description: "Dignified structures for medical professionals. Privacy for those who provide care.", 
       plainEnglish: "For doctors and practitioners. We handle the specialized paperwork needed for a Professional LLC while protecting your home privacy.",
-      features: ['Advanced Privacy', 'Board-Ready Structure', 'Clinician Privacy Forms', 'Regulatory Assistance'] 
+      features: ['Advanced Privacy', 'Board-Ready Structure', 'Federal BOI Reporting', 'Regulatory Assistance'] 
     },
     { 
       id: 'contractor', 
@@ -512,7 +512,7 @@ export default function Landing({ appUser }) {
       includedProtocols: [1],
       description: "Solid foundations for trades and contractors. From site-work to state-filing.", 
       plainEnglish: "For those who build Florida. we handle your entity formation and help link your professional license to your new company.",
-      features: ['Statutory Compliance', 'License Linking Support', 'Qualifier Certification', 'Permit-Ready Filing'] 
+      features: ['Statutory Compliance', 'Federal BOI Reporting', 'Qualifier Certification', 'Permit-Ready Filing'] 
     }
   ];
 
@@ -818,7 +818,28 @@ export default function Landing({ appUser }) {
         </section>
 
         {/* REGISTERED AGENT CONSOLE (THE SOVEREIGN SLAB) */}
-        <RegisteredAgentConsole />
+        <section className="py-40 bg-[#0A0A0B] relative overflow-hidden flex flex-col items-center border-y border-white/5">
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-luminous-blue/20 to-transparent" />
+            <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-luminous-blue/5 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
+            
+            <div className="max-w-4xl mx-auto text-center mb-24 relative z-10 px-6">
+                <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-full mb-8">
+                    <div className="w-2 h-2 rounded-full bg-luminous-blue animate-pulse shadow-[0_0_10px_rgba(0,122,255,0.8)]" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-luminous-blue">Interactive Demo</span>
+                </div>
+                <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-[0.9]">
+                    The Command <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-luminous-blue to-emerald-400">Center.</span>
+                </h2>
+                <p className="text-gray-400 text-xl mt-8 font-medium italic max-w-2xl mx-auto leading-relaxed">
+                    Step inside the Sovereign Slab. Experience total control over your entity compliance, document vault, and active privacy shields.
+                </p>
+            </div>
+            
+            <div className="w-full max-w-[1400px] h-[850px] mx-auto rounded-[48px] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(0,0,0,1)] relative z-20 bg-[#0A0A0B]">
+                <RegisteredAgentConsole />
+            </div>
+        </section>
 
         <PrivacyShield privacyPackage={privacyPackage} handleSelection={handleSelection} />
 

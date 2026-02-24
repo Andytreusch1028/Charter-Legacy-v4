@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
-import { X, Check, FileText, Building2, Landmark, Shield, ChevronRight, Loader2, Download, ScrollText, CheckCircle2, ArrowRight } from 'lucide-react';
+import { X, Check, FileText, Building2, Landmark, Shield, ChevronRight, Loader2, Download, ScrollText, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 const BlueprintStep = ({ title, status, icon: Icon, active, onClick, children }) => (
   <div 
     onClick={onClick}
-    className={`p-6 rounded-3xl border-2 transition-all duration-300 cursor-pointer ${
+    className={`p-6 rounded-[32px] border transition-all duration-500 cursor-pointer ${
       active 
-        ? 'border-black bg-white shadow-xl scale-[1.02]' 
-        : 'border-transparent hover:bg-white/50 hover:border-gray-200'
+        ? 'border-white/20 bg-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+        : 'border-transparent hover:bg-white/5 hover:border-white/10'
     }`}
   >
-    <div className="flex items-center justify-between mb-4">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${active ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'}`}>
-        <Icon size={20} />
+    <div className="flex items-center justify-between mb-6">
+      <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center transition-all duration-500 ${active ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.4)]' : 'bg-white/5 text-gray-500 border border-white/10'}`}>
+        <Icon size={22} strokeWidth={1.5} />
       </div>
-      {status === 'complete' && <div className="p-1 bg-[#00D084] rounded-full text-white"><Check size={12} strokeWidth={4} /></div>}
+      {status === 'complete' && <div className="p-1.5 bg-emerald-500/20 border border-emerald-500/50 rounded-full text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]"><Check size={14} strokeWidth={3} /></div>}
     </div>
-    <h3 className={`text-lg font-black uppercase tracking-tight ${active ? 'text-black' : 'text-gray-400'}`}>{title}</h3>
+    <h3 className={`text-[13px] font-bold tracking-[0.2em] uppercase transition-colors duration-500 ${active ? 'text-white' : 'text-gray-500'}`}>{title}</h3>
     
     {active && (
-      <div className="mt-6 pt-6 border-t border-gray-100 animate-in fade-in slide-in-from-top-4">
+      <div className="mt-6 pt-6 border-t border-white/10 animate-in fade-in slide-in-from-top-4 duration-500">
          {children}
       </div>
     )}
@@ -257,16 +257,19 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
 
   // RENDER MODAL (Open State)
   return (
-    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
-      <div className="absolute inset-0 bg-[#F0F2F5]/90 backdrop-blur-xl" onClick={onClose} />
+    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-500">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-2xl" onClick={onClose} />
       
-      <div className="vitreous-glass w-full max-w-5xl h-[90vh] rounded-[48px] overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 shadow-2xl">
+      <div className="relative z-10 w-full max-w-6xl h-[90vh] rounded-[48px] overflow-hidden flex flex-col md:flex-row shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 bg-[#0A0A0B]/80 backdrop-blur-3xl">
         
         {/* SIDEBAR NAVIGATION */}
-        <div className="w-full md:w-1/3 bg-white p-8 border-r border-gray-100 overflow-y-auto">
+        <div className="w-full md:w-1/3 bg-black/40 p-10 border-r border-white/10 overflow-y-auto">
            <div className="mb-12">
-              <div className="text-[0.65rem] font-black uppercase tracking-[0.5em] text-[#0A0A0B] opacity-30 mb-4">Operational Handbook</div>
-              <h2 className="text-3xl font-black uppercase tracking-tighter leading-none text-[#0A0A0B]">{companyName}</h2>
+              <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-500 mb-4 flex items-center gap-2">
+                 <div className="w-1.5 h-1.5 rounded-full bg-luminous-blue animate-pulse"/> Operational Handbook
+              </div>
+              <h2 className="text-3xl font-light tracking-tight text-white mb-2">{companyName}</h2>
+              <p className="text-xs text-gray-400 font-medium">Internal Corporate Documentation</p>
            </div>
 
            <div className="space-y-4">
@@ -277,62 +280,80 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
                 status={completedSteps.includes('ein') ? 'complete' : 'pending'}
                 onClick={() => setActiveStep('ein')}
               >
-                <p className="text-sm text-gray-500 font-medium leading-relaxed mb-4">
-                  Your Employer Identification Number is the "SSN" for your business. Required for banking.
+                <p className="text-[13px] text-gray-400 font-light leading-relaxed mb-6">
+                  Your Employer Identification Number is the tax identifier for your business entity. Usually required to establish banking relationships.
                 </p>
                 <button 
                   onClick={(e) => { e.stopPropagation(); markComplete('ein'); }}
-                  className="w-full py-3 bg-black text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#00D084] transition-colors"
+                  className="w-full py-4 bg-white text-black rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-luminous-blue hover:text-white transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.1)] focus:outline-none"
                 >
                   {completedSteps.includes('ein') ? 'Access Letter' : 'Mark as Received'}
                 </button>
               </BlueprintStep>
 
               <BlueprintStep 
-                title="Operating Agreement Template" 
+                title="Operating Agreement" 
                 icon={FileText} 
                 active={activeStep === 'oa'} 
                 status={completedSteps.includes('oa') ? 'complete' : 'pending'}
                 onClick={() => setActiveStep('oa')}
               >
-                 <p className="text-sm text-gray-500 font-medium leading-relaxed mb-4">
-                  The governing constitution of your LLC. Establishes ownership and rules.
+                 <p className="text-[13px] text-gray-400 font-light leading-relaxed mb-6">
+                  The primary internal document outlining your LLC's ownership structure and operational procedures.
                 </p>
                 <button 
                   onClick={(e) => { e.stopPropagation(); generatePDF('oa'); }}
                   disabled={generating}
-                  className="w-full py-3 bg-black text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#00D084] transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-white/10 text-white border border-white/20 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50"
                 >
-                  {generating ? <Loader2 className="animate-spin" size={14}/> : <><Download size={14}/> Sign Digitally</>}
+                  {generating ? <Loader2 className="animate-spin" size={16}/> : <><ScrollText size={16}/> Draft Agreement</>}
                 </button>
               </BlueprintStep>
 
               <BlueprintStep 
-                title="Banking Resolution Form" 
+                title="Banking Resolution" 
                 icon={Landmark} 
                 active={activeStep === 'banking'} 
                 status={completedSteps.includes('banking') ? 'complete' : 'pending'}
                 onClick={() => setActiveStep('banking')}
               >
-                 <p className="text-sm text-gray-500 font-medium leading-relaxed mb-4">
-                  Formal authorization to open a corporate bank account.
+                 <p className="text-[13px] text-gray-400 font-light leading-relaxed mb-6">
+                  An internal corporate resolution authorizing designated members to open commercial bank accounts.
                 </p>
                 <button 
                   onClick={(e) => { e.stopPropagation(); generatePDF('banking'); }}
                   disabled={generating}
-                  className="w-full py-3 bg-black text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#00D084] transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-white/10 text-white border border-white/20 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50"
                 >
-                   {generating ? <Loader2 className="animate-spin" size={14}/> : <><Download size={14}/> Generate PDF</>}
+                   {generating ? <Loader2 className="animate-spin" size={16}/> : <><Download size={16}/> Generate Document</>}
+                </button>
+              </BlueprintStep>
+
+              <BlueprintStep 
+                title="FinCEN BOI Report" 
+                icon={Shield} 
+                active={activeStep === 'boi'} 
+                status={completedSteps.includes('boi') ? 'complete' : 'pending'}
+                onClick={() => setActiveStep('boi')}
+              >
+                 <p className="text-[13px] text-gray-400 font-light leading-relaxed mb-6">
+                  A mandatory federal report disclosing beneficial owners. Must be filed within 90 days.
+                </p>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); markComplete('boi'); }}
+                  className="w-full py-4 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-orange-500 hover:text-white transition-all duration-300 flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.1)] focus:outline-none"
+                >
+                   {completedSteps.includes('boi') ? 'View Confirmation' : 'File BOI Report'}
                 </button>
               </BlueprintStep>
            </div>
         </div>
 
         {/* MAIN CONTENT PREVIEW */}
-        <div className="flex-1 bg-[#F5F5F7] p-8 md:p-16 relative overflow-y-auto flex flex-col items-center justify-center text-center">
-            <button onClick={onClose} className="absolute top-8 right-8 p-2 bg-white rounded-full hover:bg-black hover:text-white transition-all shadow-sm"><X size={20} /></button>
+        <div className="flex-1 bg-black/20 p-8 md:p-16 relative overflow-y-auto flex flex-col items-center justify-center text-center">
+            <button onClick={onClose} className="absolute top-8 right-8 w-12 h-12 flex items-center justify-center bg-white/5 border border-white/10 rounded-full text-gray-500 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all duration-300 shadow-sm"><X size={20} /></button>
             
-            <div className="max-w-xl space-y-8 animate-in slide-in-from-right duration-500" key={activeStep}>
+            <div className="w-full max-w-xl animate-in slide-in-from-right-8 duration-500" key={activeStep}>
                {activeStep === 'ein' && <EINContent companyName={companyName} />}
                {activeStep === 'oa' && <OAContent companyName={companyName} />}
                {activeStep === 'banking' && <BankContent companyName={companyName} />}
@@ -349,24 +370,24 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
 
 const EINContent = ({ companyName }) => (
   <>
-    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm text-[#007AFF]">
-       <Building2 size={32} />
+    <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(255,255,255,0.02)] text-luminous-blue group transition-all duration-500 hover:border-luminous-blue/50 hover:bg-luminous-blue/10 hover:shadow-[0_0_40px_rgba(0,122,255,0.2)]">
+       <Building2 size={36} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-500" />
     </div>
-    <div className="text-center mt-4">
-        <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Federal Tax ID</h2>
+    <div className="text-center mt-8">
+        <h2 className="text-5xl font-light tracking-tight text-white mb-4">Federal Tax <span className="font-medium text-gray-500">ID.</span></h2>
     </div>
-    <div className="bg-white p-8 rounded-2xl shadow-sm text-left border border-gray-200/50 mt-8">
-       <div className="space-y-4 font-mono text-sm text-gray-600">
-          <div className="flex justify-between border-b border-gray-100 pb-2">
-             <span>Entity Name:</span>
-             <span className="font-bold text-black">{companyName}</span>
+    <div className="bg-black/40 p-10 rounded-[40px] border border-white/10 mt-10 w-full max-w-lg mx-auto group hover:border-white/20 transition-all duration-500 shadow-2xl">
+       <div className="space-y-6 font-mono text-[13px] text-gray-400">
+          <div className="flex justify-between items-center border-b border-white/5 pb-5 group-hover:border-white/10 transition-colors">
+             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Entity Name</span>
+             <span className="font-bold text-white text-[15px] truncate max-w-[200px]">{companyName}</span>
           </div>
-          <div className="flex justify-between border-b border-gray-100 pb-2">
-             <span>EIN Status:</span>
-             <span className="font-bold text-[#00D084]">Pending IRS Assignment</span>
+          <div className="flex justify-between items-center border-b border-white/5 pb-5 group-hover:border-white/10 transition-colors">
+             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">EIN Status</span>
+             <span className="font-bold text-luminous-blue bg-luminous-blue/10 px-3.5 py-1.5 rounded-full text-[10px] uppercase tracking-widest border border-luminous-blue/20 drop-shadow-[0_0_15px_rgba(0,122,255,0.3)] animate-pulse">Pending IRS Assignment</span>
           </div>
-          <p className="pt-2 text-xs text-gray-400 italic">
-             * Note: The IRS creates this number digitally. Once assigned, your CP-575 letter will appear here automatically.
+          <p className="pt-2 text-[11px] text-gray-500 font-light leading-relaxed font-sans text-center px-4">
+             * Note: The IRS assigns this identifier digitally. Upon assignment, the CP-575 confirmation letter will be deposited into your vault.
           </p>
        </div>
     </div>
@@ -375,39 +396,46 @@ const EINContent = ({ companyName }) => (
 
 const OAContent = ({ companyName }) => (
   <>
-    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm text-[#007AFF]">
-       <FileText size={32} />
+    <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(255,255,255,0.02)] text-emerald-400 group transition-all duration-500 hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:shadow-[0_0_40px_rgba(16,185,129,0.2)]">
+       <FileText size={36} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-500" />
     </div>
-    <div className="text-center mt-4">
-        <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Operating Agreement</h2>
-        <p className="text-gray-500 font-medium mt-2">
-        This multi-member agreement defines the ownership structure (Membership Units) and management rules for <strong>{companyName}</strong>.
+    <div className="text-center mt-8">
+        <h2 className="text-5xl font-light tracking-tight text-white mb-4">Operating <span className="font-medium text-gray-500">Agreement.</span></h2>
+        <p className="text-gray-400 font-light mt-4 max-w-md mx-auto text-[15px] leading-relaxed">
+        This internal agreement defines the ownership structure and operational parameters for <strong className="text-white font-medium">{companyName}</strong>.
         </p>
     </div>
-    <div className="h-64 bg-white rounded-xl border border-gray-200 w-full opacity-60 flex items-center justify-center relative overflow-hidden mt-8">
-       <div className="absolute inset-0 bg-[radial-gradient(#00000033_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
-       <p className="font-serif italic text-gray-300 text-2xl">Preview Document</p>
+    <div className="h-72 bg-black/40 rounded-[40px] border border-white/10 w-full max-w-lg mx-auto flex items-center justify-center relative overflow-hidden mt-10 group cursor-pointer hover:border-white/20 transition-all duration-500 shadow-2xl">
+       <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.1)_1px,transparent_1px)] [background-size:24px_24px] opacity-20 group-hover:opacity-40 transition-opacity duration-1000"></div>
+       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/90 to-transparent"></div>
+       <div className="relative z-10 flex flex-col items-center gap-5">
+           <ScrollText size={56} strokeWidth={1} className="text-gray-600 group-hover:text-emerald-400 transition-colors duration-500" />
+           <p className="font-bold uppercase tracking-[0.3em] text-[10px] text-gray-500 group-hover:text-white transition-colors duration-500">Document Blueprint Preview</p>
+       </div>
     </div>
   </>
 );
 
 const BankContent = ({ companyName }) => (
   <>
-    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm text-[#007AFF]">
-       <Landmark size={32} />
+    <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(255,255,255,0.02)] text-purple-400 group transition-all duration-500 hover:border-purple-500/50 hover:bg-purple-500/10 hover:shadow-[0_0_40px_rgba(168,85,247,0.2)]">
+       <Landmark size={36} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-500" />
     </div>
-    <div className="text-center mt-4">
-        <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Banking Resolution</h2>
-        <p className="text-gray-500 font-medium mt-2">
-        Most banks require a "Banking Resolution" signed by the members to open a business checking account.
+    <div className="text-center mt-8">
+        <h2 className="text-5xl font-light tracking-tight text-white mb-4">Banking <span className="font-medium text-gray-500">Resolution.</span></h2>
+        <p className="text-gray-400 font-light mt-4 max-w-md mx-auto text-[15px] leading-relaxed">
+        A standard internal corporate resolution authorizing designated members to establish commercial banking relationships.
         </p>
     </div>
-    <div className="p-6 bg-[#007AFF]/5 rounded-2xl border border-[#007AFF]/10 text-left mt-8 w-full">
-       <h4 className="font-bold text-[#007AFF] uppercase text-xs tracking-widest mb-2">Suggested Banking Integrations</h4>
-       <ul className="space-y-2 text-sm text-gray-600">
-         <li className="flex items-center gap-2"><Check size={14} className="text-[#00D084]" /> Mercury (Tech-Forward)</li>
-         <li className="flex items-center gap-2"><Check size={14} className="text-[#00D084]" /> Chase Business (Traditional)</li>
-         <li className="flex items-center gap-2"><Check size={14} className="text-[#00D084]" /> Relay Financial (No Fees)</li>
+    <div className="p-10 bg-black/40 rounded-[40px] border border-white/10 text-left mt-10 w-full max-w-lg mx-auto group hover:border-purple-500/20 transition-all duration-500 shadow-2xl">
+       <h4 className="font-bold text-gray-500 uppercase text-[10px] tracking-[0.2em] mb-8 flex items-center gap-4">
+            <div className="w-10 h-[1px] bg-slate-700"></div>
+            Suggested Partner Banks
+       </h4>
+       <ul className="space-y-6 text-[14px] text-gray-300 font-light">
+         <li className="flex items-center gap-5 group/item cursor-pointer"><div className="w-10 h-10 rounded-[12px] bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 group-hover/item:bg-purple-500/10 group-hover/item:border-purple-500/30 transition-all shadow-sm"><Check size={16} strokeWidth={2} /></div> <span className="group-hover/item:text-white transition-colors">Mercury (Tech-Forward)</span></li>
+         <li className="flex items-center gap-5 group/item cursor-pointer"><div className="w-10 h-10 rounded-[12px] bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 group-hover/item:bg-purple-500/10 group-hover/item:border-purple-500/30 transition-all shadow-sm"><Check size={16} strokeWidth={2} /></div> <span className="group-hover/item:text-white transition-colors">Chase Business (Traditional)</span></li>
+         <li className="flex items-center gap-5 group/item cursor-pointer"><div className="w-10 h-10 rounded-[12px] bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 group-hover/item:bg-purple-500/10 group-hover/item:border-purple-500/30 transition-all shadow-sm"><Check size={16} strokeWidth={2} /></div> <span className="group-hover/item:text-white transition-colors">Relay Financial (No Fees)</span></li>
        </ul>
     </div>
   </>
@@ -415,35 +443,36 @@ const BankContent = ({ companyName }) => (
 
 const BOIContent = ({ companyName }) => (
   <>
-    <div className="w-20 h-20 bg-orange-50 rounded-3xl flex items-center justify-center mx-auto shadow-sm text-orange-500 border border-orange-100">
-       <Shield size={32} />
+    <div className="w-24 h-24 bg-orange-500/10 border border-orange-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(249,115,22,0.1)] text-orange-500 group transition-all duration-500 hover:border-orange-500/50 hover:bg-orange-500/20 hover:shadow-[0_0_40px_rgba(249,115,22,0.3)]">
+       <Shield size={36} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-500" />
     </div>
-    <div className="text-center mt-4">
-        <h2 className="text-4xl font-black uppercase tracking-tighter text-[#1D1D1F]">Mandatory Filing</h2>
-        <p className="text-gray-500 font-medium mt-2">
-        The <strong>Beneficial Ownership Information (BOI)</strong> report is required by FinCEN within 90 days of formation. Non-compliance carries severe penalties.
+    <div className="text-center mt-8">
+        <h2 className="text-5xl font-light tracking-tight text-white mb-4">FinCEN <span className="font-medium text-gray-500">BOI.</span></h2>
+        <p className="text-gray-400 font-light mt-4 max-w-lg mx-auto text-[15px] leading-relaxed">
+        The <strong>Beneficial Ownership Information (BOI)</strong> report must be filed federally within 90 days. Non-compliance results in statutory penalties.
         </p>
     </div>
     
-    <div className="mt-8 space-y-4">
-        <div className="bg-white p-6 rounded-2xl border border-orange-100 shadow-sm flex items-start gap-4">
-             <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0 mt-1">
-                 <AlertCircle size={16} />
+    <div className="mt-10 space-y-6 w-full max-w-lg mx-auto">
+        <div className="bg-black/40 p-8 rounded-[32px] border border-orange-500/20 shadow-2xl flex items-start gap-5 relative overflow-hidden group hover:border-orange-500/40 transition-colors duration-500">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl group-hover:bg-orange-500/20 transition-all duration-1000 -mr-10 -mt-10 pointer-events-none"></div>
+             <div className="w-10 h-10 rounded-[12px] bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 shrink-0 shadow-sm relative z-10">
+                 <AlertCircle size={18} strokeWidth={2} />
              </div>
-             <div>
-                 <h4 className="font-bold text-gray-900 text-sm mb-1">Federal Requirement</h4>
-                 <p className="text-xs text-gray-500 leading-relaxed">
-                     As of Jan 1, 2024, all new LLCs must report their beneficial owners (25%+ ownership) to the U.S. Treasury.
+             <div className="relative z-10">
+                 <h4 className="font-bold text-white text-[15px] mb-2">Mandatory Requirement</h4>
+                 <p className="text-[13px] text-gray-400 font-light leading-relaxed">
+                     All entities must report their beneficial owners to the U.S. Treasury. This is non-negotiable compliance.
                  </p>
              </div>
         </div>
 
-        <button className="w-full py-4 bg-orange-500 text-white rounded-xl font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg hover:shadow-orange-500/30 flex items-center justify-center gap-3 group">
-            Start Secure Filing <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform"/>
+        <button className="w-full py-5 bg-orange-600/90 text-white rounded-2xl font-bold text-[12px] uppercase tracking-[0.2em] hover:bg-orange-500 transition-all shadow-[0_0_30px_rgba(249,115,22,0.3)] hover:shadow-[0_0_40px_rgba(249,115,22,0.5)] flex items-center justify-center gap-3 group focus:outline-none">
+            Compile Federal Report <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform duration-300"/>
         </button>
         
-        <p className="text-[10px] text-center text-gray-400 font-medium">
-            Secure 256-bit encrypted transmission to FinCEN.gov
+        <p className="text-[10px] text-center text-gray-500 font-bold uppercase tracking-widest mt-4">
+            Transmission heavily encrypted via 256-bit protocol
         </p>
     </div>
   </>

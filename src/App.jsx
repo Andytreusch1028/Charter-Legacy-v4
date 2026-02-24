@@ -11,7 +11,7 @@ import DashboardZenith from './DashboardZenith';
 // Admin Zone
 import AIGrowthConsole from './zones/admin/AIGrowthConsole';
 import StaffLogin from './zones/admin/StaffLogin';
-import FulfillmentConsole from './zones/admin/FulfillmentConsole';
+import FulfillmentPortal from './staff-node/FulfillmentPortal';
 
 export default function App() {
   const [appUser, setAppUser] = useState(null);
@@ -42,7 +42,7 @@ export default function App() {
 
   // Handle Dev Override for easy offline/local UI testing
   const overrideRole = window.location.hostname === 'localhost' ? localStorage.getItem('DEV_ADMIN_BYPASS') : null;
-  const activeUser = overrideRole ? { email: `dev_${overrideRole}@localhost`, user_metadata: { role: overrideRole } } : appUser;
+  const activeUser = overrideRole ? { id: 'dev-override-uuid', email: `dev_${overrideRole}@localhost`, user_metadata: { role: overrideRole } } : appUser;
 
   // Enhanced RBAC Check for Admin Access (Using Supabase metadata)
   const isExecutive = activeUser && (
@@ -98,7 +98,7 @@ export default function App() {
           path="/admin/fulfillment" 
           element={
             isStaff 
-              ? <FulfillmentConsole /> 
+              ? <FulfillmentPortal /> 
               : <Navigate to="/staff" replace /> 
           } 
         />

@@ -78,19 +78,13 @@ const ComplianceStatusModal = ({ onClose, documentNumber = 'L24000392044' }) => 
 
     const fetchData = async () => {
         setLoading(true);
-        try {
-            const { data: fnData, error } = await supabase.functions.invoke('sunbiz-lookup', {
-                body: { documentNumber },
-            });
-            if (error || !fnData) throw new Error('Edge function unavailable');
-            setData(fnData);
-        } catch {
-            // Fall back to mock data for demo / when edge function isn't deployed
+        // By-pass the Edge function entirely for now to prevent native browser CORS errors from spamming the console
+        // We will wire this up when the sunbiz-lookup edge function is fully deployed.
+        setTimeout(() => {
             setData(MOCK_DATA);
-        } finally {
             setLoading(false);
             setLastRefreshed(new Date());
-        }
+        }, 800);
     };
 
     useEffect(() => { fetchData(); }, []);

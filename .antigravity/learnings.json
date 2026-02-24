@@ -20,6 +20,14 @@
           "correction": "Changed to 'help avoid potential civil penalties'. Removed all indemnity-implied language.",
           "impact": "High - UPL/Insurance Risk",
           "prevention_rule": "NEVER use 'protection' or 'guarantee' regarding statutory fines. Use 'assistance', 'filing service', and 'help avoid'."
+        },
+        {
+          "id": "learning-030",
+          "date": "2026-02-24",
+          "mistake": "Used terms 'Privacy Shield Deployed', 'Removals Confirmed', 'scrivener', and 'drafting a Will' which imply human intervention or legal warranties.",
+          "correction": "Changed to 'Information Shield Activated', 'Opt-Outs Processed', and 'Initialize the system to compile your self-directed Will'.",
+          "impact": "High - UPL/Insurance Risk",
+          "prevention_rule": "MANDATORY: When describing privacy services, use 'Abstraction' or 'Opt-Outs'. When describing estate plan generation, use 'compiling' or 'system' with 'self-directed' qualifiers, never 'drafting' or 'scrivener'."
         }
       ]
     },
@@ -57,6 +65,14 @@
           "correction": "Always use clean, absolute local paths. Avoid %20 or other URL encodings when passing paths to filesystem tools.",
           "impact": "Low - Execution Delay",
           "prevention_rule": "CRITICAL: Never use URL-encoded strings for filesystem tool arguments. Paths must be literal absolute strings."
+        },
+        {
+          "id": "learning-031",
+          "date": "2026-02-24",
+          "mistake": "Native browser scrollbars clashed with the immersive Obsidian aesthetic (black/gold).",
+          "correction": "Applied `.no-scrollbar` utility (hides webkit scrollbar) to scrollable containers.",
+          "impact": "Medium - Visual immersion disruption",
+          "prevention_rule": "Always use `.no-scrollbar` or custom-styled scrollbars on interior scrollable containers within the Obsidian aesthetic to maintain the premium, app-like feel."
         }
       ]
     },
@@ -218,6 +234,14 @@
           "pattern": "Implement a framework-agnostic `accessLog` array in the core Registry. Automatically push activities from all state-mutating methods and notify listeners to ensure high-fidelity UI audit trails.",
           "impact": "High - Provides zero-configuration security visibility and real-time user feedback.",
           "reuse_guidance": "Mandatory for all high-security vaults or sensitive data management modules."
+        },
+        {
+          "id": "learning-032",
+          "date": "2026-02-24",
+          "success": "Split deployment strategy into Web App (Acquisition) and Native App (Retention/Security)",
+          "pattern": "A high-friction acquisition path (Native App) was avoided by completing checkout on Web, while retaining the high-security value (FaceID, Push Notifications) of Native for post-purchase use.",
+          "impact": "High - Conversion rate and roadmap clarity",
+          "reuse_guidance": "Never put the primary checkout or formation flow in a native app. Native apps are companion tools for retention, alerts, and biometric security."
         }
       ]
     },

@@ -122,9 +122,12 @@ const VaultTile = ({ onClick, locked, mode = 'MONOLITH' }) => {
                 relative overflow-hidden group cursor-pointer transition-all prism-border w-full
                 ${mode === 'MONOLITH' ? 'p-16 bg-luminous-ink text-white rounded-[56px] shadow-[0_80px_160px_-40px_rgba(0,122,255,0.3)] h-[600px] flex flex-col justify-between hover:scale-[1.02]' : ''}
                 ${mode === 'SWISS' ? 'p-8 bg-blue-600 text-white rounded-[32px] h-full flex flex-col justify-between hover:bg-blue-700' : ''}
-                ${mode === 'CUPERTINO' ? 'p-8 bg-white/80 backdrop-blur-xl border border-white/40 rounded-[24px] h-full flex flex-col justify-between shadow-sm hover:bg-white' : ''}
+                ${mode === 'CUPERTINO' ? 'p-8 bg-[#1c1c1e] border border-white/5 rounded-[24px] h-full flex flex-col justify-between shadow-[0_10px_40px_rgba(0,0,0,0.5)] hover:border-white/10 hover:scale-[1.02] active:scale-95 transition-all duration-300' : ''}
             `}
         >
+            {/* ETCHED MONOLITH TEXTURE (Global) */}
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] [background-size:16px_16px]" />
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#d4af37]/5 rounded-bl-full pointer-events-none group-hover:scale-125 transition-transform duration-700 opacity-0 group-hover:opacity-100"></div>
                 {/* MODE: MONOLITH (Original) */}
             {mode === 'MONOLITH' && (
                 <>
@@ -167,26 +170,26 @@ const VaultTile = ({ onClick, locked, mode = 'MONOLITH' }) => {
              {/* MODE: CUPERTINO */}
              {mode === 'CUPERTINO' && (
                 <>
-                    <div className="flex justify-between items-start">
-                        <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-slate-900 shadow-sm group-hover:scale-110 group-hover:bg-blue-50 group-hover:text-[#007AFF] transition-all duration-300">
+                    <div className="flex justify-between items-start relative z-10">
+                        <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-gray-500 shadow-inner group-hover:scale-110 group-hover:bg-[#d4af37]/10 group-hover:text-[#d4af37] border border-white/5 transition-all duration-300">
                             <Lock size={24} />
                         </div>
-                        <div className="px-3 py-1 bg-white rounded-full border border-gray-100 shadow-sm text-[10px] font-bold uppercase tracking-wider text-slate-500 group/tooltip relative">
+                        <div className="px-3 py-1 bg-white/5 rounded-full border border-white/5 shadow-inner text-[10px] font-bold uppercase tracking-wider text-gray-400 group/tooltip relative">
                             Active
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-[9px] rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-[#0A0A0B] text-white border border-white/10 text-[9px] rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                                 Secure Storage
                             </div>
                         </div>
                     </div>
                     
-                    <div className="flex-1 flex flex-col justify-center items-center py-4">
-                        <div className="text-6xl font-black text-slate-900 tracking-tighter">364</div>
-                        <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Days Remaining</div>
+                    <div className="flex-1 flex flex-col justify-center items-center py-4 relative z-10">
+                        <div className="text-7xl font-black text-white tracking-tighter drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">364</div>
+                        <div className="text-[10px] font-black text-[#d4af37] uppercase tracking-widest mt-2">Days Remaining</div>
                     </div>
 
-                    <div>
-                        <h3 className="text-2xl font-bold text-slate-900 leading-tight tracking-tight mb-1">Heritage Vault</h3>
-                        <p className="text-xs text-slate-500 font-medium">Secure Document Repository</p>
+                    <div className="relative z-10">
+                        <h3 className="text-2xl font-bold text-white leading-tight tracking-tight mb-1">Heritage Vault</h3>
+                        <p className="text-xs text-gray-500 font-medium">Secure Document Repository</p>
                     </div>
                 </>
              )}
