@@ -41,6 +41,8 @@ const FormationFactory = ({
                             client_id: llc.user_id,
                             entityName: llc.llc_name || 'Unnamed Entity',
                             type: isPLLC ? 'PLLC' : 'LLC',
+                            action_type: 'FORMATION',
+                            document_number: '',
                             status: llc.llc_status || 'AWAITING_REVIEW',
                             submitted: new Date(llc.created_at).toLocaleDateString(),
                             owner: llc.profiles?.full_name || 'Client',
@@ -73,22 +75,44 @@ const FormationFactory = ({
                     });
                 let finalFormations = mapped;
                 if (finalFormations.length === 0 && window.location.hostname === 'localhost') {
-                    finalFormations = [{
-                        id: 'mock-llc-for-testing-123',
-                        client_id: 'mock-client-id',
-                        entityName: 'Charter Legacy Test Entity LLC',
-                        type: 'LLC',
-                        status: 'AWAITING_REVIEW',
-                        submitted: new Date().toLocaleDateString(),
-                        owner: 'Demo User',
-                        priority: 'high',
-                        filingOptions: { effectiveDate: '', certOfStatus: false, certifiedCopy: true },
-                        principalAddress: { street: '123 Test St', suite: '', city: 'Miami', state: 'FL', zip: '33101' },
-                        mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
-                        registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: 'Charter Legacy Services LLC', street: '456 Guardian Way', city: 'DeLand', state: 'FL', zip: '32724' },
-                        correspondence: { name: 'Demo User', email: 'legal@charterlegacy.com' },
-                        authPersonnel: [{ title: 'MGR', firstName: 'Demo', lastName: 'User', street: '123 Test St', city: 'Miami', state: 'FL', zip: '33101' }]
-                    }];
+                    finalFormations = [
+                        {
+                            id: 'mock-llc-for-testing-123',
+                            client_id: 'mock-client-id',
+                            entityName: 'Charter Legacy Test Entity LLC',
+                            type: 'LLC',
+                            action_type: 'FORMATION',
+                            document_number: '',
+                            status: 'AWAITING_REVIEW',
+                            submitted: new Date().toLocaleDateString(),
+                            owner: 'Demo User',
+                            priority: 'high',
+                            filingOptions: { effectiveDate: '', certOfStatus: false, certifiedCopy: true },
+                            principalAddress: { street: '123 Test St', suite: '', city: 'Miami', state: 'FL', zip: '33101' },
+                            mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
+                            registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: 'Charter Legacy Services LLC', street: '456 Guardian Way', city: 'DeLand', state: 'FL', zip: '32724' },
+                            correspondence: { name: 'Demo User', email: 'legal@charterlegacy.com' },
+                            authPersonnel: [{ title: 'MGR', firstName: 'Demo', lastName: 'User', street: '123 Test St', city: 'Miami', state: 'FL', zip: '33101' }]
+                        },
+                        {
+                            id: 'mock-ar-testing-456',
+                            client_id: 'mock-client-id',
+                            entityName: 'Charter Legacy AR Demo LLC',
+                            type: 'LLC',
+                            action_type: 'ANNUAL_REPORT',
+                            document_number: 'L22000527008',
+                            status: 'AWAITING_REVIEW',
+                            submitted: new Date().toLocaleDateString(),
+                            owner: 'Demo User',
+                            priority: 'high',
+                            filingOptions: { effectiveDate: '', certOfStatus: false, certifiedCopy: false },
+                            principalAddress: { street: '', suite: '', city: '', state: '', zip: '' },
+                            mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
+                            registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: 'Charter Legacy', street: '', city: '', state: '', zip: '' },
+                            correspondence: { name: 'Demo User', email: 'legal@charterlegacy.com' },
+                            authPersonnel: []
+                        }
+                    ];
                 }
                 setFormations(finalFormations);
             }
@@ -129,6 +153,12 @@ const FormationFactory = ({
     const validateSpec = (formation) => {
         const errors = [];
         if (!formation.entityName) errors.push({ id: 'entityName', label: 'Entity Name', tab: 'intake' });
+        
+        if (formation.action_type === 'ANNUAL_REPORT') {
+            if (!formation.document_number) errors.push({ id: 'doc_number', label: 'Document Number', tab: 'intake' });
+            return errors; // Minimal validation for AR demo right now
+        }
+
         if (!formation.type) errors.push({ id: 'type', label: 'Filing Type', tab: 'intake' });
         if (!formation.principalAddress?.street) errors.push({ id: 'principal_street', label: 'Principal Street', tab: 'addresses' });
         if (!formation.principalAddress?.city) errors.push({ id: 'principal_city', label: 'Principal City', tab: 'addresses' });
@@ -212,37 +242,46 @@ const FormationFactory = ({
         
         automationAbort.current = new AbortController();
         
-        const goal = `Navigate to https://dos.myflorida.com/sunbiz/start-e-filing/efile-articles-of-organization/. 
-        1. Start LLC E-Filing.
-        2. FILL FILING INFORMATION:
-           - LLC Name: "${formation.entityName}"${formation.type === 'PLLC' ? '\n           - Professional Purpose: "Professional Services"' : ''}
-           - Effective Date: "${formation.filingOptions?.effectiveDate || 'Today'}"
-           - Certificate of Status ($5): ${formation.filingOptions?.certOfStatus ? 'Check yes' : 'Leave unchecked'}
-           - Certified Copy ($30): ${formation.filingOptions?.certifiedCopy ? 'Check yes' : 'Leave unchecked'}
-        3. FILL PRINCIPAL ADDRESS:
-           - Address: "${formation.principalAddress?.street}"
-           - Suite: "${formation.principalAddress?.suite || ''}"
-           - City, State: "${formation.principalAddress?.city}", "${formation.principalAddress?.state}"
-           - Zip: "${formation.principalAddress?.zip}"
-        4. FILL MAILING ADDRESS:
-           - ${formation.mailingAddress?.isSame ? "Check 'Mailing address same as principal address'" : `Fill: ${formation.mailingAddress?.street}, ${formation.mailingAddress?.city}, ${formation.mailingAddress?.zip}`}
-        5. CRITICAL: Take a screenshot and log "Intake & Addresses complete".
-        6. FILL REGISTERED AGENT:
-           - ${formation.registeredAgent?.type === 'INDIVIDUAL' ? `Individual Name: ${formation.registeredAgent.firstName} ${formation.registeredAgent.lastName}` : `Business Name: ${formation.registeredAgent.businessName}`}
-           - RA Address: "${formation.registeredAgent?.street}, ${formation.registeredAgent?.city}, FL ${formation.registeredAgent?.zip}"
-           - Sign: Type "${formation.registeredAgent?.firstName} ${formation.registeredAgent?.lastName}" in Signature box.
-        7. CRITICAL: Take a screenshot and log "Registered Agent complete".
-        8. FILL CORRESPONDENCE:
-           - Name: "${formation.correspondence?.name}"
-           - Email: "${formation.correspondence?.email}"
-        9. FILL AUTHORIZED PERSONNEL (MGR/AMBR):
-           ${formation.authPersonnel?.map((p, i) => `
-           Entry ${i + 1}:
-           - Title: ${p.title}
-           - Name: ${p.firstName} ${p.lastName}
-           - Address: ${p.street}, ${p.city}, ${p.state} ${p.zip}
-           `).join('\n')}
-        10. CRITICAL: Stop at the final review/payment screen. Take a final screenshot.`;
+        let goal = '';
+        if (formation.action_type === 'ANNUAL_REPORT') {
+            goal = `Navigate to https://services.sunbiz.org/Filings/AnnualReport/FilingStart
+            1. Enter the Document Number: "${formation.document_number}"
+            2. Click Submit.
+            3. Review the Annual Report details page.
+            4. CRITICAL: Stop and take a final screenshot. DO NOT MAKE ANY CHANGES and DO NOT PROCEED to payment.`;
+        } else {
+            goal = `Navigate to https://dos.myflorida.com/sunbiz/start-e-filing/efile-articles-of-organization/. 
+            1. Start LLC E-Filing.
+            2. FILL FILING INFORMATION:
+               - LLC Name: "${formation.entityName}"${formation.type === 'PLLC' ? '\n               - Professional Purpose: "Professional Services"' : ''}
+               - Effective Date: "${formation.filingOptions?.effectiveDate || 'Today'}"
+               - Certificate of Status ($5): ${formation.filingOptions?.certOfStatus ? 'Check yes' : 'Leave unchecked'}
+               - Certified Copy ($30): ${formation.filingOptions?.certifiedCopy ? 'Check yes' : 'Leave unchecked'}
+            3. FILL PRINCIPAL ADDRESS:
+               - Address: "${formation.principalAddress?.street}"
+               - Suite: "${formation.principalAddress?.suite || ''}"
+               - City, State: "${formation.principalAddress?.city}", "${formation.principalAddress?.state}"
+               - Zip: "${formation.principalAddress?.zip}"
+            4. FILL MAILING ADDRESS:
+               - ${formation.mailingAddress?.isSame ? "Check 'Mailing address same as principal address'" : `Fill: ${formation.mailingAddress?.street}, ${formation.mailingAddress?.city}, ${formation.mailingAddress?.zip}`}
+            5. CRITICAL: Take a screenshot and log "Intake & Addresses complete".
+            6. FILL REGISTERED AGENT:
+               - ${formation.registeredAgent?.type === 'INDIVIDUAL' ? `Individual Name: ${formation.registeredAgent.firstName} ${formation.registeredAgent.lastName}` : `Business Name: ${formation.registeredAgent.businessName}`}
+               - RA Address: "${formation.registeredAgent?.street}, ${formation.registeredAgent?.city}, FL ${formation.registeredAgent?.zip}"
+               - Sign: Type "${formation.registeredAgent?.firstName} ${formation.registeredAgent?.lastName}" in Signature box.
+            7. CRITICAL: Take a screenshot and log "Registered Agent complete".
+            8. FILL CORRESPONDENCE:
+               - Name: "${formation.correspondence?.name}"
+               - Email: "${formation.correspondence?.email}"
+            9. FILL AUTHORIZED PERSONNEL (MGR/AMBR):
+               ${formation.authPersonnel?.map((p, i) => `
+               Entry ${i + 1}:
+               - Title: ${p.title}
+               - Name: ${p.firstName} ${p.lastName}
+               - Address: ${p.street}, ${p.city}, ${p.state} ${p.zip}
+               `).join('\n')}
+            10. CRITICAL: Stop at the final review/payment screen. Take a final screenshot.`;
+        }
 
         tinyfish.run({
             url: 'https://dos.myflorida.com/sunbiz/',
@@ -755,7 +794,7 @@ const FormationFactory = ({
                                     onClick={() => formation.status === 'FILED' ? null : startAutomation(formation)}
                                     className="flex-[3] py-3 bg-luminous-blue text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-luminous-blue/20 transition-all flex items-center justify-center gap-2"
                                 >
-                                    {formation.status === 'FILED' ? 'Download Receipt' : 'File (Automated)'}
+                                    {formation.status === 'FILED' ? 'Download Receipt' : formation.action_type === 'ANNUAL_REPORT' ? 'File Annual Report (Auto)' : 'File Formation (Auto)'}
                                     <Zap size={12} className={formation.status !== 'FILED' ? 'animate-pulse' : ''} />
                                 </button>
                                 <button 
