@@ -136,35 +136,23 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</span>
                     </div>
                      <div className="space-y-2">
-                        <div className="flex items-center justify-between group/item">
-                            <span className="text-xs font-bold text-slate-700">Articles of Organization</span>
-                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">FILED</span>
+                        <div className="flex items-center justify-between group/item cursor-pointer hover:bg-gray-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('oa'); }}>
+                            <span className="text-xs font-bold text-slate-700 group-hover/item:text-blue-600 transition-colors">Articles of Organization</span>
+                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">FILED</span>
                         </div>
-                        <div className="flex items-center justify-between group/item">
-                            <span className="text-xs font-bold text-slate-700">EIN Designation</span>
-                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">ISSUED</span>
+                        <div className="flex items-center justify-between group/item cursor-pointer hover:bg-gray-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('ein'); }}>
+                            <span className="text-xs font-bold text-slate-700 group-hover/item:text-blue-600 transition-colors">EIN Designation</span>
+                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">ISSUED</span>
                         </div>
-                        <div className="flex items-center justify-between group/item">
-                            <span className="text-xs font-bold text-slate-700">BOI Report (FinCEN)</span>
-                            <span 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onClose('boi');
-                              }}
-                              className="text-[9px] font-mono text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded animate-pulse cursor-pointer hover:bg-orange-100 hover:scale-110 transition-all border border-orange-200/50"
-                            >
+                        <div className="flex items-center justify-between group/item cursor-pointer hover:bg-orange-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('boi'); }}>
+                            <span className="text-xs font-bold text-slate-700 group-hover/item:text-orange-600 transition-colors">BOI Report (FinCEN)</span>
+                            <span className="text-[9px] font-mono text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded animate-pulse cursor-pointer border border-orange-200/50 shadow-[0_0_10px_rgba(249,115,22,0.1)]">
                               PENDING (START)
                             </span>
                         </div>
-                        <div className="flex items-center justify-between group/item">
-                            <span className="text-xs font-bold text-slate-700">2026 Annual Report</span>
-                            <span 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onClose('annual_report');
-                              }}
-                              className="text-[9px] font-mono text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded cursor-pointer animate-pulse border border-amber-200 hover:bg-amber-100 hover:scale-110 transition-all"
-                            >
+                        <div className="flex items-center justify-between group/item cursor-pointer hover:bg-amber-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('annual_report'); }}>
+                            <span className="text-xs font-bold text-slate-700 group-hover/item:text-amber-600 transition-colors">2026 Annual Report</span>
+                            <span className="text-[9px] font-mono text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded cursor-pointer animate-pulse border border-amber-200 hover:bg-amber-100 hover:scale-110 transition-all">
                               DUE (MAY 1)
                             </span>
                         </div>
@@ -174,20 +162,20 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Internal Governance</span>
                     </div>
                      <div className="space-y-2">
-                        <div className="flex items-center justify-between group/item">
-                            <span className="text-xs font-bold text-slate-700">Operating Agreement</span>
-                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">DRAFTED</span>
+                        <div className="flex items-center justify-between group/item cursor-pointer hover:bg-gray-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('oa'); }}>
+                            <span className="text-xs font-bold text-slate-700 group-hover/item:text-blue-600 transition-colors">Operating Agreement</span>
+                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">DRAFTED</span>
                         </div>
-                        <div className="flex items-center justify-between group/item">
-                            <span className="text-xs font-bold text-slate-700">Banking Resolution</span>
-                            <div className="flex items-center gap-1 text-red-500">
-                                <span className="text-[9px] font-black uppercase tracking-widest">Action</span>
+                        <div className="flex items-center justify-between group/item cursor-pointer hover:bg-gray-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('banking'); }}>
+                            <span className="text-xs font-bold text-slate-700 group-hover/item:text-blue-600 transition-colors">Banking Resolution</span>
+                            <div className="flex items-center gap-1 text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                                <span className="text-[9px] font-black uppercase tracking-widest">Generatable</span>
                                 <ArrowRight size={10} />
                             </div>
                         </div>
-                         <div className="flex items-center justify-between group/item opacity-50">
+                         <div className="flex items-center justify-between group/item opacity-50 cursor-pointer hover:bg-gray-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('ledger'); }}>
                             <span className="text-xs font-bold text-slate-700">Membership Ledger</span>
-                            <span className="text-[9px] font-mono text-gray-300">WAITING</span>
+                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">WAITING</span>
                         </div>
                      </div>
                 </div>
@@ -370,6 +358,17 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
                {activeStep === 'oa' && <OAContent companyName={companyName} />}
                {activeStep === 'banking' && <BankContent companyName={companyName} />}
                {activeStep === 'boi' && <BOIContent companyName={companyName} />}
+               {activeStep === 'ledger' && <LedgerContent companyName={companyName} />}
+               {activeStep === 'annual_report' && (
+                 <div className="text-center p-8 bg-black/40 border border-white/10 rounded-3xl">
+                     <Building2 size={48} className="mx-auto text-amber-500 mb-6" />
+                     <h3 className="text-2xl text-white font-medium mb-4">Annual Report Filing</h3>
+                     <p className="text-sm text-gray-400 mb-8 max-w-sm mx-auto">This compliance action requires verification of your entity's core data points.</p>
+                     <button onClick={() => onClose('annual_report')} className="px-6 py-3 bg-white text-black text-xs font-bold uppercase tracking-widest rounded-xl hover:scale-105 transition-transform">
+                         Open Verification Wizard
+                     </button>
+                 </div>
+               )}
             </div>
         </div>
 
@@ -486,6 +485,22 @@ const BOIContent = ({ companyName }) => (
         <p className="text-[10px] text-center text-gray-500 font-bold uppercase tracking-widest mt-4">
             Transmission heavily encrypted via 256-bit protocol
         </p>
+    </div>
+  </>
+);
+const LedgerContent = ({ companyName }) => (
+  <>
+    <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(255,255,255,0.02)] text-gray-400 group transition-all duration-500">
+       <FileText size={36} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-500" />
+    </div>
+    <div className="text-center mt-8">
+        <h2 className="text-5xl font-light tracking-tight text-white mb-4">Membership <span className="font-medium text-gray-500">Ledger.</span></h2>
+        <p className="text-gray-400 font-light mt-4 max-w-md mx-auto text-[15px] leading-relaxed">
+        This document tracks capitalization and ownership units.
+        </p>
+    </div>
+    <div className="h-40 bg-black/40 rounded-[32px] border border-white/10 w-full max-w-lg mx-auto flex items-center justify-center mt-10 opacity-50">
+        <p className="font-bold uppercase tracking-[0.3em] text-[10px] text-gray-500">Feature Arriving Soon</p>
     </div>
   </>
 );
