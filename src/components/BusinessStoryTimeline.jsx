@@ -15,7 +15,7 @@ const BusinessStoryTimeline = ({ llcData }) => {
                 {
                     id: 'mock-1',
                     event_category: 'COMPLIANCE',
-                    customer_facing_message: 'Your entity was secured within our private vault.',
+                    customer_facing_message: 'Your entity was secured within the Operational Handbook.',
                     created_at: llcData.created_at || new Date().toISOString()
                 }
             ]);
@@ -44,7 +44,7 @@ const BusinessStoryTimeline = ({ llcData }) => {
                         {
                             id: 'mock-1',
                             event_category: 'COMPLIANCE',
-                            customer_facing_message: 'Your entity was secured within our private vault.',
+                            customer_facing_message: 'Your entity was secured within the Operational Handbook.',
                             created_at: llcData.created_at || new Date().toISOString()
                         }
                     ]);
