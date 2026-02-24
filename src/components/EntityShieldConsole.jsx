@@ -33,6 +33,8 @@ const ACTIONS = [
     { label: 'Open BOI Filing', desc: 'View or amend your FinCEN report', cta: 'View', urgent: false },
 ];
 
+import AnnualReportWizard from './AnnualReportWizard';
+
 const StatusBadge = ({ type }) => {
     if (type === 'ok') return (
         <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-[#00D084]">
@@ -46,8 +48,9 @@ const StatusBadge = ({ type }) => {
     );
 };
 
-const EntityShieldConsole = ({ onClose }) => {
+const EntityShieldConsole = ({ onClose, llcData }) => {
     const [activeTab, setActiveTab] = useState('overview');
+    const [isWizardOpen, setIsWizardOpen] = useState(false);
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 md:p-8 animate-in fade-in duration-300">
@@ -146,7 +149,9 @@ const EntityShieldConsole = ({ onClose }) => {
                                             <p className="text-xs font-black text-slate-900">{action.label}</p>
                                             <p className="text-[10px] text-gray-400">{action.desc}</p>
                                         </div>
-                                        <button className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap flex items-center gap-1.5 transition-all ${action.urgent ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-slate-900 text-white hover:bg-blue-600'}`}>
+                                        <button 
+                                            onClick={() => action.label.includes('Annual Report') ? setIsWizardOpen(true) : null}
+                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap flex items-center gap-1.5 transition-all ${action.urgent ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-slate-900 text-white hover:bg-blue-600'}`}>
                                             {action.cta} <ArrowRight size={12} />
                                         </button>
                                     </div>
@@ -157,6 +162,17 @@ const EntityShieldConsole = ({ onClose }) => {
                     </main>
                 </div>
             </div>
+
+            {isWizardOpen && (
+                <AnnualReportWizard 
+                    llcData={llcData} 
+                    onClose={() => setIsWizardOpen(false)} 
+                    onComplete={() => {
+                        setIsWizardOpen(false);
+                        // Optional: trigger refresh
+                    }} 
+                />
+            )}
         </div>
     );
 };

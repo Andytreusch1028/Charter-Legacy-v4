@@ -98,9 +98,9 @@ const ActiveProtectionTriad = ({
                     sublabel="Entity Shield"
                     status="Active"
                     detail="Annual report filed · Good standing · BOI submitted"
-                    cta="View Status"
+                    cta="Manage Entity"
                     accentColor="green"
-                    onClick={() => setIsComplianceOpen(true)}
+                    onClick={() => setIsEntityShieldOpen(true)}
                 />
 
                 {/* ── Card 3: Personal Shield ── */}
@@ -125,7 +125,7 @@ const ActiveProtectionTriad = ({
                 />
             )}
             {isEntityShieldOpen && (
-                <EntityShieldConsole onClose={() => setIsEntityShieldOpen(false)} />
+                <EntityShieldConsole llcData={llcData} onClose={() => setIsEntityShieldOpen(false)} />
             )}
             {isPrivacyShieldOpen && (
                 <PrivacyShieldConsole onClose={() => setIsPrivacyShieldOpen(false)} />

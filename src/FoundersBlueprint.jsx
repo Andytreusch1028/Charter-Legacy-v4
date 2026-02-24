@@ -156,6 +156,18 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
                               PENDING (START)
                             </span>
                         </div>
+                        <div className="flex items-center justify-between group/item">
+                            <span className="text-xs font-bold text-slate-700">2026 Annual Report</span>
+                            <span 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onClose('annual_report');
+                              }}
+                              className="text-[9px] font-mono text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded cursor-pointer animate-pulse border border-amber-200 hover:bg-amber-100 hover:scale-110 transition-all"
+                            >
+                              DUE (MAY 1)
+                            </span>
+                        </div>
                      </div>
 
                     <div className="flex items-center justify-between border-b border-gray-100 pb-2 pt-2">

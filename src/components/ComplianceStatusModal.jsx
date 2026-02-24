@@ -195,8 +195,13 @@ const ComplianceStatusModal = ({ onClose, documentNumber = 'L24000392044' }) => 
                                     {(data?.annualReports || MOCK_DATA.annualReports).map(r => (
                                         <AnnualReportRow key={r.year} year={r.year} filed={r.filed} />
                                     ))}
-                                    <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
-                                        <p className="text-xs font-bold text-emerald-400">✓ All annual reports current. Next report due: May 1, 2027.</p>
+                                    <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-between">
+                                        <div>
+                                            <p className="text-xs font-bold text-amber-400 flex items-center gap-2 mb-1">
+                                                <AlertTriangle size={14} /> 2026 Annual Report Due
+                                            </p>
+                                            <p className="text-[10px] text-gray-400">Avoid $400 statutory late fee. File by May 1st.</p>
+                                        </div>
                                     </div>
                                 </div>
                             )}

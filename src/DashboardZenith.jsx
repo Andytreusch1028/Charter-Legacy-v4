@@ -8,6 +8,7 @@ import { supabase } from './lib/supabase';
 
 import FoundersBlueprint from './FoundersBlueprint';
 import RegisteredAgentConsole from './RegisteredAgentConsole';
+import AnnualReportWizard from './components/AnnualReportWizard';
 import SuccessionSuite from './lib/succession/SuccessionSuite';
 import { useSuccession } from './lib/succession/useSuccession';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,6 +30,7 @@ const DashboardZenith = ({ user, initialData }) => {
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [blueprintStep, setBlueprintStep] = useState('ein');
   const [isRAConsoleOpen, setIsRAConsoleOpen] = useState(false);
+  const [isAnnualReportWizardOpen, setIsAnnualReportWizardOpen] = useState(false);
   const navigate = useNavigate();
   const { openVault } = useSuccession();
   
@@ -359,6 +361,31 @@ const DashboardZenith = ({ user, initialData }) => {
                                 <h1 className="text-6xl md:text-[8rem] font-black uppercase tracking-tighter leading-[0.8] text-white break-words max-w-5xl mb-8">
                                     {llcData?.llc_name}.
                                 </h1>
+
+                                <div className="mb-8 w-max">
+                                    <div 
+                                        onClick={() => setIsAnnualReportWizardOpen(true)}
+                                        className="relative group cursor-pointer overflow-hidden p-[1px] rounded-2xl"
+                                    >
+                                        <span className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 rounded-2xl animate-[spin_3s_linear_infinite] group-hover:animate-none opacity-50"></span>
+                                        <div className="relative bg-slate-900 border border-amber-500/30 px-6 py-4 rounded-2xl flex items-center gap-4 transition-all group-hover:bg-slate-800">
+                                            <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500">
+                                                <AlertCircle size={20} className="animate-pulse" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-0.5">Urgent Action Required</p>
+                                                <p className="text-sm font-bold text-white">2026 Annual Report Due</p>
+                                            </div>
+                                            <div className="ml-4 pl-4 border-l border-white/10 hidden sm:block">
+                                                <p className="text-xs text-gray-400">File by May 1st to avoid a $400 statutory late fee.</p>
+                                            </div>
+                                            <div className="ml-8 px-4 py-2 bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg group-hover:bg-amber-400 transition-colors">
+                                                File Now
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <p className="text-gray-500 font-medium text-xl italic max-w-3xl leading-relaxed opacity-80">
                                     "Unity Protocol Engaged. Monitoring Governance, Abstraction, and Legacy systems."
                                 </p>
@@ -380,8 +407,12 @@ const DashboardZenith = ({ user, initialData }) => {
                                         <FoundersBlueprint 
                                             isOpen={false} 
                                             onClose={(step) => {
-                                                setBlueprintStep(typeof step === 'string' ? step : 'ein');
-                                                setIsBlueprintOpen(true);
+                                                if (step === 'annual_report') {
+                                                    setIsAnnualReportWizardOpen(true);
+                                                } else {
+                                                    setBlueprintStep(typeof step === 'string' ? step : 'ein');
+                                                    setIsBlueprintOpen(true);
+                                                }
                                             }} 
                                             mode="SWISS" // Using SWISS mode for compactness in column
                                         />
@@ -475,6 +506,16 @@ const DashboardZenith = ({ user, initialData }) => {
                   isModal={true}
                   onClose={() => setIsRAConsoleOpen(false)}
                   initialTab={isRAConsoleOpen} // passing string value directly if it's not boolean 'true'
+              />
+          )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+          {isAnnualReportWizardOpen && (
+              <AnnualReportWizard 
+                  llcData={llcData} 
+                  onClose={() => setIsAnnualReportWizardOpen(false)}
+                  onComplete={() => setIsAnnualReportWizardOpen(false)}
               />
           )}
       </AnimatePresence>
