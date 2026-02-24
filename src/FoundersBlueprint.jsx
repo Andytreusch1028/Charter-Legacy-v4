@@ -136,7 +136,7 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</span>
                     </div>
                      <div className="space-y-2">
-                        <div className="flex items-center justify-between group/item cursor-pointer hover:bg-gray-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('oa'); }}>
+                        <div className="flex items-center justify-between group/item cursor-pointer hover:bg-gray-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('articles'); }}>
                             <span className="text-xs font-bold text-slate-700 group-hover/item:text-blue-600 transition-colors">Articles of Organization</span>
                             <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">FILED</span>
                         </div>
@@ -274,6 +274,25 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
 
            <div className="space-y-4">
               <BlueprintStep 
+                title="Articles of Organization" 
+                icon={FileText} 
+                active={activeStep === 'articles'} 
+                status={completedSteps.includes('articles') ? 'complete' : 'pending'}
+                onClick={() => setActiveStep('articles')}
+              >
+                <p className="text-[13px] text-gray-400 font-light leading-relaxed mb-6">
+                  The initial founding document filed with the State of Florida establishing the existence of your LLC.
+                </p>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); generatePDF('articles'); }}
+                  disabled={generating}
+                  className="w-full py-4 bg-white/10 text-white border border-white/20 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {generating ? <Loader2 className="animate-spin" size={16}/> : <><Download size={16}/> Access Articles</>}
+                </button>
+              </BlueprintStep>
+
+              <BlueprintStep 
                 title="Federal EIN" 
                 icon={Building2} 
                 active={activeStep === 'ein'} 
@@ -354,6 +373,7 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
             <button onClick={onClose} className="absolute top-8 right-8 w-12 h-12 flex items-center justify-center bg-white/5 border border-white/10 rounded-full text-gray-500 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all duration-300 shadow-sm"><X size={20} /></button>
             
             <div className="w-full max-w-xl animate-in slide-in-from-right-8 duration-500" key={activeStep}>
+               {activeStep === 'articles' && <ArticlesContent companyName={companyName} />}
                {activeStep === 'ein' && <EINContent companyName={companyName} />}
                {activeStep === 'oa' && <OAContent companyName={companyName} />}
                {activeStep === 'banking' && <BankContent companyName={companyName} />}
@@ -378,6 +398,36 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
 };
 
 // --- CONTENT SUB-COMPONENTS ---
+
+const ArticlesContent = ({ companyName }) => (
+  <>
+    <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(255,255,255,0.02)] text-blue-400 group transition-all duration-500 hover:border-blue-500/50 hover:bg-blue-500/10 hover:shadow-[0_0_40px_rgba(59,130,246,0.2)]">
+       <Building2 size={36} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-500" />
+    </div>
+    <div className="text-center mt-8">
+        <h2 className="text-5xl font-light tracking-tight text-white mb-4">Articles of <span className="font-medium text-gray-500">Organization.</span></h2>
+        <p className="text-gray-400 font-light mt-4 max-w-md mx-auto text-[15px] leading-relaxed">
+        The primary state filing establishing the legal existence of <strong className="text-white font-medium">{companyName}</strong>.
+        </p>
+    </div>
+    <div className="bg-black/40 p-10 rounded-[40px] border border-white/10 mt-10 w-full max-w-lg mx-auto group hover:border-white/20 transition-all duration-500 shadow-2xl">
+       <div className="space-y-6 font-mono text-[13px] text-gray-400">
+          <div className="flex justify-between items-center border-b border-white/5 pb-5 group-hover:border-white/10 transition-colors">
+             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Entity Name</span>
+             <span className="font-bold text-white text-[15px] truncate max-w-[200px]">{companyName}</span>
+          </div>
+          <div className="flex justify-between items-center border-b border-white/5 pb-5 group-hover:border-white/10 transition-colors">
+             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Filing Status</span>
+             <span className="font-bold text-emerald-400 bg-emerald-400/10 px-3.5 py-1.5 rounded-full text-[10px] uppercase tracking-widest border border-emerald-400/20 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">Active</span>
+          </div>
+          <div className="flex justify-between items-center border-b border-white/5 pb-5 group-hover:border-white/10 transition-colors">
+             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">State</span>
+             <span className="font-bold text-white">Florida (Sunbiz)</span>
+          </div>
+       </div>
+    </div>
+  </>
+);
 
 const EINContent = ({ companyName }) => (
   <>
