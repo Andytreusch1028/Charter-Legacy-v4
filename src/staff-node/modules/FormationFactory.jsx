@@ -73,28 +73,13 @@ const FormationFactory = ({
                             ]
                         };
                     });
-                let finalFormations = mapped;
-                if (finalFormations.length === 0 && window.location.hostname === 'localhost') {
-                    finalFormations = [
-                        {
-                            id: 'mock-llc-for-testing-123',
-                            client_id: 'mock-client-id',
-                            entityName: 'Charter Legacy Test Entity LLC',
-                            type: 'LLC',
-                            action_type: 'FORMATION',
-                            document_number: '',
-                            status: 'AWAITING_REVIEW',
-                            submitted: new Date().toLocaleDateString(),
-                            owner: 'Demo User',
-                            priority: 'high',
-                            filingOptions: { effectiveDate: '', certOfStatus: false, certifiedCopy: true },
-                            principalAddress: { street: '123 Test St', suite: '', city: 'Miami', state: 'FL', zip: '33101' },
-                            mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
-                            registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: 'Charter Legacy Services LLC', street: '456 Guardian Way', city: 'DeLand', state: 'FL', zip: '32724' },
-                            correspondence: { name: 'Demo User', email: 'legal@charterlegacy.com' },
-                            authPersonnel: [{ title: 'MGR', firstName: 'Demo', lastName: 'User', street: '123 Test St', city: 'Miami', state: 'FL', zip: '33101' }]
-                        },
-                        {
+                let finalFormations = [...mapped];
+                
+                // Always inject the AR Demo card in local dev for testing purposes
+                if (window.location.hostname === 'localhost') {
+                    // Check if it's already there to prevent duplicates on re-renders
+                    if (!finalFormations.find(f => f.id === 'mock-ar-testing-456')) {
+                        finalFormations.push({
                             id: 'mock-ar-testing-456',
                             client_id: 'mock-client-id',
                             entityName: 'Charter Legacy AR Demo LLC',
@@ -111,8 +96,30 @@ const FormationFactory = ({
                             registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: 'Charter Legacy', street: '', city: '', state: '', zip: '' },
                             correspondence: { name: 'Demo User', email: 'legal@charterlegacy.com' },
                             authPersonnel: []
-                        }
-                    ];
+                        });
+                    }
+                    
+                    // Also inject the standard mock if the DB is completely empty
+                    if (finalFormations.length === 1 && finalFormations[0].id === 'mock-ar-testing-456') {
+                         finalFormations.unshift({
+                            id: 'mock-llc-for-testing-123',
+                            client_id: 'mock-client-id',
+                            entityName: 'Charter Legacy Test Entity LLC',
+                            type: 'LLC',
+                            action_type: 'FORMATION',
+                            document_number: '',
+                            status: 'AWAITING_REVIEW',
+                            submitted: new Date().toLocaleDateString(),
+                            owner: 'Demo User',
+                            priority: 'high',
+                            filingOptions: { effectiveDate: '', certOfStatus: false, certifiedCopy: true },
+                            principalAddress: { street: '123 Test St', suite: '', city: 'Miami', state: 'FL', zip: '33101' },
+                            mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
+                            registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: 'Charter Legacy Services LLC', street: '456 Guardian Way', city: 'DeLand', state: 'FL', zip: '32724' },
+                            correspondence: { name: 'Demo User', email: 'legal@charterlegacy.com' },
+                            authPersonnel: [{ title: 'MGR', firstName: 'Demo', lastName: 'User', street: '123 Test St', city: 'Miami', state: 'FL', zip: '33101' }]
+                        });
+                    }
                 }
                 setFormations(finalFormations);
             }
