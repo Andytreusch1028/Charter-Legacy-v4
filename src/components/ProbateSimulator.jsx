@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Scale, AlertTriangle, X, Info, Eye, Lock, ArrowRight } from 'lucide-react';
+import { Building2, AlertTriangle, X, Info, Eye, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const ProbateSimulator = () => {
@@ -14,19 +14,19 @@ const ProbateSimulator = () => {
       >
         <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-[#d4af37]/10 text-[#d4af37] rounded-xl border border-[#d4af37]/20 group-hover:scale-110 transition-transform">
-                <Scale size={20} />
+                <Building2 size={20} />
             </div>
             <div className="px-3 py-1 bg-[#d4af37]/10 rounded-full text-[10px] font-bold uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/20">
                 Simulator
             </div>
         </div>
         <div className="mb-auto">
-            <h3 className="text-xl font-black text-white leading-none mb-1">
-                Probate Impact.
+            <h3 className="text-xl font-black text-white leading-tight">
+                What happens to your LLC<br/>when you die?
             </h3>
         </div>
         <p className="text-[10px] text-gray-500 font-medium group-hover:text-[#d4af37] transition-colors flex items-center justify-between gap-2 mt-2 pt-3 border-t border-white/5">
-            <span className="uppercase tracking-widest font-black">Tap to simulate event</span> <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            <span className="uppercase tracking-widest font-black">See the difference</span> <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
         </p>
       </div>
 
@@ -57,13 +57,14 @@ const ProbateSimulator = () => {
                         <X size={20} />
                     </button>
                     
-                    <div className="flex items-center gap-3 mb-4 text-red-500">
+                    <div className="flex items-center gap-3 mb-4 text-red-400">
                         <AlertTriangle size={20} />
-                        <span className="font-bold uppercase tracking-widest text-xs">Probate Simulation</span>
+                        <span className="font-bold uppercase tracking-widest text-xs">LLC Transfer Scenario</span>
                     </div>
-                    <h2 className="text-3xl font-black mb-2">The Public Risk Profile</h2>
-                    <p className="text-gray-400 text-sm max-w-md">
-                        Without a Living Trust, assets typically go through Probate. This is a public, costly, and time-consuming court process.
+                    <h2 className="text-3xl font-black mb-2">Your LLC Without a TOD</h2>
+                    <p className="text-gray-400 text-sm max-w-md leading-relaxed">
+                        Without a Transfer on Death designation on file, your LLC membership interest 
+                        becomes a probate asset — frozen, public, and tied up in court for months.
                     </p>
                 </div>
 
@@ -71,62 +72,75 @@ const ProbateSimulator = () => {
                 <div className="p-8">
                     {/* Comparison Grid */}
                     <div className="grid grid-cols-2 gap-4 mb-8">
-                        {/* Scenario A: Probate */}
+                        {/* Scenario A: No TOD */}
                         <div className="p-6 bg-red-950/20 border border-red-900/50 rounded-3xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/5 rounded-full blur-2xl pointer-events-none" />
-                            <h4 className="text-red-400 font-black uppercase tracking-wider text-xs mb-4">Without a Trust (Probate)</h4>
+                            <h4 className="text-red-400 font-black uppercase tracking-wider text-xs mb-4">No TOD on File</h4>
                             <div className="space-y-4 relative z-10">
                                 <div>
-                                    <p className="text-xs text-red-500/80 font-bold mb-1">Estimated Cost</p>
-                                    <p className="text-3xl font-black text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]">3-7%</p>
-                                    <p className="text-[10px] text-red-500/60 uppercase font-black tracking-widest mt-1">Gross Estate Value</p>
+                                    <p className="text-xs text-red-500/80 font-bold mb-1">Court & Attorney Costs</p>
+                                    <p className="text-3xl font-black text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]">3–7%</p>
+                                    <p className="text-[10px] text-red-500/60 uppercase font-black tracking-widest mt-1">of LLC interest value</p>
                                 </div>
                                 <div className="h-px bg-red-900/30" />
                                 <div>
-                                     <p className="text-xs text-red-500/80 font-bold mb-1">Time Frozen</p>
-                                     <p className="text-2xl font-black text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]">9-18 Months</p>
+                                     <p className="text-xs text-red-500/80 font-bold mb-1">Business Impact</p>
+                                     <p className="text-2xl font-black text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]">9–18 Months</p>
+                                     <p className="text-[10px] text-red-500/60 uppercase font-black tracking-widest mt-1">Uncertain while estate is settled</p>
                                 </div>
                                  <div className="h-px bg-red-900/30" />
                                  <div>
-                                     <p className="text-xs text-red-500/80 font-bold mb-1">Privacy Level</p>
+                                     <p className="text-xs text-red-500/80 font-bold mb-1">Ownership Record</p>
                                      <div className="flex items-center gap-2 text-red-400 font-bold">
-                                        <Eye size={16} /> Public Record
+                                        <Eye size={16} /> Becomes Public
                                      </div>
-                                </div>
+                                 </div>
                             </div>
                         </div>
 
-                        {/* Scenario B: Trust */}
+                        {/* Scenario B: TOD Sealed */}
                         <div className="p-6 bg-[#d4af37]/5 border border-[#d4af37]/20 rounded-3xl relative overflow-hidden">
                              <div className="absolute top-0 left-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-2xl pointer-events-none" />
-                             <h4 className="text-[#d4af37] font-black uppercase tracking-wider text-xs mb-4">With Charter Legacy (Trust)</h4>
+                             <h4 className="text-[#d4af37] font-black uppercase tracking-wider text-xs mb-4">TOD Sealed with Charter Legacy</h4>
                             <div className="space-y-4 relative z-10">
                                 <div>
                                     <p className="text-xs text-[#d4af37]/80 font-bold mb-1">Transfer Cost</p>
-                                    <p className="text-3xl font-black text-[#d4af37] drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]">~0%</p>
-                                    <p className="text-[10px] text-[#d4af37]/60 uppercase font-black tracking-widest mt-1">Immediate Transfer</p>
+                                    <p className="text-3xl font-black text-[#d4af37] drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]">~$0</p>
+                                    <p className="text-[10px] text-[#d4af37]/60 uppercase font-black tracking-widest mt-1">No probate required</p>
                                 </div>
                                 <div className="h-px bg-[#d4af37]/10" />
                                 <div>
-                                     <p className="text-xs text-[#d4af37]/80 font-bold mb-1">Time Frozen</p>
-                                     <p className="text-2xl font-black text-[#d4af37] drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]">0 Days</p>
+                                     <p className="text-xs text-[#d4af37]/80 font-bold mb-1">Business Transfer</p>
+                                     <p className="text-2xl font-black text-[#d4af37] drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]">No Court</p>
+                                     <p className="text-[10px] text-[#d4af37]/60 uppercase font-black tracking-widest mt-1">Successor claims outside probate</p>
                                 </div>
                                  <div className="h-px bg-[#d4af37]/10" />
                                  <div>
-                                     <p className="text-xs text-[#d4af37]/80 font-bold mb-1">Privacy Level</p>
+                                     <p className="text-xs text-[#d4af37]/80 font-bold mb-1">Ownership Record</p>
                                      <div className="flex items-center gap-2 text-[#d4af37] font-bold">
-                                        <Lock size={16} /> 100% Private
+                                        <Lock size={16} /> No Public Filing
                                      </div>
-                                </div>
+                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Disclaimer - CRITICAL FOR UPL */}
+                    {/* What this does NOT cover */}
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-4 flex gap-3">
+                        <ShieldCheck size={18} className="text-gray-400 shrink-0 mt-0.5" />
+                        <div>
+                            <p className="text-[10px] text-gray-300 font-black uppercase tracking-widest mb-1">Scope: LLC Membership Interest Only</p>
+                            <p className="text-[11px] text-gray-400 leading-relaxed">
+                                This tool handles the transfer of your <strong className="text-white">LLC ownership interest only</strong> — not your personal real estate, bank accounts, or other assets. For full estate planning, consult a licensed estate attorney.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Disclaimer */}
                     <div className="bg-white/5 p-4 rounded-xl flex gap-3 border border-white/10">
-                        <Info size={20} className="text-gray-500 shrink-0" />
-                        <p className="text-[10px] text-gray-500 leading-relaxed font-medium">
-                            <strong className="text-gray-400">EDUCATIONAL USE ONLY:</strong> Costs and timelines are estimates based on national averages for probate proceedings. This simulator does not constitute legal advice or a guarantee of specific results. Probate laws and fees vary significantly by state and county.
+                        <Info size={18} className="text-gray-400 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-gray-400 leading-relaxed">
+                            <strong className="text-gray-200">EDUCATIONAL USE ONLY:</strong> Figures are estimates based on Florida probate averages. A TOD designation bypasses probate for your LLC membership interest under Florida law. This does not constitute legal advice. Individual circumstances vary.
                         </p>
                     </div>
                 </div>

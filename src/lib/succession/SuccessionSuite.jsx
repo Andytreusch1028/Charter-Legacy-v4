@@ -3,6 +3,7 @@ import { X, Globe, Lock, Unlock, Shield, ShieldCheck } from 'lucide-react';
 import { supabase as charterSupabase } from '../../lib/supabase';
 import HeritageConsole from './components/HeritageConsole';
 import { useSuccession } from './useSuccession';
+import { checkAndTriggerAnnualReview } from './AnnualReviewService';
 
 /**
  * SUCCESSION SUITE (Library Version)
@@ -10,7 +11,7 @@ import { useSuccession } from './useSuccession';
  * Refactored to use the standalone library registry via useSuccession hook.
  */
 const SuccessionSuite = ({ user }) => {
-    const { isOpen, closeVault } = useSuccession();
+    const { isOpen, closeVault, setProtocolData } = useSuccession();
     const [legalDocs, setLegalDocs] = useState([]);
     const [auditLog, setAuditLog] = useState([]);
     const [activeProtocolData, setActiveProtocolData] = useState(null);
@@ -49,21 +50,38 @@ const SuccessionSuite = ({ user }) => {
 
                 if (isMounted && dbProtocols && dbProtocols.length > 0) {
                     const latest = dbProtocols[0];
-                    setActiveProtocolData(latest.protocol_data);
 
-                    const dbDoc = {
-                        id: latest.id,
-                        label: latest.type === 'trust' ? 'Family Living Trust' : 'Last Will & Testament',
-                        date: new Date(latest.created_at).toLocaleDateString(),
-                        status: 'active'
-                    };
-                    setLegalDocs([dbDoc]);
+                    // ── ANNUAL REVIEW CHECK ─────────────────────────────────────────
+                    // Runs transparently on vault open. If the designation is >= 340
+                    // days old (or >= 340 days since last notice), the service will:
+                    //   1. Queue an email notification in Supabase
+                    //   2. Log ANNUAL_REVIEW_NOTICE_SENT to the SuccessionRegistry
+                    //   3. Stamp `last_annual_notice_at` on the wills record
+                    const resolvedProtocolData = await checkAndTriggerAnnualReview(
+                        user.id,
+                        user.email,
+                        latest.protocol_data,
+                        latest.created_at
+                    );
+
+                    if (isMounted) {
+                        setActiveProtocolData(resolvedProtocolData);
+                        setProtocolData(resolvedProtocolData);
+
+                        const dbDoc = {
+                            id:     latest.id,
+                            label:  'Transfer on Death (TOD) Designation',
+                            date:   new Date(latest.created_at).toLocaleDateString(),
+                            status: 'active'
+                        };
+                        setLegalDocs([dbDoc]);
+                    }
                 }
 
                 if (isMounted) {
                     setAuditLog([
-                        { action: 'PROTOCOL_READ', details: 'Succession system heartbeat detected', time: 'Just now' },
-                        { action: 'AUTH_VERIFIED', details: 'Heritage permissions confirmed', time: 'Just now' }
+                        { action: 'PROTOCOL_READ',  details: 'Succession system heartbeat detected', time: new Date().toISOString() },
+                        { action: 'AUTH_VERIFIED',  details: 'Heritage permissions confirmed',       time: new Date().toISOString() }
                     ]);
                 }
 
@@ -85,13 +103,71 @@ const SuccessionSuite = ({ user }) => {
     }, [isOpen, user]);
 
     // 2. Event Handlers
-    const handleDownload = (data) => {
-        console.log("Generating Protocol Artifact:", data);
-        setAuditLog(prev => [{ 
-            action: 'DOC_GENERATED', 
-            details: `Legal artifact finalized: ${data.fullName}`, 
-            time: 'Just now' 
-        }, ...prev]);
+    const handleDownload = async (data) => {
+        // Generate a cryptographic seed if not present
+        const protocolSeed = data.protocolSeed || [
+            Math.random().toString(36).substring(2, 6).toUpperCase(),
+            Math.random().toString(36).substring(2, 6).toUpperCase(),
+            Math.random().toString(36).substring(2, 6).toUpperCase()
+        ].join('-');
+
+        const enrichedData = { ...data, protocolSeed };
+
+        // Persist to Supabase
+        if (user?.id) {
+            try {
+                // Try upsert (works if user_id has unique constraint)
+                const { error: upsertError } = await charterSupabase
+                    .from('wills')
+                    .upsert({ user_id: user.id, protocol_data: enrichedData }, { onConflict: 'user_id' });
+
+                // If upsert fails (no unique constraint), insert fresh record
+                if (upsertError) {
+                    await charterSupabase
+                        .from('wills')
+                        .insert({ user_id: user.id, protocol_data: enrichedData });
+                }
+            } catch (err) {
+                console.error('Failed to persist succession protocol:', err);
+            }
+        }
+        const prevDocsLength = legalDocs.length;
+        const newDoc = {
+            id: 'tod-' + Date.now(),
+            label: 'Transfer on Death (TOD) Designation',
+            date: new Date().toLocaleDateString(),
+            seed: enrichedData.protocolSeed,
+            status: 'active'
+        };
+
+        setLegalDocs(prev => [newDoc, ...prev.map(doc => ({ ...doc, status: 'superseded' }))]);
+        setActiveProtocolData(enrichedData);
+        setProtocolData(enrichedData); // Keep global registry in sync
+
+        setAuditLog(prev => {
+            const timeNow = new Date().toISOString();
+            const newLogs = [
+                { 
+                    action: 'KINETIC_ANCHOR_SECURED', 
+                    details: `Cryptographic Anchor (${enrichedData.protocolSeed}) secured for: ${enrichedData.fullName}`, 
+                    time: timeNow
+                }
+            ];
+            
+            if (prevDocsLength > 0) {
+                newLogs.push({
+                    action: 'PROTOCOL_SUPERSEDED',
+                    details: 'Previous Master Protocol was voided and superseded by a new issuance stream.',
+                    time: new Date(Date.now() - 10).toISOString()
+                });
+            }
+            
+            return [...newLogs, ...prev];
+        });
+    };
+
+    const handleLogEvent = (action, details) => {
+        setAuditLog(prev => [{ action, details, time: new Date().toISOString() }, ...prev]);
     };
 
     if (!isOpen) return null;
@@ -142,6 +218,7 @@ const SuccessionSuite = ({ user }) => {
                             auditLog={auditLog}
                             activeProtocolData={activeProtocolData}
                             onDownload={handleDownload}
+                            onLogEvent={handleLogEvent}
                         />
                     )}
                 </div>

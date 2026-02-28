@@ -23,6 +23,7 @@ export const useSuccession = () => {
         lockVault: () => SuccessionRegistry.setUnlocked(false),
         validatePIN: SuccessionRegistry.validatePIN,
         setProtocol: SuccessionRegistry.setProtocol,
-        provisionBypass: SuccessionRegistry.provisionBypass
+        provisionBypass: SuccessionRegistry.provisionBypass,
+        setProtocolData: SuccessionRegistry.setProtocolData
     };
 };

@@ -2,7 +2,7 @@ import React from 'react';
 import { Lock, Activity } from 'lucide-react';
 import { usePermissions } from '../hooks/usePermissions.jsx';
 
-const VaultTile = ({ onClick, locked, mode = 'MONOLITH' }) => {
+const VaultTile = ({ onClick, locked, mode = 'MONOLITH', successionData }) => {
     // If we passed locked prop, use it. Otherwise, use hook.
     // In DashboardZenith we pass `locked` but we can also use hook here.
     const { setIsUpgradeModalOpen } = usePermissions();
@@ -167,32 +167,80 @@ const VaultTile = ({ onClick, locked, mode = 'MONOLITH' }) => {
                 </>
              )}
 
-             {/* MODE: CUPERTINO */}
-             {mode === 'CUPERTINO' && (
-                <>
-                    <div className="flex justify-between items-start relative z-10">
-                        <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-gray-500 shadow-inner group-hover:scale-110 group-hover:bg-[#d4af37]/10 group-hover:text-[#d4af37] border border-white/5 transition-all duration-300">
-                            <Lock size={24} />
-                        </div>
-                        <div className="px-3 py-1 bg-white/5 rounded-full border border-white/5 shadow-inner text-[10px] font-bold uppercase tracking-wider text-gray-400 group/tooltip relative">
-                            Active
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-[#0A0A0B] text-white border border-white/10 text-[9px] rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                Secure Storage
+             {/* MODE: CUPERTINO — PREMIUM REDESIGN */}
+             {mode === 'CUPERTINO' && (() => {
+                const isSealed = !!(successionData?.protocolSeed && successionData?.beneficiaryName);
+                const firstName = successionData?.beneficiaryName?.split(',')[0]?.split(' ')[0] || null;
+                const seed = successionData?.protocolSeed?.slice(0, 9) || null;
+
+                return (
+                    <>
+                        {/* TOP ROW: Status only — small, clean */}
+                        <div className="flex justify-between items-center relative z-10">
+                            <div className="flex items-center gap-2">
+                                <Lock size={14} className={isSealed ? 'text-[#d4af37]' : 'text-gray-600'} />
+                                <span className="text-[9px] font-black uppercase tracking-[0.25em] text-gray-600">Heritage Vault</span>
+                            </div>
+                            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest
+                                ${isSealed
+                                    ? 'bg-[#d4af37]/10 border-[#d4af37]/20 text-[#d4af37]'
+                                    : 'bg-white/5 border-white/5 text-gray-500'}`}>
+                                <div className={`w-1.5 h-1.5 rounded-full ${isSealed ? 'bg-[#d4af37] shadow-[0_0_6px_rgba(212,175,55,0.8)] animate-pulse' : 'bg-gray-600'}`}></div>
+                                {isSealed ? 'Sealed' : 'Unsealed'}
                             </div>
                         </div>
-                    </div>
-                    
-                    <div className="flex-1 flex flex-col justify-center items-center py-4 relative z-10">
-                        <div className="text-7xl font-black text-white tracking-tighter drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">364</div>
-                        <div className="text-[10px] font-black text-[#d4af37] uppercase tracking-widest mt-2">Days Remaining</div>
-                    </div>
 
-                    <div className="relative z-10">
-                        <h3 className="text-2xl font-bold text-white leading-tight tracking-tight mb-1">Heritage Vault</h3>
-                        <p className="text-xs text-gray-500 font-medium">Secure Document Repository</p>
-                    </div>
-                </>
-             )}
+                        {/* HERO CENTER */}
+                        <div className="flex-1 flex flex-col justify-center relative z-10">
+                            {isSealed ? (
+                                /* ── SEALED STATE ── */
+                                <div className="space-y-4">
+                                    <div>
+                                        <p className="text-[9px] text-gray-600 uppercase tracking-[0.2em] font-bold mb-1">Your legacy is protected</p>
+                                        <p className="text-3xl font-black text-white leading-tight tracking-tight">
+                                            Going to{' '}
+                                            <span className="text-[#d4af37]">{firstName}</span>
+                                        </p>
+                                        {successionData.beneficiaryName.includes(',') && (
+                                            <p className="text-gray-500 text-xs mt-1 font-medium">
+                                                + {successionData.beneficiaryName.split(',').length - 1} more successor{successionData.beneficiaryName.split(',').length > 2 ? 's' : ''}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-2 pt-1">
+                                        <code className="font-mono text-[10px] font-black text-[#d4af37]/70 bg-[#d4af37]/5 border border-[#d4af37]/15 px-2.5 py-1 rounded-lg tracking-widest">
+                                            {seed}
+                                        </code>
+                                        <span className="text-[9px] text-gray-600 uppercase tracking-widest font-bold">TOD Protocol</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                /* ── UNSEALED STATE ── */
+                                <div className="space-y-3">
+                                    <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center">
+                                        <Lock size={18} className="text-gray-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xl font-black text-white leading-snug">Your legacy isn't protected yet.</p>
+                                        <p className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
+                                            Designate a successor and seal your TOD protocol to secure your company.
+                                        </p>
+                                    </div>
+                                    <div className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-[#d4af37] border border-[#d4af37]/20 bg-[#d4af37]/5 px-3 py-1.5 rounded-full">
+                                        <span>Open Vault to Get Started</span>
+                                        <span>→</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* BOTTOM: Subtle subtitle */}
+                        <p className="text-[9px] text-gray-700 font-bold uppercase tracking-[0.2em] relative z-10">
+                            Secure Document Repository
+                        </p>
+                    </>
+                );
+             })()}
         </div>
     );
 };

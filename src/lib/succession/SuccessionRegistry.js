@@ -10,10 +10,20 @@ import { supabase } from '../supabase';
 let state = {
     isOpen: false,
     isUnlocked: false,
-    activeProtocol: null, // 'will', 'trust'
+    activeProtocol: null,
     lastAudit: null,
-    accessLog: [] // Reactive log of vault interactions
+    accessLog: [],
+    clientIp: null,
+    protocolData: null // Live succession document data
 };
+
+// Asynchronously resolve true origin IP for cryptographic audit trails
+fetch('https://api.ipify.org?format=json')
+    .then(res => res.json())
+    .then(data => { state.clientIp = data.ip; })
+    .catch(() => { state.clientIp = 'LOCAL_TERMINAL'; });
+
+const getOriginIp = () => state.clientIp || 'RESOLVING...';
 
 const listeners = new Set();
 
@@ -45,7 +55,7 @@ export const SuccessionRegistry = {
         try {
             state.isOpen = true;
             state.lastAudit = new Date().toISOString();
-            state.accessLog = [{ action: 'VAULT_OPENED', time: state.lastAudit }, ...state.accessLog];
+            state.accessLog = [{ action: 'VAULT_OPENED', time: state.lastAudit, ip: getOriginIp() }, ...state.accessLog];
             notify();
             console.log("SuccessionRegistry: Vault Access Initialized.");
         } catch (error) {
@@ -61,7 +71,7 @@ export const SuccessionRegistry = {
         try {
             state.isOpen = false;
             state.isUnlocked = false; 
-            state.accessLog = [{ action: 'VAULT_CLOSED', time: new Date().toISOString() }, ...state.accessLog];
+            state.accessLog = [{ action: 'VAULT_CLOSED', time: new Date().toISOString(), ip: getOriginIp() }, ...state.accessLog];
             notify();
             console.log("SuccessionRegistry: Vault Session Terminated (Auto-Locked).");
         } catch (error) {
@@ -78,7 +88,8 @@ export const SuccessionRegistry = {
             state.isUnlocked = !!status;
             state.accessLog = [{ 
                 action: status ? 'MANUAL_UNLOCK' : 'MANUAL_LOCK', 
-                time: new Date().toISOString() 
+                time: new Date().toISOString(),
+                ip: getOriginIp()
             }, ...state.accessLog];
             notify();
         } catch (error) {
@@ -92,15 +103,16 @@ export const SuccessionRegistry = {
      */
     setProtocol: (protocol) => {
         try {
-            const VALID_PROTOCOLS = ['will', 'trust', null];
+            const VALID_PROTOCOLS = ['TOD_Designation', null];
             if (!VALID_PROTOCOLS.includes(protocol)) {
-                throw new Error(`Unsupported legacy protocol: ${protocol}`);
+                throw new Error(`Unsupported corporate succession protocol: ${protocol}`);
             }
             state.activeProtocol = protocol;
             state.accessLog = [{ 
                 action: 'PROTOCOL_TRANSITION', 
                 details: protocol, 
-                time: new Date().toISOString() 
+                time: new Date().toISOString(),
+                ip: getOriginIp()
             }, ...state.accessLog];
             notify();
         } catch (error) {
@@ -126,12 +138,12 @@ export const SuccessionRegistry = {
             if (isValid) {
                 state.isUnlocked = true;
                 state.lastAudit = new Date().toISOString();
-                state.accessLog = [{ action: 'PIN_VERIFIED', details: 'Vault Key Handshake Authorized', time: state.lastAudit }, ...state.accessLog];
+                state.accessLog = [{ action: 'PIN_VERIFIED', details: 'Vault Key Handshake Authorized', time: state.lastAudit, ip: getOriginIp() }, ...state.accessLog];
                 notify();
                 return true;
             }
 
-            state.accessLog = [{ action: 'PIN_DENIED', details: 'Cryptographic Sequence Rejected', time: new Date().toISOString() }, ...state.accessLog];
+            state.accessLog = [{ action: 'PIN_DENIED', details: 'Cryptographic Sequence Rejected', time: new Date().toISOString(), ip: getOriginIp() }, ...state.accessLog];
             notify();
             return false;
         } catch (error) {
@@ -151,7 +163,7 @@ export const SuccessionRegistry = {
                 state.isUnlocked = true;
                 state.isOpen = true;
                 state.lastAudit = new Date().toISOString();
-                state.accessLog = [{ action: 'BYPASS_ACTIVATED', time: state.lastAudit }, ...state.accessLog];
+                state.accessLog = [{ action: 'BYPASS_ACTIVATED', time: state.lastAudit, ip: getOriginIp() }, ...state.accessLog];
                 notify();
                 return true;
             }
@@ -160,6 +172,16 @@ export const SuccessionRegistry = {
             console.error("SuccessionRegistry: Bypass provisioning failed.", error);
             return false;
         }
+    },
+
+    /**
+     * SET PROTOCOL DATA
+     * Stores the active succession document data globally so any
+     * component (e.g. VaultTile on the dashboard) can read it reactively.
+     */
+    setProtocolData: (data) => {
+        state.protocolData = data;
+        notify();
     }
 };
 

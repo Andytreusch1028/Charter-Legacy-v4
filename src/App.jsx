@@ -10,6 +10,7 @@ import DashboardZenith from './DashboardZenith';
 
 // Admin Zone
 import AIGrowthConsole from './zones/admin/AIGrowthConsole';
+import MarketingDashboard from './zones/admin/MarketingDashboard';
 import StaffLogin from './zones/admin/StaffLogin';
 import FulfillmentPortal from './staff-node/FulfillmentPortal';
 
@@ -89,6 +90,16 @@ export default function App() {
                   await supabase.auth.signOut();
                   window.location.href = '/staff';
                 }} /> 
+              : <Navigate to="/staff" replace /> 
+          } 
+        />
+
+        {/* === MARKETING DASHBOARD === */}
+        <Route 
+          path="/admin/marketing" 
+          element={
+            isStaff 
+              ? <MarketingDashboard isOpen={true} onClose={() => window.location.href = '/staff'} /> 
               : <Navigate to="/staff" replace /> 
           } 
         />

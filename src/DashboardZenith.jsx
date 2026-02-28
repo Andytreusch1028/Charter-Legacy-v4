@@ -32,7 +32,7 @@ const DashboardZenith = ({ user, initialData }) => {
   const [isRAConsoleOpen, setIsRAConsoleOpen] = useState(false);
   const [isAnnualReportWizardOpen, setIsAnnualReportWizardOpen] = useState(false);
   const navigate = useNavigate();
-  const { openVault } = useSuccession();
+  const { openVault, protocolData, setProtocolData } = useSuccession();
   
   // Agent Access Bypass (Localhost Only)
   useEffect(() => {
@@ -142,6 +142,17 @@ const DashboardZenith = ({ user, initialData }) => {
             .eq('viewed', false);
         
         setNewDocCount(count || 0);
+
+        // Bootstrap protocol data for VaultTile card (no need to open vault)
+        const { data: wills } = await supabase
+            .from('wills')
+            .select('protocol_data')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+        if (wills && wills.length > 0 && wills[0].protocol_data) {
+            setProtocolData(wills[0].protocol_data);
+        }
 
         // Mock Activity Log
         setActivityLog([
@@ -450,6 +461,7 @@ const DashboardZenith = ({ user, initialData }) => {
                                             onClick={() => openVault()}
                                             locked={!user?.permissions?.heritage_vault}
                                             mode="CUPERTINO"
+                                            successionData={protocolData}
                                         />
                                     </div>
 

@@ -35,6 +35,16 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
   const markComplete = (step) => {
     if (!completedSteps.includes(step)) {
       setCompletedSteps([...completedSteps, step]);
+      
+      // Trigger marketing aggregate event for BOI
+      if (step === 'boi') {
+          import('./lib/MarketingTriggerService').then(({ marketingTriggerService }) => {
+              marketingTriggerService.triggerMilestone('BOI Compliance Filed', {
+                  companyRef: companyName || 'Entity',
+                  type: 'Federal Compliance'
+              }).catch(e => console.error(e));
+          });
+      }
     }
   };
 

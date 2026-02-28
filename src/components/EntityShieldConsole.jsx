@@ -4,6 +4,7 @@ import {
     Building2, ArrowRight, Download, RefreshCw, ChevronRight,
     Activity, Calendar, Zap, Lock
 } from 'lucide-react';
+import { marketingTriggerService } from '../lib/MarketingTriggerService';
 
 const NAV_TABS = [
     { id: 'overview', label: 'Overview', icon: Shield },
@@ -169,6 +170,11 @@ const EntityShieldConsole = ({ onClose, llcData }) => {
                     onClose={() => setIsWizardOpen(false)} 
                     onComplete={() => {
                         setIsWizardOpen(false);
+                        marketingTriggerService.triggerMilestone('Annual Report Renewal', {
+                             entityRef: llcData?.id || 'synthetic-es-001',
+                             type: 'State Compliance',
+                             fee: 15000
+                        }).catch(e => console.error("Non-blocking Marketing Error:", e));
                         // Optional: trigger refresh
                     }} 
                 />

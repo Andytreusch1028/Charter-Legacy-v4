@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { marketingTriggerService } from './lib/MarketingTriggerService';
 
 // Initialize Stripe outside component render to avoid recreation
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
@@ -64,12 +65,25 @@ const SpecSheet = ({ item, isOpen, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [boiAdded, setBoiAdded] = useState(false);
   const [breachAdded, setBreachAdded] = useState(false);
+  const [externalLLCBOI, setExternalLLCBOI] = useState(false);   // User has LLC not filed by us
+  const [existingBOIStatus, setExistingBOIStatus] = useState(null); // 'already_filed' | 'not_filed' | null
+  const [existingLLCInfo, setExistingLLCInfo] = useState(null);   // Their Charter LLC on record
+
+  // ── Computed BOI scenario flags ───────────────────────────────────────────
+  const FORMATION_IDS = ['founder', 'medical', 'contractor', 'sovereign_upgrade'];
+  const boiIncludedInPackage = FORMATION_IDS.includes(item?.id); // BOI ships with formation
+  const boiNotApplicable     = item?.id === 'will';               // Succession doc — BOI irrelevant
+  const isPrivacyShieldOnly  = item?.id === 'privacy_shield';     // May have external LLC
 
   useEffect(() => {
     if (isOpen) {
         setStep('details');
-        setBoiAdded(item?.id === 'sovereign_upgrade');
+        // Formation packages → pre-include BOI (locked). Sovereign upgrade → both.
+        setBoiAdded(boiIncludedInPackage);
         setBreachAdded(item?.id === 'sovereign_upgrade');
+        setExternalLLCBOI(false);
+        setExistingBOIStatus(null);
+        setExistingLLCInfo(null);
     }
   }, [isOpen, item]);
   const [email, setEmail] = useState('');
@@ -134,6 +148,33 @@ const SpecSheet = ({ item, isOpen, onClose, onSuccess }) => {
           }
           
           setUser(authenticatedUser);
+
+          // ── POST-AUTH BOI CHECK ───────────────────────────────────────────
+          // Check if user already has a Charter LLC with BOI on file.
+          // This covers two cases:
+          //   1. Privacy Shield buyer who formed with us before → BOI already done
+          //   2. Returning customer adding a new product → no double-billing
+          try {
+              const { data: existingLLCs } = await supabase
+                  .from('llcs')
+                  .select('id, product_type, llc_name, boi_filed')
+                  .eq('user_id', authenticatedUser.id);
+
+              if (existingLLCs && existingLLCs.length > 0) {
+                  const charterFormationTypes = ['founders_shield', 'medical_pllc', 'trade_professional'];
+                  const charterLLC = existingLLCs.find(llc => charterFormationTypes.includes(llc.product_type));
+
+                  if (charterLLC) {
+                      setExistingLLCInfo(charterLLC);
+                      // BOI is always included in Charter formation packages
+                      setExistingBOIStatus('already_filed');
+                      setBoiAdded(false); // Remove from add-on total — already covered
+                  }
+              }
+          } catch (boiCheckErr) {
+              // Non-fatal: if check fails, don't block checkout
+              console.warn('[BOI Check] Could not verify existing LLC status:', boiCheckErr.message);
+          }
 
           try {
              const { data: intentData, error: functionError } = await supabase.functions.invoke('create-payment-intent', {
@@ -208,7 +249,20 @@ const SpecSheet = ({ item, isOpen, onClose, onSuccess }) => {
                   ])
                   .select();
 
-              if (dbError) console.error("DB Error:", dbError);
+              if (dbError) {
+                  console.error("DB Error:", dbError);
+              } else {
+                  // --- MARKETING AGGREGATE TRIGGER ---
+                  // Trigger the formation accepted milestone here contextually
+                  if (item.id !== 'will') { // Assuming will is not an LLC formation
+                    marketingTriggerService.triggerMilestone('LLC Formation Accepted', {
+                        userId: user.id,
+                        package: item.id,
+                        price: item.price,
+                        privacyShieldIncluded: true
+                    }).catch(err => console.error("Non-blocking Marketing Error:", err));
+                  }
+              }
           }
           setStep('success');
       } catch (err) {
@@ -245,12 +299,12 @@ const SpecSheet = ({ item, isOpen, onClose, onSuccess }) => {
              </div>
              
              <div className="space-y-4">
-                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Protocol Architecture:</p>
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">What&apos;s Included in Your Order:</p>
                 <div className="grid gap-4">
                     {[
-                      { id: 1, name: 'Registered Agent Nexus', sub: 'Statutory Compliance & Legal Foundation' },
-                      { id: 2, name: 'Anonymity Shield', sub: 'Privacy Protection & Information Shield' },
-                      { id: 3, name: 'Heritage Protocol', sub: 'Legacy & Continuity Protocols' }
+                      { id: 1, name: 'Florida Registered Agent', sub: 'State Filing & Registered Agent Service' },
+                      { id: 2, name: 'Privacy Shield', sub: 'Your home address removed from every public record' },
+                      { id: 3, name: 'Successor Plan', sub: 'Transfer on Death Document Service' }
                     ].filter(p => item.id === 'will' ? p.id === 3 : true)
                      .map((p) => {
                        const isActive = (item.includedProtocols || []).includes(p.id);
@@ -258,18 +312,20 @@ const SpecSheet = ({ item, isOpen, onClose, onSuccess }) => {
                          <div key={p.id} className={`p-5 rounded-2xl border flex items-center justify-between transition-all ${
                            isActive 
                              ? 'bg-black text-white border-black shadow-lg scale-[1.02]' 
-                             : 'bg-gray-50 border-gray-100 opacity-40 blur-[0.5px]'
+                             : 'bg-gray-50 border-gray-100 opacity-40'
                          }`}>
                             <div>
                                <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">{p.name}</p>
-                               <p className={`text-[9px] font-medium leading-none ${isActive ? 'text-gray-400' : 'text-gray-500'}`}>{p.sub}</p>
+                               <p className={`text-[9px] font-medium leading-none ${isActive ? 'text-gray-400' : 'text-gray-500'}`}>
+                                 {isActive ? p.sub : 'Not in this package'}
+                               </p>
                             </div>
                             {isActive ? (
                                <div className="w-6 h-6 rounded-full bg-[#00D084] flex items-center justify-center text-black">
                                   <Check size={14} strokeWidth={4} />
                                </div>
                             ) : (
-                               <Lock size={14} className="text-gray-300" />
+                               <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Not included</span>
                             )}
                          </div>
                        );
@@ -277,72 +333,102 @@ const SpecSheet = ({ item, isOpen, onClose, onSuccess }) => {
                 </div>
              </div>
 
-             {/* FEDERAL COMPLIANCE TOGGLE - OPTION 2 */}
-             {item.id !== 'will' && (
-             <div 
-                onClick={() => item.id !== 'sovereign_upgrade' && setBoiAdded(!boiAdded)}
-                className={`flex items-center justify-between p-5 rounded-2xl border mb-6 cursor-pointer transition-all ${boiAdded ? 'bg-black text-white border-black' : 'bg-white border-gray-100 hover:border-gray-200'}`}
-             >
-                <div className="flex items-center gap-4">
-                   <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${boiAdded ? 'bg-white text-black border-transparent' : 'border-gray-200 text-transparent'}`}>
-                      <Check size={14} className={boiAdded ? "opacity-100" : "opacity-0"} />
+             {/* ── BOI SECTION: 3 SCENARIOS ─────────────────────────────────── */}
+
+             {/* Scenario A: Formation package → BOI included, locked green card */}
+             {boiIncludedInPackage && (
+               <div className="flex items-center justify-between p-5 rounded-2xl border mb-4 bg-emerald-50 border-emerald-200">
+                 <div className="flex items-center gap-4">
+                   <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white">
+                     <Check size={14} strokeWidth={3} />
                    </div>
                    <div className="space-y-0.5">
-                      <p className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                         Federal Compliance Guard
-                         {item.id === 'sovereign_upgrade' && <span className="text-[9px] bg-[#00D084] text-black px-2 py-0.5 rounded-full">INCLUDED</span>}
-                      </p>
-                      <p className={`text-[10px] font-medium leading-tight max-w-[200px] ${boiAdded ? 'text-gray-400' : 'text-gray-500'}`}>Mandatory FinCEN BOI Filing. We handle this report to help avoid potential civil penalties. *Future ownership changes require an updated filing.</p>
+                     <p className="text-xs font-black uppercase tracking-widest text-emerald-800 flex items-center gap-2">
+                       Federal BOI Filing
+                       <span className="text-[9px] bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-black">INCLUDED</span>
+                     </p>
+                     <p className="text-[10px] font-medium text-emerald-600 max-w-[220px]">
+                       Included with your LLC formation. We file your FinCEN Beneficial Ownership report automatically.
+                     </p>
                    </div>
-                </div>
-                <div className="text-right">
-                   {item.id === 'sovereign_upgrade' ? (
-                       <span className="text-[10px] font-black line-through text-gray-500 block">$149</span>
-                   ) : (
-                       <span className={`text-xs font-black ${boiAdded ? 'text-[#00D084]' : 'text-gray-400'}`}>+$149</span>
-                   )}
-                </div>
-             </div>
+                 </div>
+                 <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">$0</span>
+               </div>
              )}
 
-             {/* BREACH ALERTS TOGGLE */}
-             {item.id !== 'will' && (
-             <div 
-                onClick={() => item.id !== 'sovereign_upgrade' && setBreachAdded(!breachAdded)}
-                className={`flex items-center justify-between p-5 rounded-2xl border mb-6 cursor-pointer transition-all ${breachAdded ? 'bg-black text-white border-black' : 'bg-white border-gray-100 hover:border-gray-200'}`}
-             >
-                <div className="flex items-center gap-4">
-                   <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${breachAdded ? 'bg-white text-black border-transparent' : 'border-gray-200 text-transparent'}`}>
-                      <Check size={14} className={breachAdded ? "opacity-100" : "opacity-0"} />
+             {/* Scenario B: Privacy Shield only → optional add-on + external LLC option */}
+             {!boiIncludedInPackage && !boiNotApplicable && (
+               <>
+                 {existingBOIStatus === 'already_filed' && existingLLCInfo && (
+                   <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-50 border border-blue-100 mb-4">
+                     <Check size={14} className="text-blue-500 shrink-0" />
+                     <p className="text-[10px] font-bold text-blue-700 leading-tight">
+                       Your BOI is already on file from when we formed <span className="font-black">{existingLLCInfo.llc_name || 'your LLC'}</span>. No action needed.
+                     </p>
                    </div>
-                   <div className="space-y-0.5">
-                      <p className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                         Instant Breach Alerts
-                         {item.id === 'sovereign_upgrade' && <span className="text-[9px] bg-[#00D084] text-black px-2 py-0.5 rounded-full">INCLUDED</span>}
-                      </p>
-                      <p className={`text-[10px] font-medium leading-tight max-w-[200px] ${breachAdded ? 'text-gray-400' : 'text-gray-500'}`}>Notify me via SMS if my name appears on any public watchlist.</p>
+                 )}
+                 {existingBOIStatus !== 'already_filed' && (
+                   <div
+                     onClick={() => setBoiAdded(!boiAdded)}
+                     className={`flex items-center justify-between p-5 rounded-2xl border mb-4 cursor-pointer transition-all ${boiAdded ? 'bg-black text-white border-black' : 'bg-white border-gray-100 hover:border-gray-200'}`}
+                   >
+                     <div className="flex items-center gap-4">
+                       <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${boiAdded ? 'bg-white text-black border-transparent' : 'border-gray-200'}`}>
+                         <Check size={14} className={boiAdded ? 'opacity-100' : 'opacity-0'} />
+                       </div>
+                       <div className="space-y-0.5">
+                         <p className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                           Federal BOI Filing
+                           <span className={`text-[9px] px-2 py-0.5 rounded-full font-black ${boiAdded ? 'bg-white text-black' : 'bg-amber-100 text-amber-700'}`}>REQUIRED BY FEDERAL LAW</span>
+                         </p>
+                         <p className={`text-[10px] font-medium leading-tight max-w-[220px] ${boiAdded ? 'text-gray-400' : 'text-gray-500'}`}>
+                           We file your mandatory FinCEN Beneficial Ownership report. *Future ownership changes require a new filing.
+                         </p>
+                       </div>
+                     </div>
+                     <span className={`text-xs font-black ${boiAdded ? 'text-[#00D084]' : 'text-gray-400'}`}>+$149</span>
                    </div>
-                </div>
-                <div className="text-right">
-                   {item.id === 'sovereign_upgrade' ? (
-                       <span className="text-[10px] font-black line-through text-gray-500 block">$49/yr</span>
-                   ) : (
-                       <span className={`text-xs font-black ${breachAdded ? 'text-[#00D084]' : 'text-gray-400'}`}>+$49/yr</span>
-                   )}
-                </div>
-             </div>
+                 )}
+                 {isPrivacyShieldOnly && (
+                   <div
+                     onClick={() => setExternalLLCBOI(!externalLLCBOI)}
+                     className={`flex items-center justify-between p-5 rounded-2xl border mb-4 cursor-pointer transition-all ${externalLLCBOI ? 'bg-black text-white border-black' : 'bg-white border-dashed border-gray-200 hover:border-gray-300'}`}
+                   >
+                     <div className="flex items-center gap-4">
+                       <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${externalLLCBOI ? 'bg-white text-black border-transparent' : 'border-gray-200'}`}>
+                         <Check size={14} className={externalLLCBOI ? 'opacity-100' : 'opacity-0'} />
+                       </div>
+                       <div className="space-y-0.5">
+                         <p className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                           BOI for My Existing Business
+                           <span className={`text-[9px] px-2 py-0.5 rounded-full font-black ${externalLLCBOI ? 'bg-white text-black' : 'bg-gray-100 text-gray-500'}`}>NOT FILED BY US</span>
+                         </p>
+                         <p className={`text-[10px] font-medium leading-tight max-w-[220px] ${externalLLCBOI ? 'text-gray-400' : 'text-gray-500'}`}>
+                           I have an LLC formed elsewhere. File my FinCEN BOI report as a standalone service.
+                         </p>
+                       </div>
+                     </div>
+                     <span className={`text-xs font-black ${externalLLCBOI ? 'text-[#00D084]' : 'text-gray-400'}`}>+$149</span>
+                   </div>
+                 )}
+               </>
              )}
+
+             {/* ── LEGACY: sovereign_upgrade fallback (kept for safety) ───────── */}
+             {/* sovereign_upgrade: BOI separately shown via boiIncludedInPackage above */}
+
+             {/* BREACH ALERTS TOGGLE */}
 
              <div className="grid grid-cols-2 gap-8 py-6 border-y border-gray-100">
                  <div className="space-y-2">
                     <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Total cost</p>
                     <p className="text-3xl font-black text-black">
-                        {item.id === 'will' ? item.price : `$${(parseInt(item.price.replace(/[^0-9]/g, '')) || 0) + ((item.id !== 'sovereign_upgrade' && boiAdded) ? 149 : 0) + ((item.id !== 'sovereign_upgrade' && breachAdded) ? 49 : 0)}`}
+                        {item.price}
                     </p>
                  </div>
                  <div className="space-y-2">
-                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Establishment</p>
-                    <p className="text-3xl font-black text-black">24h</p>
+                     <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">LLC Filed Within</p>
+                     <p className="text-3xl font-black text-black">24h</p>
                  </div>
              </div>
              <button onClick={handleNext} disabled={loading} className="w-full bg-[#007AFF] text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
