@@ -9,7 +9,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 2. Enable RLS
 -- (Assuming storage.objects already has RLS enabled, but re-insuring)
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
 -- 3. Staff Policy: Full Control
 -- Staff need to upload, view, and delete documents they process.

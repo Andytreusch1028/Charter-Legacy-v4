@@ -19,12 +19,14 @@ CREATE TABLE IF NOT EXISTS public.ra_service_log (
 ALTER TABLE public.ra_service_log ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Clients can see their own logs
+DROP POLICY IF EXISTS "Clients can view their own document logs" ON public.ra_service_log;
 CREATE POLICY "Clients can view their own document logs" 
 ON public.ra_service_log
 FOR SELECT 
 USING (auth.uid() = client_id);
 
 -- Policy: Staff can manage all logs
+DROP POLICY IF EXISTS "Staff can manage all document logs" ON public.ra_service_log;
 CREATE POLICY "Staff can manage all document logs" 
 ON public.ra_service_log
 FOR ALL
@@ -33,4 +35,4 @@ USING (
 );
 
 -- Realtime triggers
-ALTER PUBLICATION supabase_realtime ADD TABLE ra_service_log;
+-- ALTER PUBLICATION supabase_realtime ADD TABLE ra_service_log;

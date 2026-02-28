@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS public.marketing_queue (
 ALTER TABLE public.marketing_queue ENABLE ROW LEVEL SECURITY;
 
 -- Allow authenticated users to view/manage their queue inside the dashboard
+DROP POLICY IF EXISTS "Allow authenticated full access to marketing_queue" ON public.marketing_queue;
 CREATE POLICY "Allow authenticated full access to marketing_queue"
 ON public.marketing_queue
 FOR ALL
@@ -21,6 +22,7 @@ USING (true)
 WITH CHECK (true);
 
 -- Allow service role to do everything for background queue processing
+DROP POLICY IF EXISTS "Allow service role full access to marketing_queue" ON public.marketing_queue;
 CREATE POLICY "Allow service role full access to marketing_queue"
 ON public.marketing_queue
 FOR ALL
