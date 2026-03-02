@@ -179,6 +179,7 @@ const FormationFactory = ({
     const [apiKey, setApiKey] = useState(TINYFISH_KEY);
     const [showKeyPrompt, setShowKeyPrompt] = useState(!TINYFISH_KEY);
     const [handoffUrl, setHandoffUrl] = useState(null);
+    const [currentUrl, setCurrentUrl] = useState(null);
     const [showFullSnapshot, setShowFullSnapshot] = useState(false);
     
     // Flight Recorder State
@@ -258,6 +259,7 @@ const FormationFactory = ({
         setActiveAutomation(formation);
         setAutomationState('NAVIGATING');
         setHandoffUrl(null);
+        setCurrentUrl(formation.action_type === 'ANNUAL_REPORT' ? 'https://services.sunbiz.org/Filings/AnnualReport/FilingStart' : 'https://dos.myflorida.com/sunbiz/start-e-filing/efile-articles-of-organization/');
         setLastSnapshot(null);
         setAutomationLogs([{
             timestamp: new Date().toLocaleTimeString(),
@@ -296,9 +298,11 @@ const FormationFactory = ({
             goal = `Navigate to https://services.sunbiz.org/Filings/AnnualReport/FilingStart
             1. Enter the Document Number: "${formation.document_number}"
             2. Click Submit.
-            3. Review the Annual Report details page.
-            4. Update the Principal Address to: ${formation.principalAddress.street}, ${formation.principalAddress.city}, FL ${formation.principalAddress.zip}
-            5. CRITICAL: Stop at the final review screen and take a screenshot. DO NOT click proceed to payment.`;
+            3. Log "Intake & Addresses complete".
+            4. Review the Annual Report details page.
+            5. Update the Principal Address to: ${formation.principalAddress.street}, ${formation.principalAddress.city}, FL ${formation.principalAddress.zip}
+            6. Log "Registered Agent complete".
+            7. CRITICAL: Stop at the final review screen and take a screenshot. DO NOT click proceed to payment.`;
         } else {
             goal = `Navigate to https://dos.myflorida.com/sunbiz/start-e-filing/efile-articles-of-organization/. 
             1. Start LLC E-Filing.
@@ -341,13 +345,26 @@ const FormationFactory = ({
             onEvent: async (data) => {
                 let message = data.message;
                 
+                if (data.url || data.payload?.url) setCurrentUrl(data.url || data.payload?.url);
+                
                 // Enhancement: Specificity Bridge
                 if (!message) {
-                    if (data.event === 'navigation') message = `Navigating to ${data.payload?.url?.split('/').pop() || 'next section'}...`;
-                    else if (data.event === 'field_filled') message = `Synchronizing field: ${data.payload?.field || data.payload?.selector || 'system input'}`;
-                    else if (data.event === 'click') message = `Acknowledging ${data.payload?.element || 'interaction point'}...`;
-                    else if (data.event === 'completed') message = "Protocol successfully finalized.";
-                    else message = data.payload ? (typeof data.payload === 'string' ? data.payload : JSON.stringify(data.payload)) : 'Executing protocol step...';
+                    if (data.event === 'navigation' || data.type === 'navigation') {
+                        message = `Navigating to ${data.payload?.url || data.url || 'next section'}...`;
+                    } else if (data.event === 'action' || data.type === 'action') {
+                        const payload = data.payload || data;
+                        if (payload.action === 'fill' || payload.action === 'type') {
+                            message = `[INJECT] ${payload.value} -> ${payload.target || payload.selector || payload.description || 'field'}`;
+                        } else if (payload.action === 'click') {
+                            message = `[CLICK] ${payload.target || payload.selector || payload.description || 'element'}`;
+                        } else {
+                            message = `[ACTION] ${payload.action} on ${payload.target || payload.selector || 'interaction point'}`;
+                        }
+                    } else if (data.event === 'completed') {
+                        message = "Protocol successfully finalized.";
+                    } else {
+                        message = `[${(data.event || data.type || 'LOG').toUpperCase()}] ${data.payload ? (typeof data.payload === 'string' ? data.payload : JSON.stringify(data.payload)) : JSON.stringify(data)}`;
+                    }
                 }
 
                 setAutomationLogs(prev => [...prev.slice(-49), {
@@ -606,27 +623,27 @@ const FormationFactory = ({
                                                 <Camera size={14} /> Review Final Form Snapshot
                                             </button>
                                             
-                                            {handoffUrl && (
+                                            {(handoffUrl || currentUrl) && (
                                                 <button 
-                                                    onClick={() => window.open(handoffUrl, '_blank')}
+                                                    onClick={() => window.open(handoffUrl || currentUrl, '_blank')}
                                                     className="w-full py-4 bg-luminous-blue text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-luminous-blue/20 transition-all flex items-center justify-center gap-2"
                                                 >
-                                                    <ExternalLink size={16} /> Interactive Takeover (Pay Now)
+                                                    <ExternalLink size={16} /> Operator Takeover & Finalize
                                                 </button>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-col xl:flex-row gap-3">
                                         <button 
                                             onClick={() => {
                                                 setEditingSpec({ ...activeAutomation });
                                                 setShowSpecEditor(true);
                                                 setAutomationState('IDLE');
                                             }}
-                                            className="w-full py-4 border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                                            className="flex-[1.5] py-4 border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 px-2"
                                         >
-                                            <Edit3 size={16} /> Spot a mistake? Edit & Retry
+                                            <Edit3 size={16} /> Edit Spec
                                         </button>
                                         <button 
                                             onClick={() => {
@@ -638,13 +655,13 @@ const FormationFactory = ({
                                                 setActiveAutomation(null);
                                                 setToast({ type: 'success', message: 'Filing Finalized: State Receipt Uploaded' });
                                             }}
-                                            className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-2"
+                                            className="flex-[2] py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 px-2 whitespace-nowrap"
                                         >
                                             Mark as Paid & File
                                         </button>
                                         <button 
                                             onClick={() => setActiveAutomation(null)}
-                                            className="px-6 py-4 bg-white/5 text-white/40 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                                            className="flex-[1] py-4 bg-white/5 text-white/40 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-white/10 transition-all px-2"
                                         >
                                             Close
                                         </button>

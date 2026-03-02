@@ -13,26 +13,7 @@ const NAV_TABS = [
     { id: 'settings', label: 'Settings', icon: Lock },
 ];
 
-const MONITORING = [
-    { label: 'Annual Report', status: 'Due May 1, 2026', type: 'warning', icon: Calendar },
-    { label: 'Registered Agent', status: 'Active — Charter Legacy LLC', type: 'ok', icon: Shield },
-    { label: 'Sunbiz Standing', status: 'Good Standing — Verified', type: 'ok', icon: CheckCircle2 },
-    { label: 'BOI Filing', status: 'Filed — FinCEN Confirmed', type: 'ok', icon: FileText },
-];
 
-const TIMELINE = [
-    { date: 'Feb 12, 2026', event: 'Privacy Shield Deployed', detail: 'Ownership records shielded from public index.' },
-    { date: 'Jan 28, 2026', event: 'Registered Agent Activated', detail: 'Charter Legacy LLC assigned as statutory RA.' },
-    { date: 'Jan 15, 2026', event: 'Entity Formation Complete', detail: 'Articles of Organization filed with Sunbiz.' },
-    { date: 'Jan 10, 2026', event: 'BOI Report Submitted', detail: 'Beneficial Ownership filed with FinCEN.' },
-];
-
-const ACTIONS = [
-    { label: 'File Annual Report', desc: 'Due May 1, 2026 — avoid $400 late fee', cta: 'File Now', urgent: true },
-    { label: 'Download Articles of Organization', desc: 'Official formation document from Sunbiz', cta: 'Download', urgent: false },
-    { label: 'Update Registered Agent', desc: 'Change or verify RA information', cta: 'Update', urgent: false },
-    { label: 'Open BOI Filing', desc: 'View or amend your FinCEN report', cta: 'View', urgent: false },
-];
 
 import AnnualReportWizard from './AnnualReportWizard';
 
@@ -52,6 +33,28 @@ const StatusBadge = ({ type }) => {
 const EntityShieldConsole = ({ onClose, llcData }) => {
     const [activeTab, setActiveTab] = useState('overview');
     const [isWizardOpen, setIsWizardOpen] = useState(false);
+    const [isARFiled, setIsARFiled] = useState(llcData?.llc_status === 'AR Pending' || llcData?.llc_status === 'FILED' || llcData?.llc_status === 'TRANSMITTED');
+
+    const MONITORING = [
+        { label: 'Annual Report', status: isARFiled ? 'Filed — Current' : 'Due May 1, 2026', type: isARFiled ? 'ok' : 'warning', icon: Calendar },
+        { label: 'Registered Agent', status: 'Active — Charter Legacy LLC', type: 'ok', icon: Shield },
+        { label: 'Sunbiz Standing', status: 'Good Standing — Verified', type: 'ok', icon: CheckCircle2 },
+        { label: 'BOI Filing', status: 'Filed — FinCEN Confirmed', type: 'ok', icon: FileText },
+    ];
+
+    const TIMELINE = [
+        { date: 'Feb 12, 2026', event: 'Privacy Shield Deployed', detail: 'Ownership records shielded from public index.' },
+        { date: 'Jan 28, 2026', event: 'Registered Agent Activated', detail: 'Charter Legacy LLC assigned as statutory RA.' },
+        { date: 'Jan 15, 2026', event: 'Entity Formation Complete', detail: 'Articles of Organization filed with Sunbiz.' },
+        { date: 'Jan 10, 2026', event: 'BOI Report Submitted', detail: 'Beneficial Ownership filed with FinCEN.' },
+    ];
+
+    const ACTIONS = [
+        { label: 'File Annual Report', desc: isARFiled ? 'Your 2026 report is transmitted and marked current' : 'Due May 1, 2026 — avoid $400 late fee', cta: isARFiled ? 'View Status' : 'File Now', urgent: !isARFiled },
+        { label: 'Download Articles of Organization', desc: 'Official formation document from Sunbiz', cta: 'Download', urgent: false },
+        { label: 'Update Registered Agent', desc: 'Change or verify RA information', cta: 'Update', urgent: false },
+        { label: 'Open BOI Filing', desc: 'View or amend your FinCEN report', cta: 'View', urgent: false },
+    ];
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 md:p-8 animate-in fade-in duration-300">
@@ -151,9 +154,10 @@ const EntityShieldConsole = ({ onClose, llcData }) => {
                                             <p className="text-[10px] text-gray-400">{action.desc}</p>
                                         </div>
                                         <button 
-                                            onClick={() => action.label.includes('Annual Report') ? setIsWizardOpen(true) : null}
-                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap flex items-center gap-1.5 transition-all ${action.urgent ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-slate-900 text-white hover:bg-blue-600'}`}>
-                                            {action.cta} <ArrowRight size={12} />
+                                            onClick={() => action.label.includes('Annual Report') && !isARFiled ? setIsWizardOpen(true) : null}
+                                            disabled={action.label.includes('Annual Report') && isARFiled}
+                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap flex items-center gap-1.5 transition-all ${action.urgent ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-slate-900 text-white hover:bg-blue-600'} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                                            {action.cta} {(!action.label.includes('Annual Report') || !isARFiled) && <ArrowRight size={12} />}
                                         </button>
                                     </div>
                                 ))}
@@ -170,12 +174,12 @@ const EntityShieldConsole = ({ onClose, llcData }) => {
                     onClose={() => setIsWizardOpen(false)} 
                     onComplete={() => {
                         setIsWizardOpen(false);
+                        setIsARFiled(true);
                         marketingTriggerService.triggerMilestone('Annual Report Renewal', {
                              entityRef: llcData?.id || 'synthetic-es-001',
                              type: 'State Compliance',
                              fee: 15000
                         }).catch(e => console.error("Non-blocking Marketing Error:", e));
-                        // Optional: trigger refresh
                     }} 
                 />
             )}

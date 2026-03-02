@@ -53,6 +53,10 @@ serve(async (req) => {
             amount = 39900 // $399.00
             description = 'Legacy Will Package'
             break
+        case 'annual_report':
+            amount = 19900 // $199.00
+            description = 'Florida Annual Report Renewal'
+            break
         default:
             throw new Error('Invalid Package ID')
     }
