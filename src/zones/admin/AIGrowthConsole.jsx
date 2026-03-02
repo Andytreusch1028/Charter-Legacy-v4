@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Brain, Activity, Check, BarChart2, Zap, ShieldCheck, Anchor, Loader2 } from 'lucide-react';
+import { X, Brain, Activity, Check, BarChart2, Zap, ShieldCheck, Anchor, Loader2, Globe } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import SEOConsoleTab from './SEOConsoleTab';
 
 const AIGrowthConsole = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('performance');
@@ -103,15 +104,33 @@ const AIGrowthConsole = ({ isOpen, onClose }) => {
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-            <X size={20} />
-          </button>
+          
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setActiveTab('performance')}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'performance' ? 'bg-[#1D1D1F] text-white shadow-md' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+            >
+              Performance
+            </button>
+            <button 
+              onClick={() => setActiveTab('seo')}
+              className={`px-4 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'seo' ? 'bg-[#1D1D1F] text-white shadow-md' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+            >
+              <Globe size={14} /> SEO Matrix
+            </button>
+            <div className="w-px h-6 bg-gray-200 mx-2" />
+            <button onClick={onClose} className="p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-8 space-y-12">
           
-          {/* Ongoing Test Performance */}
+          {activeTab === 'performance' ? (
+             <>
+               {/* Ongoing Test Performance */}
           <section className="space-y-6">
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 pb-2">Active A/B Test Variants</h3>
             
@@ -202,6 +221,10 @@ const AIGrowthConsole = ({ isOpen, onClose }) => {
                   </div>
               ))}
           </section>
+             </>
+          ) : (
+             <SEOConsoleTab />
+          )}
 
         </div>
       </motion.div>
