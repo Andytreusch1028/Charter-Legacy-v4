@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { supabase } from './lib/supabase';
 
 // Marketing Zone
@@ -59,64 +60,66 @@ export default function App() {
   const isStaff = isExecutive || isFulfillment;
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* === MARKETING & FRONTWARD LOGIN (CUSTOMERS) === */}
-        <Route path="/" element={<Landing appUser={activeUser} />} />
-        
-        {/* === CUSTOMER PLAYGROUND (ZENITH) === */}
-        <Route 
-          path="/app/*" 
-          element={activeUser ? <DashboardZenith user={activeUser} /> : <Navigate to="/" replace />} 
-        />
-        
-        {/* === BACKSTAGE: STAFF / EXECUTIVE LOGIN === */}
-        <Route 
-          path="/staff" 
-          element={
-            activeUser 
-              ? (isExecutive ? <Navigate to="/admin/growth" replace /> : isFulfillment ? <Navigate to="/admin/fulfillment" replace /> : <Navigate to="/app" replace />)
-              : <StaffLogin />
-          } 
-        />
+    <HelmetProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* === MARKETING & FRONTWARD LOGIN (CUSTOMERS) === */}
+          <Route path="/" element={<Landing appUser={activeUser} />} />
+          
+          {/* === CUSTOMER PLAYGROUND (ZENITH) === */}
+          <Route 
+            path="/app/*" 
+            element={activeUser ? <DashboardZenith user={activeUser} /> : <Navigate to="/" replace />} 
+          />
+          
+          {/* === BACKSTAGE: STAFF / EXECUTIVE LOGIN === */}
+          <Route 
+            path="/staff" 
+            element={
+              activeUser 
+                ? (isExecutive ? <Navigate to="/admin/growth" replace /> : isFulfillment ? <Navigate to="/admin/fulfillment" replace /> : <Navigate to="/app" replace />)
+                : <StaffLogin />
+            } 
+          />
 
-        {/* === EXECUTIVE / ADMIN ZONE === */}
-        <Route 
-          path="/admin/growth" 
-          element={
-            isExecutive 
-              ? <AIGrowthConsole isOpen={true} onClose={async () => {
-                  localStorage.removeItem('DEV_ADMIN_BYPASS');
-                  await supabase.auth.signOut();
-                  window.location.href = '/staff';
-                }} /> 
-              : <Navigate to="/staff" replace /> 
-          } 
-        />
+          {/* === EXECUTIVE / ADMIN ZONE === */}
+          <Route 
+            path="/admin/growth" 
+            element={
+              isExecutive 
+                ? <AIGrowthConsole isOpen={true} onClose={async () => {
+                    localStorage.removeItem('DEV_ADMIN_BYPASS');
+                    await supabase.auth.signOut();
+                    window.location.href = '/staff';
+                  }} /> 
+                : <Navigate to="/staff" replace /> 
+            } 
+          />
 
-        {/* === MARKETING DASHBOARD === */}
-        <Route 
-          path="/admin/marketing" 
-          element={
-            isStaff 
-              ? <MarketingDashboard isOpen={true} onClose={() => window.location.href = '/staff'} /> 
-              : <Navigate to="/staff" replace /> 
-          } 
-        />
-        
-        {/* === FULFILLMENT ZONE === */}
-        <Route 
-          path="/admin/fulfillment" 
-          element={
-            isStaff 
-              ? <FulfillmentPortal /> 
-              : <Navigate to="/staff" replace /> 
-          } 
-        />
+          {/* === MARKETING DASHBOARD === */}
+          <Route 
+            path="/admin/marketing" 
+            element={
+              isStaff 
+                ? <MarketingDashboard isOpen={true} onClose={() => window.location.href = '/staff'} /> 
+                : <Navigate to="/staff" replace /> 
+            } 
+          />
+          
+          {/* === FULFILLMENT ZONE === */}
+          <Route 
+            path="/admin/fulfillment" 
+            element={
+              isStaff 
+                ? <FulfillmentPortal /> 
+                : <Navigate to="/staff" replace /> 
+            } 
+          />
 
-        {/* Catch-all redirect */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }

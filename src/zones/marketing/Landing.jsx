@@ -14,6 +14,7 @@ import RegisteredAgentConsole from '../../RegisteredAgentConsole';
 import SpecSheet from '../../SpecSheet';
 import DoubleLLCExplainer from '../../DoubleLLCExplainer';
 import PlanManager from '../../components/PlanManager';
+import SEOHead from '../../components/SEOHead';
 import { useHeroVariant } from '../../hooks/useHeroVariant';
 import { useNavigate } from 'react-router-dom';
 
@@ -665,6 +666,11 @@ export default function Landing({ appUser }) {
 
   return (
     <div className="min-h-screen bg-luminous text-luminous-ink font-sans antialiased selection:bg-luminous-gold selection:text-white relative overflow-x-hidden">
+      <SEOHead 
+        title="Florida LLC Formation & Trust Protocol"
+        description="We protect Florida businesses by securing their anonymity off the public record and keeping their operations compliant. Form your Anonymous LLC or arrange a Florida Homestead transfer all online."
+        keywords="florida llc, anonymous llc florida, registered agent, florida living trust, form an llc in florida"
+      />
 
       {/* ── STICKY PACKAGE BAR — appears after scrolling past hero ─────────── */}
       <div
