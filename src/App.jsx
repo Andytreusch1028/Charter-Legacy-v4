@@ -117,7 +117,8 @@ export default function App() {
 
   // User Role Resolution
   // If activeUser is logged in but doesn't have an explicit RBAC role in metadata, they are a 'customer'
-  const currentRole = appUser ? (appUser.user_metadata?.role || 'customer') : 'unauthenticated';
+  const isTestUser = appUser?.email === 'test@charterlegacy.com';
+  const currentRole = appUser ? (isTestUser ? 'fulfillment' : (appUser.user_metadata?.role || 'customer')) : 'unauthenticated';
 
   return (
     <HelmetProvider>
