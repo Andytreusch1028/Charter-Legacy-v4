@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:5173",
+      "localStorage": [
+        {
+          "name": "sb-fybqboobpbcqoaemaiwu-auth-token",
+          "value": "{\"access_token\":\"eyJhbGciOiJFUzI1NiIsImtpZCI6IjAyNTUzNWIzLWZlZWEtNGQzYi1hNDQzLTEyOWRiODg4Y2YxYyIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2Z5YnFib29icGJjcW9hZW1haXd1LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIxYjUxYTZiNS03YTY0LTRmODMtYTI0MS1hNThmMTJkYWNmM2IiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzcyOTIxOTk4LCJpYXQiOjE3NzI5MTgzOTgsImVtYWlsIjoidGVzdEBjaGFydGVybGVnYWN5LmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6Im90cCIsInRpbWVzdGFtcCI6MTc3MjkxODM5OH1dLCJzZXNzaW9uX2lkIjoiNmIyOTk2NDEtMDdlNy00MTJmLWExYjktNWM5NWYzOGM5N2FmIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.m6GafBVdu_XSTtEgvkMbt-oU1qsAv3VbPzK5IIfZb9b_xiMU4vUu8bbauWse0WqJ3eXupy3332mF1QcO3RnXDg\",\"expires_in\":3600,\"expires_at\":1772921998,\"refresh_token\":\"fw3qvslwoctf\",\"token_type\":\"bearer\",\"user\":{\"id\":\"1b51a6b5-7a64-4f83-a241-a58f12dacf3b\",\"aud\":\"authenticated\",\"role\":\"authenticated\",\"email\":\"test@charterlegacy.com\",\"email_confirmed_at\":\"2026-03-07T21:19:18.115917Z\",\"phone\":\"\",\"confirmation_sent_at\":\"2026-03-07T21:19:17.768601Z\",\"confirmed_at\":\"2026-03-07T21:19:18.115917Z\",\"recovery_sent_at\":\"2026-03-07T21:19:58.779045Z\",\"last_sign_in_at\":\"2026-03-07T21:19:58.932236Z\",\"app_metadata\":{\"provider\":\"email\",\"providers\":[\"email\"]},\"user_metadata\":{\"email_verified\":true},\"identities\":[{\"identity_id\":\"466040b7-3e59-4832-bd69-ed76c3a9626e\",\"id\":\"1b51a6b5-7a64-4f83-a241-a58f12dacf3b\",\"user_id\":\"1b51a6b5-7a64-4f83-a241-a58f12dacf3b\",\"identity_data\":{\"email\":\"test@charterlegacy.com\",\"email_verified\":true,\"phone_verified\":false,\"sub\":\"1b51a6b5-7a64-4f83-a241-a58f12dacf3b\"},\"provider\":\"email\",\"last_sign_in_at\":\"2026-03-07T21:19:17.916435Z\",\"created_at\":\"2026-03-07T21:19:17.916509Z\",\"updated_at\":\"2026-03-07T21:19:17.916509Z\",\"email\":\"test@charterlegacy.com\"}],\"created_at\":\"2026-03-07T21:19:17.855027Z\",\"updated_at\":\"2026-03-07T21:19:58.937477Z\",\"is_anonymous\":false}}"
+        }
+      ]
+    }
+  ]
+}
