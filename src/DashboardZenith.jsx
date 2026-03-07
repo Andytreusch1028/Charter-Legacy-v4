@@ -6,33 +6,37 @@ import {
 } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
-import FoundersBlueprint from './FoundersBlueprint';
-import RegisteredAgentConsole from './RegisteredAgentConsole';
-import AnnualReportWizard from './components/AnnualReportWizard';
-import SuccessionSuite from './lib/succession/SuccessionSuite';
 import { useSuccession } from './lib/succession/useSuccession';
 import { motion, AnimatePresence } from 'framer-motion';
 import { canAccessComponent } from './lib/rbac.config';
 
+import FoundersBlueprint from './FoundersBlueprint';
+import SuccessionSuite from './lib/succession/SuccessionSuite';
 import VaultTile from './components/VaultTile';
-import DBAWizard from './components/DBAWizard';
-import DBARenewalWizard from './components/DBARenewalWizard';
-import ReinstatementWizard from './components/ReinstatementWizard';
-import DissolutionWizard from './components/DissolutionWizard';
-import CertificateOfStatusWizard from './components/CertificateOfStatusWizard';
 import ProbateSimulator from './components/ProbateSimulator';
-import DesignationProtocol from './DesignationProtocol';
-import SubscriptionGate from './components/SubscriptionGate';
 import BusinessSelector from './components/BusinessSelector';
 import BusinessStoryTimeline from './components/BusinessStoryTimeline';
+import ActiveProtectionTriad from './components/ActiveProtectionTriad';
+import ActionAlerts from './components/dashboard/ActionAlerts';
+import DashboardModals from './components/dashboard/DashboardModals';
+import { useDashboardData } from './hooks/useDashboardData';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardZenith = ({ user, initialData }) => {
-  const [loading, setLoading] = useState(true);
-  const [llcData, setLlcData] = useState(initialData || null);
-  const [allLlcs, setAllLlcs] = useState([]);
-  const [activeDBA, setActiveDBA] = useState(null);
-  const [activityLog, setActivityLog] = useState([]);
+  const navigate = useNavigate();
+  const { openVault, protocolData, setProtocolData } = useSuccession();
+  
+  const {
+      loading,
+      llcData,
+      setLlcData,
+      allLlcs,
+      activeDBA,
+      newDocCount,
+      showDesignation,
+      setShowDesignation
+  } = useDashboardData(user, initialData, setProtocolData);
+
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [blueprintStep, setBlueprintStep] = useState('ein');
   const [isRAConsoleOpen, setIsRAConsoleOpen] = useState(false);
@@ -42,8 +46,6 @@ const DashboardZenith = ({ user, initialData }) => {
   const [isReinstatementWizardOpen, setIsReinstatementWizardOpen] = useState(false);
   const [isDissolutionWizardOpen, setIsDissolutionWizardOpen] = useState(false);
   const [isCertStatusWizardOpen, setIsCertStatusWizardOpen] = useState(false);
-  const navigate = useNavigate();
-  const { openVault, protocolData, setProtocolData } = useSuccession();
   
   // Gatekeeper Role check for UI rendering
   const currentRole = user?.user_metadata?.role || 'customer';
@@ -56,12 +58,8 @@ const DashboardZenith = ({ user, initialData }) => {
   useEffect(() => {
     if (window.location.hostname === 'localhost') {
       window.__antigravity_open_vault = () => openVault();
-      console.log("🛠️ Antigravity: Global vault accessor mounted at window.__antigravity_open_vault()");
     }
   }, [openVault]);
-  
-  // New State for Designation
-  const [showDesignation, setShowDesignation] = useState(false);
   
   // Steve Mode: Power Tools
   const [privacyMode, setPrivacyMode] = useState(false);
@@ -78,174 +76,31 @@ const DashboardZenith = ({ user, initialData }) => {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(JSON.stringify(llcData, null, 2));
-    alert("LLC Data copied to clipboard (JSON)");
   };
 
   // Keyboard Shortcuts (Steve Mode)
   useEffect(() => {
     const handleKeyDown = (e) => {
-        // Ignore if typing in an input
         if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
 
         switch(e.key.toLowerCase()) {
-            case 'b':
-                setIsBlueprintOpen(true);
-                break;
-            case 'v':
-                openVault();
-                break;
-            case 'r':
-                setIsRAConsoleOpen('dashboard');
-                break;
-            case 'p':
-                setIsRAConsoleOpen('privacy');
-                break;
-            case 'm':
-                setIsRAConsoleOpen('messaging');
-                break;
+            case 'b': setIsBlueprintOpen(true); break;
+            case 'v': openVault(); break;
+            case 'r': setIsRAConsoleOpen('dashboard'); break;
+            case 'p': setIsRAConsoleOpen('privacy'); break;
+            case 'm': setIsRAConsoleOpen('messaging'); break;
             case 'escape':
                 setIsBlueprintOpen(false);
                 setIsRAConsoleOpen(false);
                 setShowDesignation(false);
                 break;
-            default:
-                break;
+            default: break;
         }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-  const [newDocCount, setNewDocCount] = useState(0);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
-      
-      // Localhost Bypass: Auto-grant Heritage Vault permission
-      if (window.location.hostname === 'localhost') {
-        if (user && !user.permissions) {
-          user.permissions = { heritage_vault: true };
-        } else if (user?.permissions) {
-          user.permissions.heritage_vault = true;
-        }
-      }
-
-      try {
-        // Fetch LLC Data if not provided
-        if (!llcData) {
-            const { data, error } = await supabase
-                .from('llcs')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
-            
-            if (data && data.length > 0) {
-                setAllLlcs(data);
-                if (data.length === 1) {
-                    setLlcData(data[0]);
-                    if (data[0].llc_name.includes('Pending Formation') || data[0].llc_status === 'Setting Up') {
-                        setShowDesignation(true);
-                    }
-                }
-            }
-        }
-
-        // Fetch user's active DBA if any
-        const { data: dbaData } = await supabase
-            .from('dbas')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(1);
-            
-        if (dbaData && dbaData.length > 0) {
-            setActiveDBA(dbaData[0]);
-        }
-
-        // Fetch RA Alerts
-        const { count } = await supabase
-            .from('registered_agent_documents')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .eq('viewed', false);
-        
-        setNewDocCount(count || 0);
-
-        // Bootstrap protocol data for VaultTile card (no need to open vault)
-        const { data: wills } = await supabase
-            .from('wills')
-            .select('protocol_data')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(1);
-        if (wills && wills.length > 0 && wills[0].protocol_data) {
-            setProtocolData(wills[0].protocol_data);
-        }
-
-        // Mock Activity Log
-        setActivityLog([
-            { id: 1, message: "Privacy Protection Started", time: "Just now", icon: ShieldCheck },
-            { id: 2, message: "Institutional Payment Verified", time: "1 min ago", icon: CheckCircle2 },
-            { id: 3, message: "Identity Verification Active", time: "Action Required", icon: Fingerprint },
-        ]);
-
-        setTimeout(() => setLoading(false), 2000);
-
-      } catch (err) {
-        console.error("Dashboard Load Error:", err);
-      } finally {
-        // Graceful fallback: If user has zero LLCs (e.g. Emergency Override, new signup)
-        // provision mock data so the dashboard is usable instead of showing blank screen
-        if (!llcData) {
-          const isLocalDev = window.location.hostname === 'localhost';
-          const isAuditor = user?.email?.includes('auditor');
-          
-          if (isLocalDev || isAuditor) {
-            const mockLLC = {
-                llc_name: isAuditor ? 'Pending Formation - LLC Name TBD' : 'Charter Legacy Demo LLC',
-                llc_status: isAuditor ? 'Setting Up' : 'Active',
-                privacy_shield_active: true,
-                created_at: new Date().toISOString(),
-                _isDemoData: true,
-            };
-            setLlcData(mockLLC);
-            if (isAuditor) setShowDesignation(true);
-          }
-        }
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-
-    // Subscribe to new documents to update alert real-time
-    const channel = supabase
-      .channel('ra_doc_alerts')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'registered_agent_documents',
-        filter: `user_id=eq.${user.id}` 
-      }, () => {
-        // Re-fetch count on any change
-        const fetchCount = async () => {
-          const { count } = await supabase
-            .from('registered_agent_documents')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .eq('viewed', false);
-          setNewDocCount(count || 0);
-        };
-        fetchCount();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -412,95 +267,14 @@ const DashboardZenith = ({ user, initialData }) => {
                                     {llcData?.llc_name}.
                                 </h1>
 
-                                <div className="mb-8 w-max">
-                                    <div 
-                                        onClick={() => {
-                                            if (hasReportAccess) setIsAnnualReportWizardOpen(true);
-                                        }}
-                                        className={`relative group ${hasReportAccess ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-not-allowed opacity-60'} overflow-hidden p-[1px] rounded-2xl transition-all`}
-                                    >
-                                        <span className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 rounded-2xl animate-[spin_3s_linear_infinite] group-hover:animate-none opacity-50"></span>
-                                        <div className="relative bg-slate-900 border border-amber-500/30 px-6 py-4 rounded-2xl flex items-center gap-4 transition-all group-hover:bg-slate-800">
-                                            <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500">
-                                                <AlertCircle size={20} className="animate-pulse" />
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-0.5">Urgent Action Required</p>
-                                                <p className="text-sm font-bold text-white">2026 Annual Report Due</p>
-                                            </div>
-                                            <div className="ml-4 pl-4 border-l border-white/10 hidden sm:block">
-                                                <p className="text-xs text-gray-400">File by May 1st to avoid a $400 statutory late fee.</p>
-                                            </div>
-                                            <div className="ml-8 px-4 py-2 bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg group-hover:bg-amber-400 transition-colors">
-                                                File Now
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Conditionally Render DBA Renewal Alert */}
-                                {activeDBA && activeDBA.status !== 'Renewed' && (() => {
-                                    const created = new Date(activeDBA.created_at);
-                                    const expiration = new Date(created.setFullYear(created.getFullYear() + 5));
-                                    const now = new Date();
-                                    const monthsUntilExpiry = (expiration - now) / (1000 * 60 * 60 * 24 * 30);
-                                    
-                                    if (monthsUntilExpiry <= 6) {
-                                        return (
-                                            <div className="mb-8 w-max">
-                                                <div 
-                                                    onClick={() => setIsDBARenewalWizardOpen(true)}
-                                                    className="relative group cursor-pointer hover:scale-[1.02] overflow-hidden p-[1px] rounded-2xl transition-all"
-                                                >
-                                                    <span className="absolute inset-0 bg-gradient-to-r from-red-500 via-rose-500 to-red-500 rounded-2xl animate-[spin_3s_linear_infinite] group-hover:animate-none opacity-50"></span>
-                                                    <div className="relative bg-slate-900 border border-red-500/30 px-6 py-4 rounded-2xl flex items-center gap-4 transition-all group-hover:bg-slate-800">
-                                                        <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
-                                                            <Activity size={20} className="animate-pulse" />
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500 mb-0.5">Brand Risk Alert</p>
-                                                            <p className="text-sm font-bold text-white">DBA Renewal Due: {activeDBA.dba_name}</p>
-                                                        </div>
-                                                        <div className="ml-4 pl-4 border-l border-white/10 hidden sm:block">
-                                                            <p className="text-xs text-gray-400">Florida requires Fictitious Names to be renewed every 5 years.</p>
-                                                        </div>
-                                                        <div className="ml-8 px-4 py-2 bg-red-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg group-hover:bg-red-400 transition-colors">
-                                                            Renew Now
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                })()}
-
-                                {/* Conditionally Render Reinstatement Alert */}
-                                {llcData?.llc_status && ['Admin Dissolved', 'Inactive', 'Revoked'].includes(llcData.llc_status) && (
-                                    <div className="mb-8 w-max">
-                                        <div 
-                                            onClick={() => setIsReinstatementWizardOpen(true)}
-                                            className="relative group cursor-pointer hover:scale-[1.02] overflow-hidden p-[1px] rounded-2xl transition-all"
-                                        >
-                                            <span className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 rounded-2xl animate-[spin_3s_linear_infinite] group-hover:animate-none opacity-50"></span>
-                                            <div className="relative bg-slate-900 border border-orange-500/30 px-6 py-4 rounded-2xl flex items-center gap-4 transition-all group-hover:bg-slate-800">
-                                                <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
-                                                    <RefreshCw size={20} className="animate-pulse" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500 mb-0.5">Entity Recovery Required</p>
-                                                    <p className="text-sm font-bold text-white">LLC Reinstatement Needed</p>
-                                                </div>
-                                                <div className="ml-4 pl-4 border-l border-white/10 hidden sm:block">
-                                                    <p className="text-xs text-gray-400">Your LLC has been administratively dissolved. File for reinstatement to restore active status.</p>
-                                                </div>
-                                                <div className="ml-8 px-4 py-2 bg-orange-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg group-hover:bg-orange-400 transition-colors">
-                                                    Reinstate Now
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
+                                <ActionAlerts 
+                                    llcData={llcData}
+                                    activeDBA={activeDBA}
+                                    hasReportAccess={hasReportAccess}
+                                    onOpenAnnualReport={() => setIsAnnualReportWizardOpen(true)}
+                                    onOpenDBARenewal={() => setIsDBARenewalWizardOpen(true)}
+                                    onOpenReinstatement={() => setIsReinstatementWizardOpen(true)}
+                                />
 
                                 <p className="text-gray-500 font-medium text-xl italic max-w-3xl leading-relaxed opacity-80">
                                     "Unity Protocol Engaged. Monitoring Governance, Abstraction, and Legacy systems."
@@ -597,103 +371,22 @@ const DashboardZenith = ({ user, initialData }) => {
 
       </div>
     </div>
-      {/* MODALS */}
-      <AnimatePresence>
-      {isBlueprintOpen && (
-          <FoundersBlueprint 
-              isOpen={isBlueprintOpen} 
-              onClose={() => setIsBlueprintOpen(false)} 
-              llcData={llcData} 
-              initialStep={blueprintStep}
-          />
-      )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-          <SuccessionSuite user={user} />
-      </AnimatePresence>
-
-      <AnimatePresence>
-      {showDesignation && (
-          <DesignationProtocol 
-              onComplete={(data) => {
-                  setLlcData(data);
-                  setShowDesignation(false);
-              }}
-          />
-      )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-          {isRAConsoleOpen && (
-              <RegisteredAgentConsole 
-                  isModal={true}
-                  onClose={() => setIsRAConsoleOpen(false)}
-                  initialTab={isRAConsoleOpen} // passing string value directly if it's not boolean 'true'
-              />
-          )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-          {isAnnualReportWizardOpen && (
-              <AnnualReportWizard 
-                  llcData={llcData} 
-                  onClose={() => setIsAnnualReportWizardOpen(false)}
-                  onComplete={() => setIsAnnualReportWizardOpen(false)}
-              />
-          )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-          {isDBAWizardOpen && (
-              <DBAWizard 
-                  llcData={llcData} 
-                  onClose={() => setIsDBAWizardOpen(false)}
-                  onComplete={() => setIsDBAWizardOpen(false)}
-              />
-          )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-          {isDBARenewalWizardOpen && (
-              <DBARenewalWizard 
-                  llcData={llcData} 
-                  activeDBA={activeDBA}
-                  onClose={() => setIsDBARenewalWizardOpen(false)}
-                  onComplete={() => setIsDBARenewalWizardOpen(false)}
-              />
-          )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-          {isReinstatementWizardOpen && (
-              <ReinstatementWizard 
-                  llcData={llcData} 
-                  onClose={() => setIsReinstatementWizardOpen(false)}
-                  onComplete={() => setIsReinstatementWizardOpen(false)}
-              />
-          )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-          {isDissolutionWizardOpen && (
-              <DissolutionWizard 
-                  llcData={llcData} 
-                  onClose={() => setIsDissolutionWizardOpen(false)}
-                  onComplete={() => setIsDissolutionWizardOpen(false)}
-              />
-          )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-          {isCertStatusWizardOpen && (
-              <CertificateOfStatusWizard 
-                  llcData={llcData} 
-                  onClose={() => setIsCertStatusWizardOpen(false)}
-                  onComplete={() => setIsCertStatusWizardOpen(false)}
-              />
-          )}
-      </AnimatePresence>
+      {/* MODALS ABSTRACTION */}
+      <DashboardModals 
+          user={user}
+          llcData={llcData}
+          activeDBA={activeDBA}
+          setLlcData={setLlcData}
+          isBlueprintOpen={isBlueprintOpen} setIsBlueprintOpen={setIsBlueprintOpen} blueprintStep={blueprintStep}
+          showDesignation={showDesignation} setShowDesignation={setShowDesignation}
+          isRAConsoleOpen={isRAConsoleOpen} setIsRAConsoleOpen={setIsRAConsoleOpen}
+          isAnnualReportWizardOpen={isAnnualReportWizardOpen} setIsAnnualReportWizardOpen={setIsAnnualReportWizardOpen}
+          isDBAWizardOpen={isDBAWizardOpen} setIsDBAWizardOpen={setIsDBAWizardOpen}
+          isDBARenewalWizardOpen={isDBARenewalWizardOpen} setIsDBARenewalWizardOpen={setIsDBARenewalWizardOpen}
+          isReinstatementWizardOpen={isReinstatementWizardOpen} setIsReinstatementWizardOpen={setIsReinstatementWizardOpen}
+          isDissolutionWizardOpen={isDissolutionWizardOpen} setIsDissolutionWizardOpen={setIsDissolutionWizardOpen}
+          isCertStatusWizardOpen={isCertStatusWizardOpen} setIsCertStatusWizardOpen={setIsCertStatusWizardOpen}
+      />
     </>
   );
 };
