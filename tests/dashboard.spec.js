@@ -1,14 +1,23 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 
+import * as fs from 'fs';
+
 // Qodo Sner-test: Establish Truth Baseline for DashboardZenith
 test.describe('DashboardZenith Truth Baseline', () => {
 
   test('should render the setup state when no LLC is active', async ({ page }) => {
-    // Navigate to the dashboard locally (assuming dev server is on port 5173 or similar)
+    // Listen for all console events and errors
+    page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
+    page.on('pageerror', exception => console.log('BROWSER ERROR:', exception));
+
+    // Navigate to the dashboard locally (assuming dev server is on port 5173)
     // Sner-tests lock in the *current* behavior exactly as-is.
-    await page.goto('http://localhost:5173/dashboard');
+    await page.goto('http://localhost:5173/app');
     
+    // Dump content
+    fs.writeFileSync('page_dump.html', await page.content());
+
     // In demo mode or fallback mode, it might auto-provision "Charter Legacy Demo LLC".
     // We expect the main Zenith frame to be present.
     await expect(page.locator('.min-h-screen.bg-\\[\\#0A0A0B\\]')).toBeVisible();
