@@ -109,11 +109,11 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FBFBFD] text-[#1D1D1F] font-sans antialiased selection:bg-black selection:text-white p-6 md:p-12 lg:p-24 overflow-x-hidden">
+    <main id="discovery-onboarding" className="min-h-screen bg-[#FBFBFD] text-[#1D1D1F] font-sans antialiased selection:bg-black selection:text-white p-6 md:p-12 lg:p-24 overflow-x-hidden">
       <div className="max-w-6xl mx-auto space-y-24">
         
         {/* Header Section */}
-        <header className="max-w-3xl space-y-8 animate-in slide-in-from-top-4 duration-1000">
+        <header aria-label="Onboarding Hero" className="max-w-3xl space-y-8 animate-in slide-in-from-top-4 duration-1000">
           <div className="flex items-center gap-3 mb-12 group cursor-default">
             <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:rotate-3">
               <Shield size={22} strokeWidth={2.5} />
@@ -136,7 +136,8 @@ export default function App() {
         </header>
 
         {/* Discovery Grid */}
-        <div className="grid md:grid-cols-2 gap-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+        <fieldset aria-label="Select Entity Type" className="border-none p-0 m-0 grid md:grid-cols-2 gap-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+          <legend className="sr-only">Choose between LLC or DBA</legend>
           {entities.map(e => (
             <EntityCard 
               key={e.id}
@@ -148,10 +149,10 @@ export default function App() {
               }}
             />
           ))}
-        </div>
+        </fieldset>
 
         {/* The Action Panel (Librarian model verification) */}
-        <div className={`transition-all duration-1000 ease-in-out ${choice ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-95 pointer-events-none'}`}>
+        <section aria-label="Selection Confirmation" className={`transition-all duration-1000 ease-in-out ${choice ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-95 pointer-events-none'}`}>
           <div className="bg-white border border-gray-100 rounded-[64px] p-10 md:p-16 shadow-[0_60px_120px_-20px_rgba(0,0,0,0.1)] max-w-4xl mx-auto space-y-12 relative overflow-hidden">
             
             <div className="flex flex-col md:flex-row items-start gap-8 relative z-10">
@@ -188,7 +189,7 @@ export default function App() {
             {/* Decorative Background Aura */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] -mr-64 -mt-64 pointer-events-none" />
           </div>
-        </div>
+        </section>
 
         {/* Footer Hardware Status */}
         <footer className="pt-24 pb-12 text-center max-w-lg mx-auto space-y-8 opacity-40">
@@ -207,10 +208,10 @@ export default function App() {
       </div>
 
       {/* Static Background Elements */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none opacity-[0.02] z-0">
+      <div aria-hidden="true" className="fixed top-0 left-0 w-full h-full pointer-events-none opacity-[0.02] z-0">
          <div className="absolute top-1/4 -left-20 w-96 h-96 border-[40px] border-black rounded-full" />
          <div className="absolute bottom-1/4 -right-20 w-64 h-64 border-[20px] border-black rounded-full" />
       </div>
-    </div>
+    </main>
   );
 }

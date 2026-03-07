@@ -233,6 +233,23 @@ const AnnualReportWizard = ({ llcData, onClose, onComplete }) => {
           ]);
           
         if (auditError) console.warn("Could not log audit:", auditError);
+
+        // 3. Dark Funnel SEO Telemetry Loop
+        // Credit the original A/B variation that acquired this user with the revenue
+        try {
+            const seoVariation = localStorage.getItem('seo_variation');
+            const seoRoute = localStorage.getItem('seo_landing_route') || '/app/dashboards';
+            if (seoVariation) {
+                await supabase.rpc('increment_seo_conversion', {
+                    p_route: seoRoute,
+                    p_variation: seoVariation,
+                    p_revenue: 199.00
+                });
+                console.log(`[SEO Telemetry] Credited Variant ${seoVariation} with $199.00 AR Revenue`);
+            }
+        } catch (telemetryErr) {
+            console.warn("[SEO Telemetry] Failed to log dark funnel conversion:", telemetryErr);
+        }
       }
 
       setStep(7); // Go to receipt

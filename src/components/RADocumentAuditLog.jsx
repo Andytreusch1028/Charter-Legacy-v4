@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     ClipboardList, Download, Mail, Archive, Filter,
     ChevronDown, CheckCircle2, XCircle, Clock,
-    Shield, AlertTriangle, Eye, Loader2
+    Shield, AlertTriangle, Eye, Loader2, Printer, Search
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -31,6 +31,7 @@ const EVENT_CONFIG = {
     ADMIN_DOC_UPLOADED:      { label: 'Admin: Document Uploaded', icon: CheckCircle2,  color: 'text-gray-400',    bg: 'bg-white/5',    border: 'border-white/10' },
     ADMIN_DOC_DELETED:       { label: 'Admin: Document Removed',  icon: XCircle,       color: 'text-red-400',     bg: 'bg-red-500/10',     border: 'border-red-500/20' },
     ADMIN_AUDIT_EXPORTED:    { label: 'Admin: Audit Exported',    icon: Download,      color: 'text-gray-400',    bg: 'bg-white/5',    border: 'border-white/10' },
+    DOC_FORWARDED_MANUAL_FALLBACK: { label: 'Admin: Manual Document Forward', icon: CheckCircle2, color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20'}
 };
 
 const ACTOR_BADGE = {
@@ -62,16 +63,18 @@ function formatDateTime(iso) {
 
 function exportCsv(rows, isAdmin) {
     const headers = isAdmin
-        ? ['Timestamp (UTC)', 'Action', 'Actor Type', 'Actor Email', 'Document ID', 'Outcome', 'IP Address', 'User Agent', 'Metadata']
-        : ['Timestamp', 'Action', 'Actor', 'Outcome', 'IP (Masked)'];
+        ? ['Timestamp (UTC)', 'Action', 'Entity', 'Duration (s)', 'Actor Type', 'Actor Email', 'Document ID', 'Outcome', 'IP Address', 'User Agent', 'Metadata']
+        : ['Timestamp', 'Action', 'Entity', 'Actor', 'Outcome', 'IP (Masked)'];
 
     const lines = rows.map(r => {
         const cfg = EVENT_CONFIG[r.action] || {};
+        const entityPart = r.metadata?.entity_name || '';
+        const durPart = r.metadata?.time_spent_seconds || '';
         if (isAdmin) {
-            return [r.created_at, r.action, r.actor_type, r.actor_email || '', r.document_id || '', r.outcome, r.ip_address || '', r.user_agent || '', JSON.stringify(r.metadata || {})]
+            return [r.created_at, r.action, entityPart, durPart, r.actor_type, r.actor_email || '', r.document_id || '', r.outcome, r.ip_address || '', r.user_agent || '', JSON.stringify(r.metadata || {})]
                 .map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
         }
-        return [formatDateTime(r.created_at), cfg.label || r.action, ACTOR_BADGE[r.actor_type]?.label || r.actor_type, r.outcome, maskIp(r.ip_address)]
+        return [formatDateTime(r.created_at), cfg.label || r.action, entityPart, ACTOR_BADGE[r.actor_type]?.label || r.actor_type, r.outcome, maskIp(r.ip_address)]
             .map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
     });
 
@@ -94,9 +97,9 @@ const AuditRow = ({ row, isAdmin, isExpanded, onToggle }) => {
     const canExpand = isAdmin; // Regular users do not get granular IP/metadata blocks
 
     return (
-        <div className={`border rounded-[24px] overflow-hidden transition-all duration-300 bg-white/5 backdrop-blur-md ${(isExpanded && canExpand) ? 'border-white/20 bg-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.2)]' : 'border-white/5 ' + (canExpand ? 'hover:bg-white/10 hover:border-white/10' : '')}`}>
+        <div className={`border rounded-[24px] overflow-hidden transition-all duration-300 ${isAdmin ? 'bg-white border-gray-100 shadow-sm hover:border-gray-300' : 'bg-white/5 backdrop-blur-md border-white/5 hover:bg-white/10 hover:border-white/10'} ${(isExpanded && canExpand) ? (isAdmin ? 'border-gray-300 shadow-md ring-4 ring-gray-100' : 'border-white/20 bg-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.2)]') : ''}`}>
             <div onClick={canExpand ? onToggle : undefined} className={`flex items-center gap-5 p-5 ${canExpand ? 'cursor-pointer group' : ''}`}>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-black/40 border border-white/5 ${canExpand ? 'group-hover:scale-105' : ''} transition-transform ${cfg.color}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${isAdmin ? 'bg-gray-50 border-gray-100' : 'bg-black/40 border-white/5'} ${canExpand ? 'group-hover:scale-105' : ''} transition-transform ${cfg.color}`}>
                     <Icon size={18} strokeWidth={1.5} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -104,39 +107,50 @@ const AuditRow = ({ row, isAdmin, isExpanded, onToggle }) => {
                         <p className={`text-[15px] font-medium tracking-wide ${cfg.color}`}>{cfg.label}</p>
                         <span className={`text-[9px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-full ${actor.bg}`}>{actor.label}</span>
                         <span className={`text-[9px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-full ${OUTCOME_BADGE[row.outcome]}`}>{row.outcome}</span>
+                        {row.metadata?.entity_name && (
+                            <span className="text-[10px] font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded border border-gray-200 bg-gray-50 text-gray-600 block sm:inline-block">
+                                {row.metadata.entity_name}
+                            </span>
+                        )}
+                        {row.metadata?.time_spent_seconds && (
+                            <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-gray-400 flex items-center gap-1">
+                                <Clock size={10} /> {row.metadata.time_spent_seconds}s
+                                {row.metadata.action_window && ` (${row.metadata.action_window})`}
+                            </span>
+                        )}
                     </div>
                     <p className="text-[11px] text-gray-500 font-medium tracking-wider mt-1">{formatDateTime(row.created_at)}</p>
                 </div>
                 {canExpand && (
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 border ${isExpanded ? 'bg-white/10 border-white/20 text-white' : 'border-transparent text-gray-500 group-hover:bg-white/5 group-hover:text-white'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 border ${isExpanded ? (isAdmin ? 'bg-gray-100 border-gray-200 text-gray-900' : 'bg-white/10 border-white/20 text-white') : (isAdmin ? 'border-transparent text-gray-400 group-hover:bg-gray-50 group-hover:text-gray-900' : 'border-transparent text-gray-500 group-hover:bg-white/5 group-hover:text-white')}`}>
                         <ChevronDown size={14} className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                     </div>
                 )}
             </div>
 
             {canExpand && isExpanded && (
-                <div className="p-6 bg-black/40 border-t border-white/5 space-y-4">
+                <div className={`p-6 border-t space-y-4 ${isAdmin ? 'bg-gray-50 border-gray-100' : 'bg-black/40 border-white/5'}`}>
                     {row.metadata && Object.keys(row.metadata).length > 0 && (
                         <div>
                             <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-3">Event Metadata</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {Object.entries(row.metadata).map(([k, v]) => (
-                                    <div key={k} className="bg-white/5 border border-white/5 rounded-2xl p-4 hover:border-white/10 transition-colors">
+                                    <div key={k} className={`border rounded-2xl p-4 transition-colors ${isAdmin ? 'bg-white border-gray-200 hover:border-gray-300' : 'bg-white/5 border-white/5 hover:border-white/10'}`}>
                                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">{k.replace(/_/g, ' ')}</p>
-                                        <p className="text-[13px] font-mono text-gray-300 mt-1.5 break-all">{String(v)}</p>
+                                        <p className={`text-[13px] font-mono mt-1.5 break-all ${isAdmin ? 'text-gray-900' : 'text-gray-300'}`}>{String(v)}</p>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-white/5">
-                        <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
+                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t ${isAdmin ? 'border-gray-200' : 'border-white/5'}`}>
+                        <div className={`border rounded-2xl p-4 ${isAdmin ? 'bg-white border-gray-200' : 'bg-white/5 border-white/5'}`}>
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Origin IP Address</p>
-                            <p className="text-[13px] font-mono text-gray-300 mt-1.5">{row.ip_address || '—'}</p>
+                            <p className={`text-[13px] font-mono mt-1.5 ${isAdmin ? 'text-gray-900' : 'text-gray-300'}`}>{row.ip_address || '—'}</p>
                         </div>
-                        <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
+                        <div className={`border rounded-2xl p-4 ${isAdmin ? 'bg-white border-gray-200' : 'bg-white/5 border-white/5'}`}>
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Actor Identity</p>
-                            <p className="text-[13px] font-mono text-gray-300 mt-1.5">{row.actor_email || '—'}</p>
+                            <p className={`text-[13px] font-mono mt-1.5 ${isAdmin ? 'text-gray-900' : 'text-gray-300'}`}>{row.actor_email || '—'}</p>
                         </div>
                     </div>
                 </div>
@@ -163,6 +177,7 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
+    const [entityQuery, setEntityQuery] = useState('');
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
     const [expandedId, setExpandedId] = useState(null);
 
@@ -187,7 +202,7 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
     useEffect(() => {
         const t = setTimeout(load, 500);
         return () => clearTimeout(t);
-    }, [searchQuery]);
+    }, [searchQuery, entityQuery]);
 
     async function load() {
         setLoading(true);
@@ -226,6 +241,11 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
                     config: 'english',
                     type: 'phrase'
                 });
+            }
+
+            // Apply Entity Filter via ilike on metadata->>entity_name
+            if (isAdmin && entityQuery.trim()) {
+                query = query.ilike('metadata->>entity_name', `%${entityQuery.trim()}%`);
             }
 
             // Apply Date Range
@@ -267,6 +287,11 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
                     r.outcome.toLowerCase().includes(term)
                 );
             }
+
+            if (isAdmin && entityQuery.trim()) {
+                const term = entityQuery.toLowerCase();
+                mockRows = mockRows.filter(r => r.metadata?.entity_name?.toLowerCase().includes(term));
+            }
             
             setRows(mockRows);
         } finally {
@@ -278,15 +303,15 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <header className="flex flex-col sm:flex-row items-start sm:items-end justify-between border-b border-white/5 pb-6 gap-6">
                 <div>
-                    <h3 className="text-4xl font-light text-white tracking-tight">Audit <span className="text-gray-500 font-medium">Log.</span></h3>
-                    <p className="text-sm text-gray-400 font-light mt-2 max-w-lg leading-relaxed">
+                    <h3 className={`text-4xl font-light tracking-tight ${isAdmin ? 'text-gray-900' : 'text-white'}`}>Audit <span className="text-gray-500 font-medium">Log.</span></h3>
+                    <p className={`text-sm font-light mt-2 max-w-lg leading-relaxed ${isAdmin ? 'text-gray-500' : 'text-gray-400'}`}>
                         {isAdmin ? 'Complete tamper-proof record of all document events.' : 'Every action on your documents, timestamped and permanent.'}
                     </p>
                 </div>
                 <div className="flex gap-3">
                      <button
                         onClick={load}
-                        className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+                        className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 ${isAdmin ? 'bg-white border-gray-200 text-gray-400 hover:text-gray-900 hover:bg-gray-50 hover:border-gray-300 shadow-sm' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]'}`}
                         title="Refresh Log"
                     >
                         <Clock size={16} className={loading ? 'animate-spin' : ''} />
@@ -305,7 +330,8 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
                                                 data: {
                                                     recipient: user.email,
                                                     rows: rows.slice(0, 50),
-                                                    filterContext: filter
+                                                    filterContext: filter,
+                                                    entityContext: entityQuery
                                                 }
                                             }
                                         });
@@ -318,13 +344,19 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
                                 }}
                                 className="flex items-center gap-2 px-5 py-2.5 bg-luminous-blue text-white rounded-full text-[10px] font-bold uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(0,122,255,0.2)] hover:bg-[#005bb5] transition-all duration-300 disabled:opacity-50"
                             >
-                                <Mail size={14} /> Email Report
+                                <Mail size={14} /> Email
                             </button>
                             <button
                                 onClick={() => exportCsv(rows, isAdmin)}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-white/5 text-white border border-white/10 hover:border-white/30 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-white/10 transition-all duration-300 shadow-sm"
+                                className={`flex items-center gap-2 px-5 py-2.5 border rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-sm ${isAdmin ? 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900' : 'bg-white/5 text-white border-white/10 hover:border-white/30 hover:bg-white/10'}`}
                             >
-                                <Download size={14} /> Export CSV
+                                <Download size={14} /> CSV
+                            </button>
+                            <button
+                                onClick={() => window.print()}
+                                className={`flex items-center gap-2 px-5 py-2.5 border rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-sm ${isAdmin ? 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900' : 'bg-white/5 text-white border-white/10 hover:border-white/30 hover:bg-white/10'}`}
+                            >
+                                <Printer size={14} /> Print
                             </button>
                         </>
                     )}
@@ -342,18 +374,31 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
             </div>
 
             {/* Controls Bar */}
-            <div className={`flex flex-col md:flex-row gap-4 p-8 bg-white/5 border border-white/10 rounded-[32px] backdrop-blur-xl shadow-lg relative z-10 w-full mb-8 ${!isAdmin ? 'justify-between items-center' : ''}`}>
+            <div className={`flex flex-col md:flex-row gap-4 p-8 border rounded-[32px] relative z-10 w-full mb-8 ${!isAdmin ? 'bg-white/5 border-white/10 backdrop-blur-xl shadow-lg justify-between items-center' : 'bg-gray-50 border-gray-100'}`}>
                 {isAdmin && (
-                    <div className="flex-1 flex items-center gap-4 bg-black/40 px-6 py-4 rounded-[24px] border border-white/5 focus-within:border-luminous-blue/50 focus-within:bg-white/5 transition-all w-full">
-                        <Filter size={18} className="text-gray-500 shrink-0" strokeWidth={1.5} />
-                        <input 
-                            type="text" 
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search actions, emails, or outcomes..."
-                            className="bg-transparent border-none outline-none text-[14px] font-light w-full text-white placeholder:text-gray-600 min-w-0"
-                        />
-                        {searchQuery && <button onClick={() => setSearchQuery('')} className="text-gray-500 hover:text-white shrink-0"><XCircle size={16} strokeWidth={1.5} /></button>}
+                    <div className="flex-1 flex flex-col md:flex-row gap-4 w-full">
+                        <div className={`flex-1 flex items-center gap-4 px-6 py-4 rounded-[24px] border transition-all ${isAdmin ? 'bg-white border-gray-200 focus-within:border-luminous-blue/50 focus-within:ring-4 focus-within:ring-luminous-blue/5' : 'bg-black/40 border-white/5 focus-within:border-luminous-blue/50 focus-within:bg-white/5'}`}>
+                            <Search size={18} className="text-gray-400 shrink-0" strokeWidth={1.5} />
+                            <input 
+                                type="text" 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search actions or outcomes..."
+                                className={`bg-transparent border-none outline-none w-full min-w-0 ${isAdmin ? 'text-[14px] font-medium text-gray-900 placeholder:text-gray-400' : 'text-[14px] font-light text-white placeholder:text-gray-400'}`}
+                            />
+                            {searchQuery && <button onClick={() => setSearchQuery('')} className={`shrink-0 transition-colors ${isAdmin ? 'text-gray-400 hover:text-gray-600' : 'text-gray-400 hover:text-white'}`}><XCircle size={16} strokeWidth={1.5} /></button>}
+                        </div>
+                        <div className={`flex-[1.5] flex items-center gap-4 px-6 py-4 rounded-[24px] border transition-all ${isAdmin ? 'bg-white border-gray-200 focus-within:border-purple-500/50 focus-within:ring-4 focus-within:ring-purple-500/5' : 'bg-black/40 border-white/5 focus-within:border-purple-500/50 focus-within:bg-white/5'}`}>
+                            <Filter size={18} className="text-purple-400 shrink-0" strokeWidth={1.5} />
+                            <input 
+                                type="text" 
+                                value={entityQuery}
+                                onChange={(e) => setEntityQuery(e.target.value)}
+                                placeholder="Filter records by Entity Name..."
+                                className={`bg-transparent border-none outline-none w-full min-w-0 ${isAdmin ? 'text-[14px] font-medium text-gray-900 placeholder:text-gray-400' : 'text-[14px] font-light text-white placeholder:text-gray-400'}`}
+                            />
+                            {entityQuery && <button onClick={() => setEntityQuery('')} className={`shrink-0 transition-colors ${isAdmin ? 'text-gray-400 hover:text-gray-600' : 'text-gray-400 hover:text-white'}`}><XCircle size={16} strokeWidth={1.5} /></button>}
+                        </div>
                     </div>
                 )}
                 
@@ -362,14 +407,14 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
                         type="date" 
                         value={dateRange.start}
                         onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
-                        className="flex-1 md:flex-none md:w-auto max-w-[140px] bg-black/40 border border-white/5 rounded-[24px] px-4 py-4 text-[11px] font-bold uppercase text-gray-400 outline-none focus:border-luminous-blue/50 focus:bg-white/5 transition-all text-center [color-scheme:dark]"
+                        className={`flex-1 md:flex-none md:w-auto max-w-[140px] border rounded-[24px] px-4 py-4 text-[11px] font-bold uppercase outline-none transition-all text-center ${isAdmin ? 'bg-white border-gray-200 text-gray-600 focus:border-luminous-blue focus:ring-4 focus:ring-luminous-blue/5' : 'bg-black/40 border-white/5 text-gray-400 focus:border-luminous-blue/50 focus:bg-white/5 [color-scheme:dark]'}`}
                     />
-                    <span className="text-gray-600 font-light">&minus;</span>
+                    <span className={`font-light ${isAdmin ? 'text-gray-300' : 'text-gray-600'}`}>&minus;</span>
                     <input 
                         type="date" 
                         value={dateRange.end}
                         onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
-                        className="flex-1 md:flex-none md:w-auto max-w-[140px] bg-black/40 border border-white/5 rounded-[24px] px-4 py-4 text-[11px] font-bold uppercase text-gray-400 outline-none focus:border-luminous-blue/50 focus:bg-white/5 transition-all text-center [color-scheme:dark]"
+                        className={`flex-1 md:flex-none md:w-auto max-w-[140px] border rounded-[24px] px-4 py-4 text-[11px] font-bold uppercase outline-none transition-all text-center ${isAdmin ? 'bg-white border-gray-200 text-gray-600 focus:border-luminous-blue focus:ring-4 focus:ring-luminous-blue/5' : 'bg-black/40 border-white/5 text-gray-400 focus:border-luminous-blue/50 focus:bg-white/5 [color-scheme:dark]'}`}
                     />
                 </div>
             </div>
@@ -381,7 +426,7 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
                             key={opt.value}
                             onClick={() => setFilter(opt.value)}
                             className={`px-5 py-2 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] transition-all duration-300 border ${
-                                filter === opt.value ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:border-white/20 hover:text-white'
+                                filter === opt.value ? (isAdmin ? 'bg-gray-900 text-white border-gray-900 shadow-sm' : 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]') : (isAdmin ? 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300' : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:border-white/20 hover:text-white')
                             }`}
                         >
                             {opt.label}
@@ -397,12 +442,12 @@ const RADocumentAuditLog = ({ isAdmin = false }) => {
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Querying Audit Ledger...</p>
                         </div>
                     ) : rows.length === 0 ? (
-                        <div className="text-center py-32 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[48px] bg-black/20">
-                            <div className="w-20 h-20 rounded-[32px] bg-white/5 border border-white/10 flex items-center justify-center text-gray-600 mb-6 drop-shadow-md">
+                        <div className={`text-center py-32 flex flex-col items-center justify-center border-2 border-dashed rounded-[48px] ${isAdmin ? 'border-gray-200 bg-gray-50' : 'border-white/5 bg-black/20'}`}>
+                            <div className={`w-20 h-20 rounded-[32px] border flex items-center justify-center drop-shadow-md mb-6 ${isAdmin ? 'bg-white border-gray-200 text-gray-400' : 'bg-white/5 border-white/10 text-gray-600'}`}>
                                 <ClipboardList size={32} strokeWidth={1} />
                             </div>
-                            <p className="text-xl font-medium text-white tracking-tight">No Matching Events</p>
-                            <p className="text-[14px] text-gray-500 font-light mt-2 max-w-sm leading-relaxed">Try adjusting your search filters or date range to find specific ledger entries.</p>
+                            <p className={`text-xl font-medium tracking-tight ${isAdmin ? 'text-gray-900' : 'text-white'}`}>No Matching Events</p>
+                            <p className={`text-[14px] font-light mt-2 max-w-sm leading-relaxed ${isAdmin ? 'text-gray-500' : 'text-gray-500'}`}>Try adjusting your search filters or date range to find specific ledger entries.</p>
                         </div>
                     ) : (
                         <div className="space-y-4">

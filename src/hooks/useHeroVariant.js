@@ -1,57 +1,80 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
-// The 3 UPL-Cleared Variants for Phase 1 A/B/C Testing
-const VARIANTS = [
+// Fallback in case the database is completely empty or offline
+const FALLBACK_VARIANTS = [
   {
     id: 'A',
+    variant_code: 'A',
     title: 'Start. Shield. Sustain.',
     titleHighlight: 'Sustain.',
     rawTitle: 'Start. Shield.',
     subHeading: 'We file your LLC, protect your home address, and lock in who gets your business when you\'re gone. The entire lifecycle of your company, handled in one place.'
-  },
-  {
-    id: 'B',
-    title: 'Anonymity by Default.',
-    titleHighlight: 'Default.',
-    rawTitle: 'Anonymity by',
-    subHeading: 'Your home address is none of the public\'s business. We use our licensed Florida office for every state filing so your personal life stays completely separate from your company.'
-  },
-  {
-    id: 'C',
-    title: 'Build it. Protect it. Pass it on.',
-    titleHighlight: 'Pass it on.',
-    rawTitle: 'Build it. Protect it.',
-    subHeading: 'We form your LLC, put our Florida office address on every public record so your home stays private, and create a legal plan for who gets your business when you\'re gone. Three problems solved. One place.'
   }
 ];
 
 export function useHeroVariant() {
-  const [variant, setVariant] = useState(VARIANTS[0]);
+  const [variant, setVariant] = useState(FALLBACK_VARIANTS[0]);
 
   useEffect(() => {
-    // Locked to Variant C — the complete product arc: Build. Protect. Pass it on.
-    const selected = VARIANTS[2];
-    setVariant(selected);
+    let isMounted = true;
 
-    fetch('http://localhost:8080/api/v1/analytics/impression', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ variantId: selected.id, timestamp: new Date().toISOString() })
-    }).catch(() => {
-      console.log(`[Analytics Simulation] Impression recorded for Variant ${selected.id}`);
-    });
+    const loadVariant = async () => {
+      try {
+        // Fetch all currently ACTIVE hero variants from Supabase
+        const { data } = await supabase
+          .from('hero_variants')
+          .select('*')
+          .eq('status', 'ACTIVE');
+
+        if (data && data.length > 0) {
+          // Select a random variant for the A/B test impression
+          const randomVariant = data[Math.floor(Math.random() * data.length)];
+          
+          // Split the headline so the last word gets the colorful Highlight styling
+          const words = randomVariant.headline.trim().split(' ');
+          const highlight = words.pop() || '';
+          const raw = words.join(' ');
+          
+          const activeVariant = {
+            id: randomVariant.id, 
+            variant_code: randomVariant.variant_code || 'GEN',
+            title: randomVariant.headline,
+            titleHighlight: highlight,
+            rawTitle: raw,
+            subHeading: randomVariant.subheading
+          };
+
+          if (isMounted) {
+            setVariant(activeVariant);
+          }
+
+          // Securely log the impression (view) via the RPC
+          await supabase.rpc('increment_variant_view', { p_id: randomVariant.id });
+          console.log(`[AI Growth Engine] Served active variant: ${activeVariant.title}`);
+        } else {
+            console.log("[AI Growth Engine] No active variants found in Supabase. Using fallback.");
+        }
+      } catch (err) {
+        console.error("Failed to load hero variants from Supabase", err);
+      }
+    };
+
+    loadVariant();
+
+    return () => { isMounted = false; };
   }, []);
 
-  const trackClick = () => {
-    // Track Conversion/Click (Mock endpoint for Java Spring Boot)
-    // TODO: (INTEGRATION) Update this URL when the Growth Engine Service is deployed
-    fetch('http://localhost:8080/api/v1/analytics/click', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ variantId: variant.id, action: 'form_llc', timestamp: new Date().toISOString() })
-    }).catch(err => {
-      console.log(`[Analytics Simulation] Click recorded for Variant ${variant.id}`);
-    });
+  const trackClick = async () => {
+    try {
+      // If the currently loaded variant is a real UUID from the DB, track the click securely
+      if (variant.id && variant.id.length > 5) {
+        await supabase.rpc('increment_variant_click', { p_id: variant.id });
+        console.log(`[AI Growth Engine] Click recorded for variant: ${variant.title}`);
+      }
+    } catch (err) {
+      console.error("Failed to track hero variant click", err);
+    }
   };
 
   return { variant, trackClick };

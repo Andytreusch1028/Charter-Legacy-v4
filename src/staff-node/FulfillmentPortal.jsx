@@ -253,7 +253,10 @@ const FulfillmentPortal = () => {
     const [linkedEntities, setLinkedEntities] = useState({});
     const [forwardingRecipients, setForwardingRecipients] = useState({});
     const [ocrProgress, setOcrProgress] = useState({});
-    const [customCategories, setCustomCategories] = useState(['Tax Mail', 'Annual Report', 'State Notice']);
+    const [customCategories, setCustomCategories] = useState(() => {
+        const saved = localStorage.getItem('cl_custom_categories');
+        return saved ? JSON.parse(saved) : ['Tax Mail', 'Annual Report', 'State Notice'];
+    });
 
     // Watch Folder State
     const [watchFolder, setWatchFolder] = useState(() => localStorage.getItem('cl_watch_folder') || 'C:\\Scanner\\RA-Inbox');
@@ -461,7 +464,17 @@ const FulfillmentPortal = () => {
         try {
             // 1. Load Entities
             const { data: entData } = await supabase.from('clients').select('*').order('name');
-            if (entData) setClients(entData);
+            const testEntities = [
+                { id: '111', name: 'Alpha Dynamics LLC', sunbizId: 'L20000000123', status: 'Active', owner_name: 'John Doe', email: 'john@alphadynamics.com' },
+                { id: '222', name: 'Beta Ventures Inc.', sunbizId: 'P19000000456', status: 'Active', owner_name: 'Jane Smith', email: 'jane@betaventures.com' },
+                { id: '333', name: 'Gamma Holdings LP', sunbizId: 'A18000000789', status: 'Inactive', owner_name: 'Bob Jackson', email: 'bob@gammaholdings.com' }
+            ];
+            
+            if (entData && entData.length > 0) {
+                setClients([...testEntities, ...entData]);
+            } else {
+                setClients(testEntities);
+            }
 
             // 2. Load Persistent RA Queue
             const { data: queueData } = await supabase
@@ -611,11 +624,11 @@ const FulfillmentPortal = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#F8F9FA] flex">
+        <div className="h-screen bg-[#F8F9FA] flex overflow-hidden">
             {renderModuleSidebar()}
             
-            <main className="flex-1 p-16">
-                <div className="max-w-6xl mx-auto h-full flex flex-col">
+            <main className="flex-1 p-8 lg:p-12 xl:p-16 overflow-hidden flex flex-col">
+                <div className="max-w-[1400px] w-full mx-auto h-full flex flex-col min-h-0">
                     {activeModule === 'ra' && (
                         <RASentry 
                             supabase={supabase}

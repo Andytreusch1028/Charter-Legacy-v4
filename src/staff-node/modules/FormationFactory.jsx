@@ -40,7 +40,7 @@ const FormationFactory = ({
                             client_id: llc.user_id,
                             entityName: llc.llc_name || 'Unnamed Entity',
                             type: isPLLC ? 'PLLC' : 'LLC',
-                            action_type: llc.llc_status === 'AR Pending' ? 'ANNUAL_REPORT' : 'FORMATION',
+                            action_type: llc.llc_status === 'AR Pending' ? 'ANNUAL_REPORT' : llc.llc_status === 'Reinstating' ? 'REINSTATEMENT' : llc.llc_status === 'Dissolving' ? 'DISSOLUTION' : 'FORMATION',
                             document_number: llc.sunbiz_document_number || '',
                             status: llc.llc_status || 'AWAITING_REVIEW',
                             submitted: new Date(llc.created_at).toLocaleDateString(),
@@ -72,7 +72,48 @@ const FormationFactory = ({
                             ]
                         };
                     });
-                let finalFormations = mapped ? [...mapped] : [];
+
+                // Fetch DBAs
+                const { data: dbaData } = await supabase
+                    .from('dbas')
+                    .select('id, user_id, llc_id, dba_name, status, created_at, advertising_county, llcs(llc_name, principal_address)')
+                    .order('created_at', { ascending: false });
+
+                let mappedDbas = [];
+                if (dbaData) {
+                    mappedDbas = dbaData
+                        .filter(dba => !['FILED', 'TRANSMITTED', 'Active'].includes(dba.status) || dba.status === 'Renewing')
+                        .map(dba => {
+                            const llc = dba.llcs || {};
+                            const addrParts = llc.principal_address?.split(',') || [];
+                            return {
+                                id: dba.id,
+                                client_id: dba.user_id,
+                                entityName: dba.dba_name || 'Unnamed DBA',
+                                type: 'DBA',
+                                action_type: dba.status === 'Renewing' ? 'DBA_RENEWAL' : 'DBA_REGISTRATION',
+                                document_number: '',
+                                status: dba.status || 'AWAITING_REVIEW',
+                                submitted: new Date(dba.created_at).toLocaleDateString(),
+                                owner: llc.llc_name || 'Owner',
+                                priority: 'high',
+                                filingOptions: { county: dba.advertising_county },
+                                principalAddress: { 
+                                    street: addrParts[0]?.trim() || '', 
+                                    suite: '', 
+                                    city: addrParts[1]?.trim() || '', 
+                                    state: 'FL', 
+                                    zip: addrParts[2]?.trim() || '' 
+                                },
+                                mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
+                                registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: '', street: '', city: '', state: '', zip: '' },
+                                correspondence: { name: 'Client', email: 'legal@charterlegacy.com' },
+                                authPersonnel: []
+                            };
+                        });
+                }
+
+                let finalFormations = mapped ? [...mapped, ...mappedDbas] : [...mappedDbas];
                 
                 // Always inject the AR Demo card in local dev for testing purposes
                 if (window.location.hostname === 'localhost') {
@@ -92,7 +133,7 @@ const FormationFactory = ({
                             filingOptions: { effectiveDate: '', certOfStatus: false, certifiedCopy: false },
                             principalAddress: { street: '', suite: '', city: '', state: '', zip: '' },
                             mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
-                            registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: 'Charter Legacy', street: '', city: '', state: '', zip: '' },
+                            registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: 'Charter Legacy', street: '', city: 'DeLand', state: 'FL', zip: '32724' },
                             correspondence: { name: 'Demo User', email: 'legal@charterlegacy.com' },
                             authPersonnel: []
                         });
@@ -158,7 +199,7 @@ const FormationFactory = ({
                             filingOptions: { effectiveDate: '', certOfStatus: false, certifiedCopy: false },
                             principalAddress: { street: '', suite: '', city: '', state: '', zip: '' },
                             mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
-                            registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: 'Charter Legacy', street: '', city: '', state: '', zip: '' },
+                            registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: 'Charter Legacy', street: '', city: 'DeLand', state: 'FL', zip: '32724' },
                             correspondence: { name: 'Demo User', email: 'legal@charterlegacy.com' },
                             authPersonnel: []
                         }
@@ -204,9 +245,14 @@ const FormationFactory = ({
         const errors = [];
         if (!formation.entityName) errors.push({ id: 'entityName', label: 'Entity Name', tab: 'intake' });
         
-        if (formation.action_type === 'ANNUAL_REPORT') {
-            if (!formation.document_number) errors.push({ id: 'doc_number', label: 'Document Number', tab: 'intake' });
-            return errors; // Minimal validation for AR demo right now
+        // Minimal validation for AR, DBA Registration, DBA Renewal, Reinstatement, Dissolution, and Certificate of Status
+        if (formation.action_type === 'ANNUAL_REPORT' || formation.action_type === 'DBA_REGISTRATION' || formation.action_type === 'DBA_RENEWAL' || formation.action_type === 'REINSTATEMENT' || formation.action_type === 'DISSOLUTION' || formation.action_type === 'CERTIFICATE_OF_STATUS') {
+            if (formation.action_type === 'ANNUAL_REPORT' && !formation.document_number) errors.push({ id: 'doc_number', label: 'Document Number', tab: 'intake' });
+            if (formation.action_type === 'DBA_REGISTRATION' && !formation.filingOptions?.county) errors.push({ id: 'dba_county', label: 'Advertising County', tab: 'intake' });
+            if (formation.action_type === 'REINSTATEMENT' && !formation.document_number) errors.push({ id: 'doc_number', label: 'Document Number', tab: 'intake' });
+            if (formation.action_type === 'DISSOLUTION' && !formation.document_number) errors.push({ id: 'doc_number', label: 'Document Number', tab: 'intake' });
+            // For DBA_RENEWAL, entityName is usually sufficient for initial check
+            return errors; 
         }
 
         if (!formation.type) errors.push({ id: 'type', label: 'Filing Type', tab: 'intake' });
@@ -259,42 +305,10 @@ const FormationFactory = ({
         setActiveAutomation(formation);
         setAutomationState('NAVIGATING');
         setHandoffUrl(null);
-        setCurrentUrl(formation.action_type === 'ANNUAL_REPORT' ? 'https://services.sunbiz.org/Filings/AnnualReport/FilingStart' : 'https://dos.myflorida.com/sunbiz/start-e-filing/efile-articles-of-organization/');
-        setLastSnapshot(null);
-        setAutomationLogs([{
-            timestamp: new Date().toLocaleTimeString(),
-            message: `Initiating Protocol Tinyfish for ${formation.entityName}...`,
-            type: 'system'
-        }]);
-        
-        setElapsedTime(0);
-        lastEventRef.current = Date.now();
-        timerRef.current = setInterval(() => {
-            setElapsedTime(prev => prev + 1);
-            
-            // Proactive "Thinking" logs to show it's not stalled
-            if (Date.now() - lastEventRef.current > 15000) {
-                const thinkingMessages = [
-                    "Analyzing Sunbiz DOM structure...",
-                    "Waiting for Florida State servers to respond...",
-                    "Verifying field availability...",
-                    "Ensuring statutory alignment...",
-                    "Calculating next optimal navigation path..."
-                ];
-                const msg = thinkingMessages[Math.floor(Math.random() * thinkingMessages.length)];
-                setAutomationLogs(prev => [...prev.slice(-49), {
-                    timestamp: new Date().toLocaleTimeString(),
-                    message: `[SYSTEM] ${msg}`,
-                    type: 'system'
-                }]);
-                lastEventRef.current = Date.now();
-            }
-        }, 1000);
-        
-        automationAbort.current = new AbortController();
         
         let goal = '';
         if (formation.action_type === 'ANNUAL_REPORT') {
+            setCurrentUrl('https://services.sunbiz.org/Filings/AnnualReport/FilingStart');
             goal = `Navigate to https://services.sunbiz.org/Filings/AnnualReport/FilingStart
             1. Enter the Document Number: "${formation.document_number}"
             2. Click Submit.
@@ -303,7 +317,52 @@ const FormationFactory = ({
             5. Update the Principal Address to: ${formation.principalAddress.street}, ${formation.principalAddress.city}, FL ${formation.principalAddress.zip}
             6. Log "Registered Agent complete".
             7. CRITICAL: Stop at the final review screen and take a screenshot. DO NOT click proceed to payment.`;
+        } else if (formation.action_type === 'DBA_REGISTRATION') {
+            setCurrentUrl('https://efile.sunbiz.org/fict01.html');
+            goal = `Navigate to https://efile.sunbiz.org/fict01.html
+            1. Start Fictitious Name Registration.
+            2. FILL FILING INFORMATION:
+               - Owner Name (LLC): "${formation.owner}"
+               - Fictitious Name (DBA): "${formation.entityName}"
+               - County of Principal Business: "${formation.filingOptions?.county || 'Miami-Dade'}"
+            3. FILL MAILING ADDRESS:
+               - Address: "${formation.principalAddress?.street}"
+               - City, State: "${formation.principalAddress?.city}", "${formation.principalAddress?.state}"
+               - Zip: "${formation.principalAddress?.zip}"
+            4. FILL FLORIDA PRINCIPAL PLACE OF BUSINESS:
+               - Same as mailing address.
+            5. CRITICAL: Stop at the final review/payment screen. Take a final screenshot.`;
+        } else if (formation.action_type === 'DBA_RENEWAL') {
+            setCurrentUrl('https://efile.sunbiz.org/fict01.html');
+            goal = `Renew the existing Florida Fictitious Name (DBA) for '${formation.entityName}'. Owner is '${formation.owner}'. Bypass the advertising requirement step as this is a strict statutory renewal. Verify the owner address and proceed to the $50 state fee payment checkout screen.`;
+        } else if (formation.action_type === 'REINSTATEMENT') {
+            setCurrentUrl('https://services.sunbiz.org/Filings/Reinstatement/FilingStart');
+            goal = `Navigate to https://services.sunbiz.org/Filings/Reinstatement/FilingStart
+            1. Enter the Document Number: "${formation.document_number}"
+            2. Click Submit to begin reinstatement.
+            3. Review the entity details — confirm Entity Name matches: "${formation.entityName}"
+            4. Confirm registered agent information is current. RA: Charter Legacy Services LLC, DeLand, FL 32724.
+            5. Verify the principal address.
+            6. CRITICAL: Stop at the final review/payment screen. Take a screenshot. DO NOT click proceed to payment.`;
+        } else if (formation.action_type === 'DISSOLUTION') {
+            setCurrentUrl('https://services.sunbiz.org/Filings/Dissolution/FilingStart');
+            goal = `Navigate to https://services.sunbiz.org/Filings/Dissolution/FilingStart
+            1. Enter the Document Number: "${formation.document_number}"
+            2. Click Submit to begin dissolution filing.
+            3. Review the entity details — confirm Entity Name matches: "${formation.entityName}"
+            4. Select Filing Type: "Articles of Dissolution"
+            5. Verify the registered agent information is current.
+            6. CRITICAL: Stop at the final review/payment screen. Take a screenshot. DO NOT click proceed to payment.`;
+        } else if (formation.action_type === 'CERTIFICATE_OF_STATUS') {
+            setCurrentUrl('https://services.sunbiz.org/Filings/CertificateOfStatus/FilingStart');
+            goal = `Navigate to https://services.sunbiz.org/Filings/CertificateOfStatus/FilingStart
+            1. Enter the Document Number: "${formation.document_number}"
+            2. Click Submit to search for the entity.
+            3. Review the entity details — confirm Entity Name matches: "${formation.entityName}"
+            4. Select Certificate Type: "${formation.filingOptions?.certified ? 'Certified Copy' : 'Certificate of Status'}"
+            5. CRITICAL: Stop at the final review/payment screen. Take a screenshot. DO NOT click proceed to payment.`;
         } else {
+            setCurrentUrl('https://dos.myflorida.com/sunbiz/start-e-filing/efile-articles-of-organization/');
             goal = `Navigate to https://dos.myflorida.com/sunbiz/start-e-filing/efile-articles-of-organization/. 
             1. Start LLC E-Filing.
             2. FILL FILING INFORMATION:
@@ -337,6 +396,39 @@ const FormationFactory = ({
             10. CRITICAL: Stop at the final review/payment screen. Take a final screenshot.`;
         }
 
+        setLastSnapshot(null);
+        setAutomationLogs([{
+            timestamp: new Date().toLocaleTimeString(),
+            message: `Initiating Protocol Tinyfish for ${formation.entityName}...`,
+            type: 'system'
+        }]);
+        
+        setElapsedTime(0);
+        lastEventRef.current = Date.now();
+        timerRef.current = setInterval(() => {
+            setElapsedTime(prev => prev + 1);
+            
+            // Proactive "Thinking" logs to show it's not stalled
+            if (Date.now() - lastEventRef.current > 15000) {
+                const thinkingMessages = [
+                    "Analyzing Sunbiz DOM structure...",
+                    "Waiting for Florida State servers to respond...",
+                    "Verifying field availability...",
+                    "Ensuring statutory alignment...",
+                    "Calculating next optimal navigation path..."
+                ];
+                const msg = thinkingMessages[Math.floor(Math.random() * thinkingMessages.length)];
+                setAutomationLogs(prev => [...prev.slice(-49), {
+                    timestamp: new Date().toLocaleTimeString(),
+                    message: `[SYSTEM] ${msg}`,
+                    type: 'system'
+                }]);
+                lastEventRef.current = Date.now();
+            }
+        }, 1000);
+        
+        automationAbort.current = new AbortController();
+        
         tinyfish.run({
             url: 'https://dos.myflorida.com/sunbiz/',
             goal,
@@ -861,7 +953,7 @@ const FormationFactory = ({
                                     onClick={() => formation.status === 'FILED' ? null : startAutomation(formation)}
                                     className="flex-[3] py-3 bg-luminous-blue text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-luminous-blue/20 transition-all flex items-center justify-center gap-2"
                                 >
-                                    {formation.status === 'FILED' ? 'Download Receipt' : formation.action_type === 'ANNUAL_REPORT' ? 'File Annual Report (Auto)' : 'File Formation (Auto)'}
+                                    {formation.status === 'FILED' ? 'Download Receipt' : formation.action_type === 'ANNUAL_REPORT' ? 'File Annual Report (Auto)' : formation.action_type === 'DBA_REGISTRATION' ? 'Process DBA' : formation.action_type === 'DBA_RENEWAL' ? 'Process DBA Renewal' : formation.action_type === 'REINSTATEMENT' ? 'Reinstate LLC' : formation.action_type === 'DISSOLUTION' ? 'Dissolve LLC' : formation.action_type === 'CERTIFICATE_OF_STATUS' ? 'Order Certificate' : 'File Formation (Auto)'}
                                     <Zap size={12} className={formation.status !== 'FILED' ? 'animate-pulse' : ''} />
                                 </button>
                                 <button 

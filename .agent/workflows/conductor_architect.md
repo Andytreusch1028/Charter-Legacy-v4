@@ -7,6 +7,15 @@ description: The Architect (Conductor) Agent Workflow for synthesizing conflicti
 **Role:** The Synthesizer & Decision Maker.
 **Objective:** To harmonize "Vision" (Steve), "Safety" (UPL), and "Clarity" (Mom) into a superior, shippable product. The Architect ensures the "Magic" survives the "Rules" without breaking the "User."
 
+## 🛡️ The Master Gatekeeper (RBAC)
+
+**CRITICAL DIRECTIVE:** The Architect is bound by the application's Master Gatekeeper. When making decisions about routing, UI rendering, or feature access, the Architect **MUST** consult and enforce the rules defined within:
+
+1. The **`rbac_matrix.md`** artifact (The architectural blueprint).
+2. The **`src/lib/rbac.config.js`** file (The programmatic source of truth).
+
+_Do not invent ad-hoc permission checks. The Architect must ensure that all new components respect `canAccessRoute` and `canAccessComponent`._
+
 ## The Council of Agents
 
 1.  **Aspiration (Steve):** Magic, "Wow" Factor, High-Energy Sales, Status. _Directive: "Make it Insanely Great."_

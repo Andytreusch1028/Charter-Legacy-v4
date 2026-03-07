@@ -12,9 +12,14 @@ import AnnualReportWizard from './components/AnnualReportWizard';
 import SuccessionSuite from './lib/succession/SuccessionSuite';
 import { useSuccession } from './lib/succession/useSuccession';
 import { motion, AnimatePresence } from 'framer-motion';
+import { canAccessComponent } from './lib/rbac.config';
 
-import ActiveProtectionTriad from './components/ActiveProtectionTriad';
 import VaultTile from './components/VaultTile';
+import DBAWizard from './components/DBAWizard';
+import DBARenewalWizard from './components/DBARenewalWizard';
+import ReinstatementWizard from './components/ReinstatementWizard';
+import DissolutionWizard from './components/DissolutionWizard';
+import CertificateOfStatusWizard from './components/CertificateOfStatusWizard';
 import ProbateSimulator from './components/ProbateSimulator';
 import DesignationProtocol from './DesignationProtocol';
 import SubscriptionGate from './components/SubscriptionGate';
@@ -26,13 +31,26 @@ const DashboardZenith = ({ user, initialData }) => {
   const [loading, setLoading] = useState(true);
   const [llcData, setLlcData] = useState(initialData || null);
   const [allLlcs, setAllLlcs] = useState([]);
+  const [activeDBA, setActiveDBA] = useState(null);
   const [activityLog, setActivityLog] = useState([]);
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [blueprintStep, setBlueprintStep] = useState('ein');
   const [isRAConsoleOpen, setIsRAConsoleOpen] = useState(false);
   const [isAnnualReportWizardOpen, setIsAnnualReportWizardOpen] = useState(false);
+  const [isDBAWizardOpen, setIsDBAWizardOpen] = useState(false);
+  const [isDBARenewalWizardOpen, setIsDBARenewalWizardOpen] = useState(false);
+  const [isReinstatementWizardOpen, setIsReinstatementWizardOpen] = useState(false);
+  const [isDissolutionWizardOpen, setIsDissolutionWizardOpen] = useState(false);
+  const [isCertStatusWizardOpen, setIsCertStatusWizardOpen] = useState(false);
   const navigate = useNavigate();
   const { openVault, protocolData, setProtocolData } = useSuccession();
+  
+  // Gatekeeper Role check for UI rendering
+  const currentRole = user?.user_metadata?.role || 'customer';
+  const hasBlueprintAccess = canAccessComponent(currentRole, 'FoundersBlueprint');
+  const hasRAAccess = canAccessComponent(currentRole, 'RegisteredAgentConsole');
+  const hasReportAccess = canAccessComponent(currentRole, 'AnnualReportWizard');
+  const hasVaultAccess = canAccessComponent(currentRole, 'SuccessionSuite');
   
   // Agent Access Bypass (Localhost Only)
   useEffect(() => {
@@ -52,7 +70,7 @@ const DashboardZenith = ({ user, initialData }) => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(llcData, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `${llcData.llc_name.replace(/\s+/g, '_')}_data.json`);
+    downloadAnchorNode.setAttribute("download", `${(llcData?.llc_name || 'export').replace(/\s+/g, '_')}_data.json`);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -134,6 +152,18 @@ const DashboardZenith = ({ user, initialData }) => {
             }
         }
 
+        // Fetch user's active DBA if any
+        const { data: dbaData } = await supabase
+            .from('dbas')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+            
+        if (dbaData && dbaData.length > 0) {
+            setActiveDBA(dbaData[0]);
+        }
+
         // Fetch RA Alerts
         const { count } = await supabase
             .from('registered_agent_documents')
@@ -166,14 +196,23 @@ const DashboardZenith = ({ user, initialData }) => {
       } catch (err) {
         console.error("Dashboard Load Error:", err);
       } finally {
-        if (!llcData && user?.email?.includes('auditor')) {
+        // Graceful fallback: If user has zero LLCs (e.g. Emergency Override, new signup)
+        // provision mock data so the dashboard is usable instead of showing blank screen
+        if (!llcData) {
+          const isLocalDev = window.location.hostname === 'localhost';
+          const isAuditor = user?.email?.includes('auditor');
+          
+          if (isLocalDev || isAuditor) {
             const mockLLC = {
-                llc_name: 'Pending Formation - LLC Name TBD',
-                llc_status: 'Setting Up',
-                privacy_shield_active: true
+                llc_name: isAuditor ? 'Pending Formation - LLC Name TBD' : 'Charter Legacy Demo LLC',
+                llc_status: isAuditor ? 'Setting Up' : 'Active',
+                privacy_shield_active: true,
+                created_at: new Date().toISOString(),
+                _isDemoData: true,
             };
             setLlcData(mockLLC);
-            setShowDesignation(true);
+            if (isAuditor) setShowDesignation(true);
+          }
         }
         setLoading(false);
       }
@@ -375,8 +414,10 @@ const DashboardZenith = ({ user, initialData }) => {
 
                                 <div className="mb-8 w-max">
                                     <div 
-                                        onClick={() => setIsAnnualReportWizardOpen(true)}
-                                        className="relative group cursor-pointer overflow-hidden p-[1px] rounded-2xl"
+                                        onClick={() => {
+                                            if (hasReportAccess) setIsAnnualReportWizardOpen(true);
+                                        }}
+                                        className={`relative group ${hasReportAccess ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-not-allowed opacity-60'} overflow-hidden p-[1px] rounded-2xl transition-all`}
                                     >
                                         <span className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 rounded-2xl animate-[spin_3s_linear_infinite] group-hover:animate-none opacity-50"></span>
                                         <div className="relative bg-slate-900 border border-amber-500/30 px-6 py-4 rounded-2xl flex items-center gap-4 transition-all group-hover:bg-slate-800">
@@ -397,6 +438,70 @@ const DashboardZenith = ({ user, initialData }) => {
                                     </div>
                                 </div>
 
+                                {/* Conditionally Render DBA Renewal Alert */}
+                                {activeDBA && activeDBA.status !== 'Renewed' && (() => {
+                                    const created = new Date(activeDBA.created_at);
+                                    const expiration = new Date(created.setFullYear(created.getFullYear() + 5));
+                                    const now = new Date();
+                                    const monthsUntilExpiry = (expiration - now) / (1000 * 60 * 60 * 24 * 30);
+                                    
+                                    if (monthsUntilExpiry <= 6) {
+                                        return (
+                                            <div className="mb-8 w-max">
+                                                <div 
+                                                    onClick={() => setIsDBARenewalWizardOpen(true)}
+                                                    className="relative group cursor-pointer hover:scale-[1.02] overflow-hidden p-[1px] rounded-2xl transition-all"
+                                                >
+                                                    <span className="absolute inset-0 bg-gradient-to-r from-red-500 via-rose-500 to-red-500 rounded-2xl animate-[spin_3s_linear_infinite] group-hover:animate-none opacity-50"></span>
+                                                    <div className="relative bg-slate-900 border border-red-500/30 px-6 py-4 rounded-2xl flex items-center gap-4 transition-all group-hover:bg-slate-800">
+                                                        <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
+                                                            <Activity size={20} className="animate-pulse" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500 mb-0.5">Brand Risk Alert</p>
+                                                            <p className="text-sm font-bold text-white">DBA Renewal Due: {activeDBA.dba_name}</p>
+                                                        </div>
+                                                        <div className="ml-4 pl-4 border-l border-white/10 hidden sm:block">
+                                                            <p className="text-xs text-gray-400">Florida requires Fictitious Names to be renewed every 5 years.</p>
+                                                        </div>
+                                                        <div className="ml-8 px-4 py-2 bg-red-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg group-hover:bg-red-400 transition-colors">
+                                                            Renew Now
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()}
+
+                                {/* Conditionally Render Reinstatement Alert */}
+                                {llcData?.llc_status && ['Admin Dissolved', 'Inactive', 'Revoked'].includes(llcData.llc_status) && (
+                                    <div className="mb-8 w-max">
+                                        <div 
+                                            onClick={() => setIsReinstatementWizardOpen(true)}
+                                            className="relative group cursor-pointer hover:scale-[1.02] overflow-hidden p-[1px] rounded-2xl transition-all"
+                                        >
+                                            <span className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 rounded-2xl animate-[spin_3s_linear_infinite] group-hover:animate-none opacity-50"></span>
+                                            <div className="relative bg-slate-900 border border-orange-500/30 px-6 py-4 rounded-2xl flex items-center gap-4 transition-all group-hover:bg-slate-800">
+                                                <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
+                                                    <RefreshCw size={20} className="animate-pulse" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500 mb-0.5">Entity Recovery Required</p>
+                                                    <p className="text-sm font-bold text-white">LLC Reinstatement Needed</p>
+                                                </div>
+                                                <div className="ml-4 pl-4 border-l border-white/10 hidden sm:block">
+                                                    <p className="text-xs text-gray-400">Your LLC has been administratively dissolved. File for reinstatement to restore active status.</p>
+                                                </div>
+                                                <div className="ml-8 px-4 py-2 bg-orange-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg group-hover:bg-orange-400 transition-colors">
+                                                    Reinstate Now
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <p className="text-gray-500 font-medium text-xl italic max-w-3xl leading-relaxed opacity-80">
                                     "Unity Protocol Engaged. Monitoring Governance, Abstraction, and Legacy systems."
                                 </p>
@@ -413,13 +518,15 @@ const DashboardZenith = ({ user, initialData }) => {
                                         </div>
                                         <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Build Foundation</h3>
                                     </div>
-                                    
-                                    <div className="h-[500px]">
+                                    <div className={`h-[500px] ${!hasBlueprintAccess ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
                                         <FoundersBlueprint 
                                             isOpen={false} 
                                             onClose={(step) => {
+                                                if (!hasBlueprintAccess) return;
                                                 if (step === 'annual_report') {
                                                     setIsAnnualReportWizardOpen(true);
+                                                } else if (step === 'dba') {
+                                                    setIsDBAWizardOpen(true);
                                                 } else {
                                                     setBlueprintStep(typeof step === 'string' ? step : 'ein');
                                                     setIsBlueprintOpen(true);
@@ -439,11 +546,15 @@ const DashboardZenith = ({ user, initialData }) => {
                                         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-luminous-blue shadow-luminous-blue/20 drop-shadow-[0_0_10px_rgba(0,122,255,0.5)]">Ongoing Compliance</h3>
                                     </div>
 
-                                    <ActiveProtectionTriad
-                                        llcData={llcData}
-                                        onOpenRAConsole={() => setIsRAConsoleOpen(true)}
-                                        raAlertCount={newDocCount}
-                                    />
+                                    <div className={!hasRAAccess ? 'opacity-50 pointer-events-none grayscale' : ''}>
+                                        <ActiveProtectionTriad
+                                            llcData={llcData}
+                                            onOpenRAConsole={() => {
+                                                if (hasRAAccess) setIsRAConsoleOpen(true);
+                                            }}
+                                            raAlertCount={newDocCount}
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* COLUMN 3: PRESERVE (The Legacy) */}
@@ -455,10 +566,11 @@ const DashboardZenith = ({ user, initialData }) => {
                                         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] shadow-[#d4af37]/20 drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">Preserve Legacy</h3>
                                     </div>
 
-                                    {/* Heritage Vault */}
-                                    <div className="h-[280px]">
+                                    <div className={`h-[280px] ${!hasVaultAccess ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
                                         <VaultTile 
-                                            onClick={() => openVault()}
+                                            onClick={() => {
+                                                if (hasVaultAccess) openVault();
+                                            }}
                                             locked={!user?.permissions?.heritage_vault}
                                             mode="CUPERTINO"
                                             successionData={protocolData}
@@ -528,6 +640,57 @@ const DashboardZenith = ({ user, initialData }) => {
                   llcData={llcData} 
                   onClose={() => setIsAnnualReportWizardOpen(false)}
                   onComplete={() => setIsAnnualReportWizardOpen(false)}
+              />
+          )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+          {isDBAWizardOpen && (
+              <DBAWizard 
+                  llcData={llcData} 
+                  onClose={() => setIsDBAWizardOpen(false)}
+                  onComplete={() => setIsDBAWizardOpen(false)}
+              />
+          )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+          {isDBARenewalWizardOpen && (
+              <DBARenewalWizard 
+                  llcData={llcData} 
+                  activeDBA={activeDBA}
+                  onClose={() => setIsDBARenewalWizardOpen(false)}
+                  onComplete={() => setIsDBARenewalWizardOpen(false)}
+              />
+          )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+          {isReinstatementWizardOpen && (
+              <ReinstatementWizard 
+                  llcData={llcData} 
+                  onClose={() => setIsReinstatementWizardOpen(false)}
+                  onComplete={() => setIsReinstatementWizardOpen(false)}
+              />
+          )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+          {isDissolutionWizardOpen && (
+              <DissolutionWizard 
+                  llcData={llcData} 
+                  onClose={() => setIsDissolutionWizardOpen(false)}
+                  onComplete={() => setIsDissolutionWizardOpen(false)}
+              />
+          )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+          {isCertStatusWizardOpen && (
+              <CertificateOfStatusWizard 
+                  llcData={llcData} 
+                  onClose={() => setIsCertStatusWizardOpen(false)}
+                  onComplete={() => setIsCertStatusWizardOpen(false)}
               />
           )}
       </AnimatePresence>

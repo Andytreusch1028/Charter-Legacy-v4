@@ -24,6 +24,7 @@
     "@supabase/supabase-js": "^2.49.1",
     "dotenv": "^16.4.7",
     "framer-motion": "^12.34.0",
+    "fs-extra": "^11.3.3",
     "lucide-react": "^0.344.0",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.4.624",
@@ -32,7 +33,8 @@
     "react-dom": "^18.3.1",
     "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.13.0",
-    "tesseract.js": "^7.0.0"
+    "tesseract.js": "^7.0.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",

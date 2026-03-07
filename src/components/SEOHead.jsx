@@ -40,9 +40,16 @@ const SEOHead = ({
   const defaultTitle = 'Charter Legacy - Your Business Deserves Better Than a State Website';
   const defaultDesc = 'Charter Legacy automates Florida Homestead Protection, Anonymous LLC Formation, and Registered Agent Services. Secure your assets for $199 + $99/yr.';
   
-  const title = dynamicSEO?.title || fallbackTitle || defaultTitle;
-  const description = dynamicSEO?.description || fallbackDesc || defaultDesc;
-  const keywords = dynamicSEO?.keywords || fallbackKey;
+  const variation = typeof window !== 'undefined' ? localStorage.getItem('seo_variation') : 'A';
+
+  const dynamicTitle = variation === 'B' && dynamicSEO?.title_b ? dynamicSEO.title_b : dynamicSEO?.title;
+  const dynamicDesc = variation === 'B' && dynamicSEO?.description_b ? dynamicSEO.description_b : dynamicSEO?.description;
+  const dynamicKey = variation === 'B' && dynamicSEO?.keywords_b ? dynamicSEO.keywords_b : dynamicSEO?.keywords;
+  const dynamicJson = variation === 'B' && dynamicSEO?.json_payload_b && Object.keys(dynamicSEO.json_payload_b).length > 0 ? dynamicSEO.json_payload_b : dynamicSEO?.json_payload;
+
+  const title = dynamicTitle || fallbackTitle || defaultTitle;
+  const description = dynamicDesc || fallbackDesc || defaultDesc;
+  const keywords = dynamicKey || fallbackKey;
   const canonical = fallbackCanonical || `${siteUrl}${location.pathname}`;
   
   const ogTitle = fallbackOgTitle || title;
@@ -50,13 +57,13 @@ const SEOHead = ({
 
   // Render the Title elegantly
   const renderTitle = () => {
-      if (dynamicSEO?.title) return dynamicSEO.title; // If explicit in DB, respect it
+      if (dynamicTitle) return dynamicTitle; // If explicit in DB, respect it
       if (title.includes('Charter Legacy')) return title;
       return `${title} | Charter Legacy`;
   };
 
-  const finalJsonLd = dynamicSEO?.json_payload && Object.keys(dynamicSEO.json_payload).length > 0 
-    ? dynamicSEO.json_payload 
+  const finalJsonLd = dynamicJson && Object.keys(dynamicJson).length > 0 
+    ? dynamicJson 
     : fallbackJson;
 
   return (

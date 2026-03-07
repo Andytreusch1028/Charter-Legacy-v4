@@ -15,6 +15,7 @@ import SpecSheet from '../../SpecSheet';
 import DoubleLLCExplainer from '../../DoubleLLCExplainer';
 import PlanManager from '../../components/PlanManager';
 import SEOHead from '../../components/SEOHead';
+import AnswerCapsule from '../../components/AnswerCapsule';
 import { useHeroVariant } from '../../hooks/useHeroVariant';
 import { useNavigate } from 'react-router-dom';
 
@@ -316,7 +317,7 @@ const HeritageVault = ({ willPackage, handleSelection }) => {
   ];
 
   return (
-    <section id="protocol" className="py-40 px-6 bg-[#F5F5F7] relative overflow-hidden">
+    <section id="protocol" aria-label="Heritage Vault Protocol" className="py-40 px-6 bg-[#F5F5F7] relative overflow-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-20%,#FFFFFF_0%,transparent_100%)] opacity-60" />
 
@@ -457,7 +458,8 @@ const HeritageVault = ({ willPackage, handleSelection }) => {
 };
 
 const PackageCard = ({ title, price, icon: Icon, protectionLevel, description, features, active, onClick, badge, isDark }) => (
-  <div 
+  <article 
+    aria-label={title}
     onClick={onClick} 
     className={`group relative transition-all duration-[0.8s] ease-out cursor-pointer p-10 rounded-[40px] border flex flex-col h-full animate-in fade-in slide-in-from-bottom-12 duration-1000 ${
       active 
@@ -525,7 +527,7 @@ const PackageCard = ({ title, price, icon: Icon, protectionLevel, description, f
           <ArrowRight size={22} strokeWidth={1.5} />
        </div>
     </div>
-  </div>
+  </article>
 );
 
 const QuoteSection = () => (
@@ -691,7 +693,10 @@ export default function Landing({ appUser }) {
               <span className="hidden sm:block text-[10px] font-bold text-gray-500 uppercase tracking-widest">Starting at $249 · one-time</span>
               <button
                 id="sticky-select-package-btn"
-                onClick={() => document.getElementById('packages').scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => {
+                  trackClick();
+                  document.getElementById('packages').scrollIntoView({ behavior: 'smooth' });
+                }}
                 className="flex items-center gap-2 px-6 py-3 bg-white text-black font-black text-[11px] uppercase tracking-[0.2em] rounded-xl hover:bg-luminous-blue hover:text-white active:scale-95 transition-all shadow-lg"
               >
                 Select My Package <ArrowRight size={14} />
@@ -800,9 +805,9 @@ export default function Landing({ appUser }) {
         )}
       </nav>
 
-      <main>
+      <main id="main-content">
         {/* ── 1. HERO ─────────────────────────────────────────────────────────── */}
-        <section className="pt-52 pb-32 px-6 text-center">
+        <header aria-label="Hero" className="pt-52 pb-32 px-6 text-center">
           <div className="max-w-6xl mx-auto space-y-12 flex flex-col items-center">
             <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white rounded-full text-[10px] font-black uppercase tracking-[0.25em] border border-gray-200 shadow-md animate-in fade-in slide-in-from-top-4 duration-700">
                <Fingerprint size={14} className="text-luminous-blue" />
@@ -855,7 +860,10 @@ export default function Landing({ appUser }) {
                </div>
             </div>
           </div>
-        </section>
+        </header>
+
+        {/* ── 1.5. ANSWER CAPSULE (AI Scraping Target) ────────────────────────── */}
+        <AnswerCapsule />
 
         {/* ── 2. QUOTE ────────────────────────────────────────────────────────── */}
         <QuoteSection />
@@ -1011,7 +1019,7 @@ export default function Landing({ appUser }) {
         </section>
 
         {/* ── 5. COMMAND CENTER — Product Experience ───────────────────────────── */}
-        <section className="pt-20 pb-40 bg-[#0A0A0B] relative overflow-hidden flex flex-col items-center">
+        <section aria-labelledby="command-center-heading" className="pt-20 pb-40 bg-[#0A0A0B] relative overflow-hidden flex flex-col items-center">
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-luminous-blue/20 to-transparent" />
             <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-luminous-blue/5 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
@@ -1021,7 +1029,7 @@ export default function Landing({ appUser }) {
                     <div className="w-2 h-2 rounded-full bg-luminous-blue animate-pulse shadow-[0_0_10px_rgba(0,122,255,0.8)]" />
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-luminous-blue">Interactive Demo</span>
                 </div>
-                <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-[0.9]">
+                <h2 id="command-center-heading" className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-[0.9]">
                     The Command <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-luminous-blue to-emerald-400">Center.</span>
                 </h2>
                 <p className="text-gray-400 text-xl mt-8 font-medium italic max-w-2xl mx-auto leading-relaxed">
@@ -1042,7 +1050,7 @@ export default function Landing({ appUser }) {
         <div className="h-32 bg-gradient-to-b from-[#0A0A0B] to-white" />
 
         {/* ── 6. PACKAGES — Select Your Foundation ────────────────────────────── */}
-        <section id="packages" className="py-40 px-6 bg-white border-t border-gray-50 relative overflow-hidden">
+        <section id="packages" aria-label="Pricing Packages" className="py-40 px-6 bg-white border-t border-gray-50 relative overflow-hidden">
            <div className="max-w-[1400px] mx-auto space-y-24">
               <div className="space-y-6 max-w-3xl mx-auto text-center">
                 <h2 className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none text-[#1D1D1F]">Select Your <span className="italic-serif lowercase text-luminous-blue">Foundation.</span></h2>
@@ -1074,7 +1082,7 @@ export default function Landing({ appUser }) {
       </main>
 
 
-      <footer className="py-24 bg-white text-center flex flex-col items-center gap-8 border-t border-gray-100 px-6">
+      <footer aria-label="Site Footer" className="py-24 bg-white text-center flex flex-col items-center gap-8 border-t border-gray-100 px-6">
          <span className="font-black text-3xl uppercase tracking-tighter">Charter <span className="italic-serif lowercase text-luminous-blue">Legacy</span></span>
          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.6em]">Florida Business Formation & LLC Succession · Est. 2024</p>
          <p className="text-[10px] text-gray-400 max-w-2xl leading-relaxed">

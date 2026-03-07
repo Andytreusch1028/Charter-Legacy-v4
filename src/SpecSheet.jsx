@@ -262,6 +262,27 @@ const SpecSheet = ({ item, isOpen, onClose, onSuccess }) => {
                         privacyShieldIncluded: true
                     }).catch(err => console.error("Non-blocking Marketing Error:", err));
                   }
+
+                  // --- DARK FUNNEL SEO TELEMETRY ---
+                  // Now that the checkout was successful, credit the original landing page
+                  // variation (A or B payload) with the revenue to feed the AI Optimizer
+                  try {
+                      const seoVariation = localStorage.getItem('seo_variation');
+                      const seoRoute = localStorage.getItem('seo_landing_route') || '/';
+                      if (seoVariation) {
+                          // Parse the '$499' price string into a raw float
+                          const numericRevenue = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                          
+                          await supabase.rpc('increment_seo_conversion', {
+                              p_route: seoRoute,
+                              p_variation: seoVariation,
+                              p_revenue: numericRevenue || 0
+                          });
+                          console.log(`[SEO Telemetry] Credited Variant ${seoVariation} with $${numericRevenue} Revenue`);
+                      }
+                  } catch (telemetryErr) {
+                      console.warn("[SEO Telemetry] Failed to log dark funnel conversion:", telemetryErr);
+                  }
               }
           }
           setStep('success');

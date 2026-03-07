@@ -168,6 +168,18 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
                         </div>
                      </div>
 
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-2 pt-2 mt-2">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Post-Formation Actions</span>
+                    </div>
+                     <div className="space-y-2 mt-2">
+                        <div className="flex items-center justify-between group/item cursor-pointer hover:bg-emerald-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('dba'); }}>
+                            <span className="text-xs font-bold text-slate-700 group-hover/item:text-emerald-600 transition-colors">Register DBA (Fictitious Name)</span>
+                            <span className="text-[9px] font-mono text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded cursor-pointer border border-emerald-200 hover:bg-emerald-100 transition-all uppercase shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                Optional
+                            </span>
+                        </div>
+                     </div>
+
                     <div className="flex items-center justify-between border-b border-gray-100 pb-2 pt-2">
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Internal Governance</span>
                     </div>
