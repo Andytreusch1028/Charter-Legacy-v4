@@ -40,8 +40,8 @@ setup('authenticate', async ({ page }) => {
   // The generated link automatically logs the browser in when visited
   await page.goto(data.properties.action_link);
   
-  // The app will verify the magic link and redirect us to /app (Dashboard Zenith)
-  await page.waitForURL('**/app**', { timeout: 15000 });
+  // The app will verify the magic link and redirect us to /admin/fulfillment
+  await page.waitForURL('**/admin/fulfillment**', { timeout: 15000 });
 
   console.log('Session established. Saving storage state...');
 
