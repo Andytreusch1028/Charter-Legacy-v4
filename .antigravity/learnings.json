@@ -242,6 +242,14 @@
           "pattern": "A high-friction acquisition path (Native App) was avoided by completing checkout on Web, while retaining the high-security value (FaceID, Push Notifications) of Native for post-purchase use.",
           "impact": "High - Conversion rate and roadmap clarity",
           "reuse_guidance": "Never put the primary checkout or formation flow in a native app. Native apps are companion tools for retention, alerts, and biometric security."
+        },
+        {
+          "id": "learning-033",
+          "date": "2026-03-07",
+          "success": "Orchestrator Shell Pattern (God Object Eradication)",
+          "pattern": "Break down massive 'God Objects' (like `FormationFactory.jsx`) by extracting multi-table data fetching and heavy third-party API automation into custom hooks (`useFormationQueue`, `useTinyfishAutomation`). The root component becomes a pure 'Orchestrator Shell' that only manages composing UI sub-components and passing them state.",
+          "impact": "High - Reduces root component line counts by ~90%, isolating UI from complex API state machines.",
+          "prevention_rule": "MANDATORY: When a functional component exceeds 500 lines due to a mix of UI rendering, data polling, and external API integrations, you must split the logic into custom hooks and move the UI chunks into a `/components` subfolder."
         }
       ]
     },
@@ -313,7 +321,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 24,
-    "last_updated": "2026-02-18T10:00:00Z"
+    "total_learnings": 25,
+    "last_updated": "2026-03-07T17:58:28Z"
   }
 }
