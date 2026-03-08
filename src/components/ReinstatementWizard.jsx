@@ -81,13 +81,29 @@ const CheckoutForm = ({ onSuccess, onError, amount }) => {
 
 const ReinstatementWizard = ({ llcData, onClose, onComplete }) => {
   const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [confirmationCode, setConfirmationCode] = useState("");
-  const [clientSecret, setClientSecret] = useState("");
+  // Florida Pricing Constants
+  const REINSTATEMENT_FEE = 100.0;
+  const ANNUAL_REPORT_FEE = 138.75;
 
-  const generateConfirmation = () => {
-    return "REINST-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+  const calculateFees = () => {
+    if (!llcData?.next_deadline) return { total: REINSTATEMENT_FEE, years: 0, reportFees: 0 };
+    
+    const currentYear = new Date().getFullYear();
+    const deadlineYear = new Date(llcData.next_deadline).getFullYear();
+    
+    // In Florida, if you miss the May 1st deadline, you are dissolved in Sept.
+    // We assume any year strictly less than currentYear that hasn't been filed needs a report.
+    const yearsDelinquent = Math.max(0, currentYear - deadlineYear);
+    const reportFees = yearsDelinquent * ANNUAL_REPORT_FEE;
+    
+    return {
+      total: REINSTATEMENT_FEE + reportFees,
+      years: yearsDelinquent,
+      reportFees: reportFees
+    };
   };
+
+  const fees = calculateFees();
 
   const handleSetupCheckout = async () => {
     setLoading(true);
@@ -95,7 +111,11 @@ const ReinstatementWizard = ({ llcData, onClose, onComplete }) => {
       const { data: intentData, error } = await supabase.functions.invoke(
         "create-payment-intent",
         {
-          body: { packageId: 'llc_reinstatement', userId: llcData?.user_id || 'system_fallback' },
+          body: { 
+            packageId: 'llc_reinstatement', 
+            userId: llcData?.user_id || 'system_fallback',
+            amount: fees.total * 100 // Stripe expects cents
+          },
         },
       );
       if (error) {
@@ -139,7 +159,10 @@ const ReinstatementWizard = ({ llcData, onClose, onComplete }) => {
             entity_name: llcData?.llc_name,
             document_number: llcData?.document_number || llcData?.sunbiz_document_number || '',
             confirmation_code: code,
-            total_paid: 100.0,
+            total_paid: fees.total,
+            years_delinquent: fees.years,
+            state_fees: REINSTATEMENT_FEE,
+            report_fees: fees.reportFees
           },
           status: "PENDING",
       }]);
@@ -149,7 +172,12 @@ const ReinstatementWizard = ({ llcData, onClose, onComplete }) => {
           user_id: llcData?.user_id,
           action: "REINSTATEMENT_ORDERED",
           actor_type: "CLIENT",
-          metadata: { confirmation_code: code, total_paid: 100.0, entity_name: llcData?.llc_name },
+          metadata: { 
+            confirmation_code: code, 
+            total_paid: fees.total, 
+            entity_name: llcData?.llc_name,
+            years_delinquent: fees.years 
+          },
       }]);
 
       setStep(4);
@@ -287,8 +315,16 @@ const ReinstatementWizard = ({ llcData, onClose, onComplete }) => {
                     <div className="font-bold text-slate-900">
                       State Reinstatement Fee
                     </div>
-                    <div className="font-mono text-slate-600">$100.00</div>
+                    <div className="font-mono text-slate-600">${REINSTATEMENT_FEE.toFixed(2)}</div>
                   </div>
+                  {fees.years > 0 && (
+                    <div className="flex justify-between items-center pb-4 border-b border-slate-200">
+                       <div className="font-bold text-slate-900">
+                        Missed Reports ({fees.years} yr)
+                      </div>
+                      <div className="font-mono text-slate-600">${fees.reportFees.toFixed(2)}</div>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center pb-4 border-b border-slate-200">
                     <div className="font-bold text-slate-900">
                       Charter Legacy Ops Fee
@@ -303,7 +339,7 @@ const ReinstatementWizard = ({ llcData, onClose, onComplete }) => {
                       Total Due
                     </div>
                     <div className="text-2xl font-black text-slate-900">
-                      $100.00
+                      ${fees.total.toFixed(2)}
                     </div>
                   </div>
                 </div>
@@ -319,7 +355,7 @@ const ReinstatementWizard = ({ llcData, onClose, onComplete }) => {
                     <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
                       <CheckoutForm
                         onSuccess={handleCheckout}
-                        amount="100.00"
+                        amount={fees.total.toFixed(2)}
                       />
                     </div>
                   </Elements>

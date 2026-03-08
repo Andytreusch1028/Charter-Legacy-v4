@@ -73,6 +73,14 @@
           "correction": "Applied `.no-scrollbar` utility (hides webkit scrollbar) to scrollable containers.",
           "impact": "Medium - Visual immersion disruption",
           "prevention_rule": "Always use `.no-scrollbar` or custom-styled scrollbars on interior scrollable containers within the Obsidian aesthetic to maintain the premium, app-like feel."
+        },
+        {
+          "id": "learning-034",
+          "date": "2026-03-07",
+          "mistake": "Standard Toggles with long descriptions broke layout on 375px viewports (iPhone SE), causing the toggle control to be pushed off-screen.",
+          "correction": "Implemented `flex-col sm:flex-row` pattern in the `Toggle` component. Forced vertical stacking and reduced font sizes for descriptions on mobile.",
+          "impact": "Medium - Broken mobile UX",
+          "prevention_rule": "MANDATORY: All toggle-style inputs must support a vertical stack (`flex-col`) on viewports below 640px to accommodate descriptive text without horizontal clipping."
         }
       ]
     },
@@ -250,6 +258,38 @@
           "pattern": "Break down massive 'God Objects' (like `FormationFactory.jsx`) by extracting multi-table data fetching and heavy third-party API automation into custom hooks (`useFormationQueue`, `useTinyfishAutomation`). The root component becomes a pure 'Orchestrator Shell' that only manages composing UI sub-components and passing them state.",
           "impact": "High - Reduces root component line counts by ~90%, isolating UI from complex API state machines.",
           "prevention_rule": "MANDATORY: When a functional component exceeds 500 lines due to a mix of UI rendering, data polling, and external API integrations, you must split the logic into custom hooks and move the UI chunks into a `/components` subfolder."
+        },
+        {
+          "id": "learning-035",
+          "date": "2026-03-07",
+          "success": "Passive Service Visualization (Status Grids)",
+          "pattern": "For background/passive services (Data Broker removal), show a grid of specific 'targets' (e.g., Whitepages, Spokeo) with individual status lights (Scrubbed/Pending).",
+          "impact": "High - Justifies recurring revenue by making invisible work tangible.",
+          "reuse_guidance": "Apply to any 'Monitor' or 'Shield' service. Use a 2x2 or 4x4 grid of entity names with individual status indicators."
+        },
+        {
+          "id": "learning-036",
+          "date": "2026-03-07",
+          "success": "Cross-Tab Heads-Up Display (HUD) Sync",
+          "pattern": "Mirror critical feature status (e.g., Privacy Shield ON/OFF) from depth-tabs onto the main 'Dashboard' tab using shared React state.",
+          "impact": "High - Eliminates 'Click Fatigue' and provides immediate system health overview.",
+          "reuse_guidance": "Any top-level status toggle should have a corresponding HUD card on the primary entry dashboard."
+        },
+        {
+          "id": "learning-037",
+          "date": "2026-03-08",
+          "success": "Statutory Fee Multiplier Hook",
+          "pattern": "Implement dynamic calculation for reinstatement fees by multiplying missed annual reports (derived from `next_deadline`) by a configured statutory rate ($138.75) and adding the base fee ($100).",
+          "impact": "High - Ensures statutory accuracy and transparency in the checkout flow.",
+          "reuse_guidance": "Mandatory for all reinstatement or late-filing flows where penalties accumulate annually."
+        },
+        {
+          "id": "learning-038",
+          "date": "2026-03-08",
+          "success": "Eager Status-Sync Pattern",
+          "pattern": "Update the parent entity status (e.g., 'Renewing') the MOMENT a checkout intent is initialized to prevent duplicate filing attempts while payment is pending.",
+          "impact": "High - Eliminates race conditions and duplicate filing costs.",
+          "reuse_guidance": "Apply to any high-stakes filing wizard logic."
         }
       ]
     },
@@ -321,7 +361,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 25,
-    "last_updated": "2026-03-07T17:58:28Z"
+    "total_learnings": 28,
+    "last_updated": "2026-03-07T21:07:00Z"
   }
 }

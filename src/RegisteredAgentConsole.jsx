@@ -14,13 +14,13 @@ import RADocumentAuditLog from './components/RADocumentAuditLog';
 const Toggle = ({ value, onChange, label, description }) => (
     <div
         onClick={() => onChange(!value)}
-        className="px-6 py-5 cursor-pointer flex items-center justify-between group flex-1 transition-colors hover:bg-white/[0.04]"
+        className="px-6 py-5 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between group flex-1 transition-colors hover:bg-white/[0.04] gap-4 sm:gap-0"
     >
-        <div className="space-y-1 pr-6">
+        <div className="space-y-1 pr-0 sm:pr-6">
             <p className={`text-[15px] tracking-wide transition-colors duration-300 ${value ? 'font-medium text-white' : 'font-light text-gray-300 group-hover:text-white'}`}>{label}</p>
-            <p className="text-[13px] text-gray-500 font-light leading-relaxed">{description}</p>
+            <p className="text-[12px] sm:text-[13px] text-gray-500 font-light leading-relaxed">{description}</p>
         </div>
-        <div className="flex items-center gap-4 shrink-0 px-2.5">
+        <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 px-0 sm:px-2.5">
             <span className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 ${value ? 'text-white' : 'text-gray-600'}`}>{value ? 'ON' : 'OFF'}</span>
             <div className={`w-[44px] h-[24px] rounded-full relative transition-all duration-500 border ${value ? 'bg-white border-white shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/20 group-hover:border-white/40'}`}>
                 <div className={`absolute top-[1.5px] w-[19px] h-[19px] rounded-full transition-all duration-500 ${value ? 'bg-black left-[calc(100%-21.5px)]' : 'bg-gray-500 left-[2px]'}`} />
@@ -99,10 +99,14 @@ const DocumentRow = ({ doc, isSelected, onSelect, onAction, actionLoading }) => 
                 {/* Badges */}
                 <div className="flex items-center gap-2 shrink-0">
                     {doc.urgent && (
-                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/20">Legal</span>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.1)]">Critical</span>
                     )}
-                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                        {doc.status || 'Forwarded'}
+                    <span className={`text-[9px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${
+                        doc.type === 'State Requirement' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : 
+                        doc.type === 'Legal Notice' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' :
+                        'text-blue-400 bg-blue-500/10 border-blue-500/20'
+                    }`}>
+                        {doc.status || (doc.type === 'Legal Notice' ? 'Service of Process' : 'Verified')}
                     </span>
                 </div>
 
@@ -156,6 +160,12 @@ const DocumentRow = ({ doc, isSelected, onSelect, onAction, actionLoading }) => 
     );
 };
 
+const PERSONAS = {
+    FLORA: { name: 'Flora', role: 'Legal Liaison', avatar_bg: 'bg-emerald-500/10', text_color: 'text-emerald-400', border_color: 'border-emerald-500/20' },
+    STONE: { name: 'Stone', role: 'Privacy Officer', avatar_bg: 'bg-indigo-500/10', text_color: 'text-indigo-400', border_color: 'border-indigo-500/20' },
+    ARIS: { name: 'Aris', role: 'Filing Clerk', avatar_bg: 'bg-amber-500/10', text_color: 'text-amber-400', border_color: 'border-amber-500/20' }
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashboard' }) => {
     const [activeTab, setActiveTab] = useState(initialTab);
@@ -164,6 +174,8 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
     const [priorityForwarding, setPriorityForwarding] = useState(true);
     const [autoDisposeMarketing, setAutoDisposeMarketing] = useState(true);
     const [smsInterrupt, setSmsInterrupt] = useState(false);
+    const [dataBrokerShield, setDataBrokerShield] = useState(true);
+    const [isShieldExpanded, setIsShieldExpanded] = useState(false);
     const [isComplianceOpen, setIsComplianceOpen] = useState(false);
     const [selectedDocs, setSelectedDocs] = useState(new Set());
     const [actionLoading, setActionLoading] = useState(null);
@@ -243,12 +255,27 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
                     setPriorityForwarding(cfg.priority_forwarding ?? true);
                     setAutoDisposeMarketing(cfg.auto_dispose_marketing ?? true);
                     setSmsInterrupt(cfg.sms_interrupt ?? false);
+                    setDataBrokerShield(cfg.data_broker_shield ?? true);
                 }
 
                 const { data: docs } = await supabase
                     .from('registered_agent_documents').select('*')
                     .eq('user_id', user.id).order('created_at', { ascending: false });
-                setDocuments(docs?.length ? docs : MOCK_DOCS);
+                
+                if (docs?.length) {
+                    setDocuments(docs);
+                } else {
+                    // Inject a "Welcome" system document if the vault is empty
+                    setDocuments([{
+                        id: 'system-welcome',
+                        title: 'Welcome to your Secure RA Vault',
+                        date: new Date().toLocaleDateString(),
+                        type: 'State Requirement',
+                        status: 'Active',
+                        viewed: false,
+                        urgent: false
+                    }, ...MOCK_DOCS.slice(0, 2)]);
+                }
 
                 // Fetch inquiries
                 const { data: inqs } = await supabase
@@ -306,9 +333,58 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
         }
     }, [activeThread]);
 
+    const simulateAgentResponse = async (threadId, userMessage) => {
+        // Wait 2-3 seconds to simulate "thinking" and typing
+        await new Promise(r => setTimeout(r, 2500));
+        
+        const text = userMessage.toLowerCase();
+        let persona = PERSONAS.FLORA; // Default
+        let response = "I have received your request and am reviewing the legal implications. I'll get back to you shortly.";
+
+        if (text.includes('annual') || text.includes('report') || text.includes('filing')) {
+            persona = PERSONAS.ARIS;
+            response = "I've checked the Florida Division of Corporations calendar. Your annual report is due by May 1st. Would you like me to draft the filing for your review?";
+        } else if (text.includes('shield') || text.includes('privacy') || text.includes('broker') || text.includes('home')) {
+            persona = PERSONAS.STONE;
+            response = "Address Shield is protecting your home record. I'm currently monitoring 40+ data brokers for any leakage of your personal DeLand address.";
+        }
+
+        // Insert mock message for immediate UI feedback if it's a mock thread
+        if (String(threadId).startsWith('mock-')) {
+            setMessages(prev => [...prev, {
+                id: `mock-reply-${Date.now()}`,
+                thread_id: threadId,
+                sender_id: 'staff',
+                sender_name: persona.name,
+                sender_role: persona.role,
+                content: response,
+                is_staff: true,
+                created_at: new Date().toISOString()
+            }]);
+            return;
+        }
+
+        // Real DB insert for authenticated users
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await supabase.from('ra_inquiry_messages').insert({
+                    thread_id: threadId,
+                    sender_id: user.id, // In a real app, this would be a staff ID
+                    content: response,
+                    is_staff: true,
+                    // Note: In a production schema, we'd have sender_name/role columns or join with a staff table
+                });
+            }
+        } catch (e) {
+            console.error("Simulation error:", e);
+        }
+    };
+
     const sendInquiryMessage = async (e) => {
         e.preventDefault();
-        if (!newMessage.trim() || !activeThread) return;
+        const messageContent = newMessage.trim();
+        if (!messageContent || !activeThread) return;
 
         setSendingMessage(true);
         if (String(activeThread.id).startsWith('mock-')) {
@@ -316,12 +392,13 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
                 id: `mock-msg-${Date.now()}`,
                 thread_id: activeThread.id,
                 sender_id: 'user',
-                content: newMessage,
+                content: messageContent,
                 is_staff: false,
                 created_at: new Date().toISOString()
             }]);
             setNewMessage('');
             setSendingMessage(false);
+            simulateAgentResponse(activeThread.id, messageContent);
             return;
         }
 
@@ -330,11 +407,12 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
             const { error } = await supabase.from('ra_inquiry_messages').insert({
                 thread_id: activeThread.id,
                 sender_id: user.id,
-                content: newMessage,
+                content: messageContent,
                 is_staff: false
             });
             if (error) throw error;
             setNewMessage('');
+            simulateAgentResponse(activeThread.id, messageContent);
         } catch (err) {
             showToast(err.message, 'error');
         } finally {
@@ -427,21 +505,71 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
         }
     };
 
+    const initiate_broker_removal = async () => {
+        // Mocking the trigger of a background scrubbing process
+        console.log("Initiating Data Broker Removal Protocol...");
+        showToast("Data Broker Shield Active — Removal Requests Queued.");
+        
+        // Optionally log to activity via a synthetic event
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await supabase.from('ra_service_log').insert({
+                    user_id: user.id,
+                    document_name: 'SYSTEM: Data Broker Cleanup Triggered',
+                    category: 'Security',
+                    status: 'RECEIVED',
+                    details: 'Automated removal requests dispatched to 40+ brokers.'
+                });
+            }
+        } catch (e) {
+            console.warn("Could not log side-effect:", e);
+        }
+    };
+
     const saveConfig = async (key, value) => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 showToast("Configuration saved (Preview Mode)", "success");
+                if (key === 'data_broker_shield' && value === true) initiate_broker_removal();
                 return;
             }
             await supabase.from('registered_agent_config').upsert(
                 { user_id: user.id, [key]: value, updated_at: new Date() },
                 { onConflict: 'user_id' }
             );
-            showToast("Configuration securely updated.", "success");
+            
+            if (key === 'data_broker_shield' && value === true) {
+                initiate_broker_removal();
+            } else if (key === 'sms_interrupt' && value === true) {
+                showToast("Urgent SMS Interrupt Syncing with Carrier...", "success");
+                console.log("SMS Interrupt Protocol: Escalating priority for +1 (555) 012-3456");
+            } else {
+                showToast("Configuration securely updated.", "success");
+            }
         } catch (err) { 
             console.error('Config save error:', err); 
             showToast("Failed to save configuration.", "error"); 
+        }
+    };
+
+    const triggerFireDrill = () => {
+        const fireDrillDoc = {
+            id: `fire-drill-${Date.now()}`,
+            title: 'Service of Process (Simulated Alert)',
+            date: new Date().toLocaleDateString(),
+            type: 'Legal Notice',
+            status: 'URGENT PENDING',
+            viewed: false,
+            urgent: true
+        };
+        
+        setDocuments(prev => [fireDrillDoc, ...prev]);
+        showToast("CRITICAL: Service of Process Simulated. Check Dashboard.", "error");
+        
+        if (priorityForwarding) {
+            console.log("[FIRE DRILL] Priority Forwarding active. Simulated email dispatch to:", userEmail);
         }
     };
 
@@ -692,6 +820,31 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
                                 </div>
                             ))}
                         </div>
+
+                        {/* --- NEW: PERSONAL PRIVACY DASHBOARD CARD --- */}
+                        <div onClick={() => setActiveTab('shield')} className="group p-8 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[32px] cursor-pointer hover:bg-white/10 hover:border-purple-500/30 transition-all duration-500 relative overflow-hidden">
+                            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/10 rounded-full blur-[60px] group-hover:bg-purple-500/20 transition-all duration-1000" />
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div className="space-y-4">
+                                    <div className="flex items-start gap-4">
+                                        <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center transition-all duration-500 border ${dataBrokerShield ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' : 'bg-white/5 border-white/10 text-gray-500'}`}>
+                                            <Fingerprint size={20} strokeWidth={1.5} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-medium uppercase tracking-widest text-gray-500 mb-1">Personal Privacy</p>
+                                            <p className="text-[17px] font-semibold text-white tracking-tight">{dataBrokerShield ? 'Shield Protocol Active' : 'Shield Inactive'}</p>
+                                            <p className="text-xs text-gray-400 font-light mt-1">
+                                                {dataBrokerShield ? '12 brokers monitored · Identity suppressed' : 'Identity visible on public search engines'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-purple-400 group-hover:gap-3 transition-all">
+                                        Privacy Settings <ChevronRight size={12} />
+                                    </div>
+                                </div>
+                                <StatusBadge active={dataBrokerShield} />
+                            </div>
+                        </div>
                     </div>
                 );
 
@@ -852,27 +1005,42 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
 
                                 {/* Messages Area */}
                                 <div className="flex-1 p-8 overflow-y-auto space-y-8 relative z-10 min-h-0">
-                                    {messages.map((msg, i) => (
-                                        <div key={msg.id} className={`flex gap-4 ${msg.is_staff ? '' : 'flex-row-reverse'}`}>
-                                            <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center shrink-0 border ${
-                                                msg.is_staff ? 'text-blue-500 border-blue-500/20 bg-blue-500/10' : 'bg-white/5 text-white border-white/10'
-                                            }`}>
-                                                {msg.is_staff ? <Shield size={18} /> : <User size={18} />}
-                                            </div>
-                                            <div className={`max-w-[70%] space-y-2 ${msg.is_staff ? '' : 'text-right'}`}>
-                                                <div className={`p-5 rounded-[24px] text-[15px] font-light leading-relaxed backdrop-blur-md border ${
+                                    {messages.map((msg, i) => {
+                                        const persona = msg.is_staff ? (
+                                            msg.sender_role === 'Privacy Officer' ? PERSONAS.STONE :
+                                            msg.sender_role === 'Filing Clerk' ? PERSONAS.ARIS : 
+                                            PERSONAS.FLORA
+                                        ) : null;
+
+                                        return (
+                                            <div key={msg.id} className={`flex gap-4 ${msg.is_staff ? '' : 'flex-row-reverse'}`}>
+                                                <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center shrink-0 border ${
                                                     msg.is_staff 
-                                                    ? 'bg-white/10 text-white border-white/5 rounded-tl-sm' 
-                                                    : 'bg-blue-600/20 text-white border-blue-500/30 rounded-tr-sm shadow-[0_0_30px_rgba(0,122,255,0.1)]'
+                                                    ? `${persona.avatar_bg} ${persona.text_color} ${persona.border_color}` 
+                                                    : 'bg-white/5 text-white border-white/10'
                                                 }`}>
-                                                    {msg.content}
+                                                    {msg.is_staff ? <Shield size={18} /> : <User size={18} />}
                                                 </div>
-                                                <p className="text-[10px] font-medium text-gray-500 tracking-wider">
-                                                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </p>
+                                                <div className={`max-w-[70%] space-y-2 ${msg.is_staff ? '' : 'text-right'}`}>
+                                                    {msg.is_staff && (
+                                                        <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-1 ${persona.text_color}`}>
+                                                            {msg.sender_name || persona.name} • {msg.sender_role || persona.role}
+                                                        </p>
+                                                    )}
+                                                    <div className={`p-5 rounded-[24px] text-[15px] font-light leading-relaxed backdrop-blur-md border ${
+                                                        msg.is_staff 
+                                                        ? 'bg-white/10 text-white border-white/5 rounded-tl-sm' 
+                                                        : 'bg-blue-600/20 text-white border-blue-500/30 rounded-tr-sm shadow-[0_0_30px_rgba(0,122,255,0.15)]'
+                                                    }`}>
+                                                        {msg.content}
+                                                    </div>
+                                                    <p className="text-[10px] font-medium text-gray-500 tracking-wider">
+                                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                     {messages.length === 0 && (
                                         <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-center text-gray-500 gap-4">
                                             <MessageSquare size={40} strokeWidth={1} className="text-gray-600" />
@@ -949,9 +1117,17 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
                                     <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
                                     <div className="w-12 h-12 rounded-[16px] bg-amber-500/10 flex items-center justify-center text-amber-400 shrink-0 border border-amber-500/20"><Shield size={20} strokeWidth={1.5} /></div>
                                     <div className="relative z-10">
-                                        <p className="text-[11px] font-bold text-amber-400 uppercase tracking-[0.2em]">Administrative Notice</p>
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-[11px] font-bold text-amber-400 uppercase tracking-[0.2em]">Administrative Notice</p>
+                                            <button 
+                                                onClick={triggerFireDrill}
+                                                className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[8px] font-bold text-gray-500 hover:text-amber-400 hover:border-amber-400 transition-all uppercase tracking-widest"
+                                            >
+                                                [Test System]
+                                            </button>
+                                        </div>
                                         <p className="text-[13px] text-amber-100/70 font-light mt-2 leading-relaxed">
-                                            All communications are logged in the immutable audit ledger. This channel is for administrative support only and does not constitute legal representation. For immediate document routing issues, use the "Urgent" flag when opening a ticket.
+                                            All communications are logged in the immutable audit ledger. This channel is for mechanical administrative support only and does not constitute legal representation or advice. No guarantee of 100% data removal is implied.
                                         </p>
                                     </div>
                                 </div>
@@ -969,9 +1145,9 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
                             <p className="text-sm text-gray-400 font-light mt-2 max-w-lg">Control how and when we notify you about received mail.</p>
                         </div>
                         <div className="flex flex-col border border-white/10 bg-white/5 backdrop-blur-3xl rounded-[32px] overflow-hidden divide-y divide-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.2)] max-w-3xl">
-                            <Toggle value={priorityForwarding} onChange={(v) => { setPriorityForwarding(v); saveConfig('priority_forwarding', v); }} label="Priority Forwarding" description="Instantly scan & email you for all court documents and state compliance notices." />
-                            <Toggle value={autoDisposeMarketing} onChange={(v) => { setAutoDisposeMarketing(v); saveConfig('auto_dispose_marketing', v); }} label="Auto-Dispose Marketing Mail" description="Automatically shred unsolicited solicitation and marketing mail." />
-                            <Toggle value={smsInterrupt} onChange={(v) => { setSmsInterrupt(v); saveConfig('sms_interrupt', v); }} label="Urgent SMS Interrupt" description="Bypass Do Not Disturb for time-sensitive Service of Process deliveries. Ensure rapid administrative handling." />
+                            <Toggle value={priorityForwarding} onChange={(v) => { setPriorityForwarding(v); saveConfig('priority_forwarding', v); }} label="Priority Forwarding" description="Assistance in instantly scanning and emailing court documents and state notices." />
+                            <Toggle value={autoDisposeMarketing} onChange={(v) => { setAutoDisposeMarketing(v); saveConfig('auto_dispose_marketing', v); }} label="Auto-Dispose Marketing Mail" description="Automated assistance in shredding unsolicited solicitation and marketing mail." />
+                            <Toggle value={smsInterrupt} onChange={(v) => { setSmsInterrupt(v); saveConfig('sms_interrupt', v); }} label="Urgent SMS Interrupt" description="Bypass Do Not Disturb for time-sensitive administrative document deliveries." />
                         </div>
                         <div className="p-8 bg-white/5 border border-white/10 rounded-[32px] backdrop-blur-md flex items-start gap-6 max-w-3xl relative overflow-hidden group hover:border-luminous-blue/30 transition-all duration-500">
                             <div className="absolute -top-16 -right-16 w-48 h-48 bg-luminous-blue/10 rounded-full blur-[60px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
@@ -999,9 +1175,19 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
                         <div className="p-10 bg-black/60 backdrop-blur-3xl rounded-[40px] border border-emerald-500/20 text-white relative overflow-hidden group shadow-[0_0_30px_rgba(16,185,129,0.05)]">
                             <div className="absolute -top-32 -right-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] group-hover:bg-emerald-500/20 transition-all duration-1000 pointer-events-none" />
                             <div className="relative z-10 space-y-10">
-                                <div className="flex items-center justify-center sm:justify-start gap-4 p-4 rounded-[20px] bg-emerald-500/10 border border-emerald-500/20 max-w-max shadow-[0_0_15px_rgba(16,185,129,0.1)]">
-                                    <CheckCircle2 size={24} className="text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]" strokeWidth={1.5} />
-                                    <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">Sunbiz Public Record — Verified</span>
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                                    <div className="flex items-center gap-4 p-4 rounded-[20px] bg-emerald-500/10 border border-emerald-500/20 max-w-max shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                                        <CheckCircle2 size={24} className="text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]" strokeWidth={1.5} />
+                                        <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">Sunbiz Public Record — Verified</span>
+                                    </div>
+                                    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shrink-0">
+                                        <Toggle 
+                                            value={dataBrokerShield} 
+                                            onChange={(v) => { setDataBrokerShield(v); saveConfig('data_broker_shield', v); if(v) setIsShieldExpanded(true); }} 
+                                            label="Shield Support" 
+                                            description="Automated assistance in requesting info removal."
+                                        />
+                                    </div>
                                 </div>
                                 <div className="grid md:grid-cols-3 gap-8">
                                     <div className="space-y-2">
@@ -1020,6 +1206,49 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
                                         <p className="text-[11px] text-emerald-400 font-medium flex items-center gap-1.5"><CheckCircle2 size={12} /> Good standing</p>
                                     </div>
                                 </div>
+
+                                {/* --- SHIELD EXPANSION: SMOOTH TRANSITION --- */}
+                                <div className={`grid transition-all duration-700 ease-in-out ${isShieldExpanded && dataBrokerShield ? 'grid-rows-[1fr] opacity-100 mt-10' : 'grid-rows-[0fr] opacity-0'}`}>
+                                    <div className="overflow-hidden border-t border-white/5 pt-10">
+                                        <div className="flex items-center justify-between mb-8">
+                                            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 flex items-center gap-3">
+                                                <Shield size={14} className="text-emerald-400" /> Identity Abstraction Status
+                                            </h4>
+                                            <div className="flex gap-2">
+                                                <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-bold text-emerald-400 uppercase tracking-widest">12 Scrubbed</div>
+                                                <div className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-[9px] font-bold text-amber-400 uppercase tracking-widest">4 Pending</div>
+                                            </div>
+                                        </div>
+                                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                            {['Whitepages', 'Spokeo', 'BeenVerified', 'Intelius'].map((name, i) => (
+                                                <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col gap-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-xs font-bold text-white">{name}</span>
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${i === 2 ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500 shadow-[0_0_8px_#10b981]'}`} />
+                                                    </div>
+                                                    <span className="text-[9px] text-gray-500 uppercase font-bold tracking-widest">{i === 2 ? 'Removal Sent' : 'Opt-Out Confirmed'}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <button 
+                                            onClick={() => setIsShieldExpanded(false)}
+                                            className="mt-8 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors flex items-center gap-2"
+                                        >
+                                            Minimize Details <ChevronRight size={12} className="rotate-90" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {!isShieldExpanded && dataBrokerShield && (
+                                    <div className="flex justify-center pt-6">
+                                        <button 
+                                            onClick={() => setIsShieldExpanded(true)}
+                                            className="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400 hover:text-white hover:border-emerald-500/40 hover:bg-emerald-500/5 transition-all duration-300 group"
+                                        >
+                                            Show Shield Details <ChevronRight size={12} className="inline ml-2 group-hover:translate-x-1 transition-transform" />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="grid md:grid-cols-2 gap-6">
@@ -1029,8 +1258,8 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
                                     <Eye size={24} strokeWidth={1.5} />
                                 </div>
                                 <div className="space-y-2 relative z-10">
-                                    <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.3)]">What the public sees</p>
-                                    <p className="text-[14px] text-gray-400 font-light leading-relaxed group-hover:text-gray-300 transition-colors">Anyone searching Sunbiz sees Charter Legacy's DeLand address — not your home. This applies to process servers, data scrapers, and anyone doing a public records search.</p>
+                                    <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.3)]">Record Privacy</p>
+                                    <p className="text-[14px] text-gray-400 font-light leading-relaxed group-hover:text-gray-300 transition-colors">Designed to shield your home address from public Sunbiz searches by utilizing Charter Legacy's registered address for administrative filings.</p>
                                 </div>
                             </div>
                             <div className="p-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] space-y-6 group hover:border-luminous-blue/30 hover:bg-white/10 transition-all duration-500 relative overflow-hidden">

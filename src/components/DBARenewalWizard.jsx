@@ -122,13 +122,16 @@ const DBARenewalWizard = ({ llcData, activeDBA, onClose, onComplete }) => {
     setConfirmationCode(code);
 
     try {
-      // 1. Update DBA record
-    if (activeDBA?.id) {
-      await supabase
-        .from("dbas")
-        .update({ status: 'Renewing' })
-        .eq('id', activeDBA.id);
-    }
+      // 1. Update DBA record status to preventing duplicate renewals
+      if (activeDBA?.id) {
+        await supabase
+          .from("dbas")
+          .update({ 
+            status: 'Renewing',
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', activeDBA.id);
+      }
 
       // 2. Queue for fulfillment team
       await supabase.from("marketing_queue").insert([{
@@ -136,10 +139,11 @@ const DBARenewalWizard = ({ llcData, activeDBA, onClose, onComplete }) => {
           event_type: "DBA_RENEWAL",
           metadata: {
             entity_id: llcData?.id,
+            dba_id: activeDBA?.id,
             dba_name: activeDBA?.dba_name || 'Unknown DBA',
             confirmation_code: code,
             total_paid: 50.0,
-            dba_record_id: activeDBA?.id || null
+            renewal_type: "Statutory"
           },
           status: "PENDING",
       }]);

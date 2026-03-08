@@ -10,6 +10,12 @@ import CommunicationCenter from './modules/CommunicationCenter';
 import FormationFactory from './modules/FormationFactory';
 import NodeAdmin from './modules/NodeAdmin';
 import RASettingsPanel from './components/RASettingsPanel';
+import StaffLoginForm from './components/FulfillmentPortal/StaffLoginForm';
+import FulfillmentToast from './components/FulfillmentPortal/FulfillmentToast';
+import FulfillmentSidebar from './components/FulfillmentPortal/FulfillmentSidebar';
+import FulfillmentFooter from './components/FulfillmentPortal/FulfillmentFooter';
+import { useStaffAuth } from './hooks/FulfillmentPortal/useStaffAuth';
+import { useDocumentIngestion } from './hooks/FulfillmentPortal/useDocumentIngestion';
 import { supabase } from '../lib/supabase';
 import { performOCR } from '../lib/ocrEngine';
 import { classifyDocumentLocal } from '../lib/aiClassifier';
@@ -33,215 +39,14 @@ const MODULES = [
 ];
 
 // --- UTILITIES ---
-const getInitials = (name, email) => {
-    if (name && name.trim()) {
-        const parts = name.trim().split(/\s+/);
-        if (parts.length >= 2) {
-            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-        }
-        return parts[0].substring(0, 2).toUpperCase();
-    }
-    if (email && email.includes('@')) {
-        const prefix = email.split('@')[0];
-        return prefix.substring(0, 2).toUpperCase();
-    }
-    return '?';
-};
-
-const calculateSHA256 = async (file) => {
-    const buffer = await file.arrayBuffer();
-    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-};
-
-// --- COMPONENTS ---
-const Toast = ({ message, type, onDismiss }) => {
-    useEffect(() => {
-        const timer = setTimeout(onDismiss, 5000);
-        return () => clearTimeout(timer);
-    }, [onDismiss]);
-
-    const colors = {
-        success: 'bg-emerald-600 text-white',
-        error: 'bg-red-600 text-white',
-        info: 'bg-luminous-blue text-white',
-        warning: 'bg-amber-500 text-white'
-    };
-
-    return (
-        <div className={`fixed bottom-8 right-8 z-[200] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${colors[type] || colors.info}`}>
-            <Activity size={18} className="animate-pulse" />
-            <p className="text-xs font-black uppercase tracking-widest">{message}</p>
-            <button onClick={onDismiss} className="ml-4 opacity-50 hover:opacity-100"><X size={14} /></button>
-        </div>
-    );
-};
-
-const StaffLoginForm = ({ onLoginSuccess }) => {
-    const [id, setId] = useState('');
-    const [password, setPassword] = useState('');
-    const [isThinking, setIsThinking] = useState(false);
-    const [error, setError] = useState(null);
-    const [mode, setMode] = useState('login'); // login, recovery
-    const [recoveryEmail, setRecoveryEmail] = useState('');
-
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setIsThinking(true);
-        setError(null);
-        
-        try {
-            // -- DEV BYPASS PROTOCOL --
-            if (id === 'admin' && (password === 'charter1028' || password === 'admin')) {
-                console.warn('⚠️  STAFF BYPASS ENGAGED: AUTHORIZING DEVELOPER OVERRIDE ⚠️');
-                const mockStaff = {
-                    id: 'staff-dev-override',
-                    email: 'admin@charterlegacy.com',
-                    app_metadata: { staff_role: 'Superuser' },
-                    user_metadata: { full_name: 'Andytreusch (Dev)' }
-                };
-                onLoginSuccess(mockStaff);
-                return;
-            }
-
-            if (!supabase?.auth) {
-                throw new Error('Security Node offline. Please refresh.');
-            }
-
-            const { data, error: loginError } = await supabase.auth.signInWithPassword({
-                email: id.includes('@') ? id : `${id}@charter-staff.internal`,
-                password: password
-            });
-
-            if (loginError) throw loginError;
-            onLoginSuccess(data.user);
-        } catch (err) {
-            setError(err.message);
-            setIsThinking(false);
-        }
-    };
-
-    const handleRecovery = async (e) => {
-        e.preventDefault();
-        setIsThinking(true);
-        try {
-            await supabase.from('staff_recovery_requests').insert({
-                staff_email: recoveryEmail,
-                requested_node: 'DeLand-01',
-                reason: 'Operator forgot access credentials.'
-            });
-            setError('Recovery Protocol Initiated. Contact Node Superuser.');
-            setIsThinking(false);
-            setTimeout(() => setMode('login'), 3000);
-        } catch (err) {
-            setError('Recovery Sync Failed.');
-            setIsThinking(false);
-        }
-    };
-
-    return (
-        <div className="min-h-screen bg-luminous-ink flex items-center justify-center p-6 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-64 h-64 bg-luminous-blue rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-64 h-64 bg-hacker-blue rounded-full blur-[120px]" />
-            </div>
-
-            <div className="w-full max-w-md relative z-10">
-                <div className="mb-12 text-center">
-                    <div className="w-20 h-20 bg-white/5 backdrop-blur-md rounded-[32px] border border-white/10 flex items-center justify-center mx-auto mb-6 shadow-2xl">
-                        {mode === 'login' ? <Lock className="text-luminous-blue" size={32} /> : <ShieldAlert className="text-amber-500" size={32} />}
-                    </div>
-                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter mb-2">
-                        {mode === 'login' ? 'Internal Vault.' : 'Recovery.'}
-                    </h1>
-                    <p className="text-[10px] text-luminous-blue font-black uppercase tracking-[0.4em]">Fulfillment Protocol Node</p>
-                </div>
-
-                {mode === 'login' ? (
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        <div className="space-y-1">
-                            <label className="text-[9px] font-black text-white/40 uppercase tracking-widest ml-4">Credential ID</label>
-                            <input 
-                                type="text" 
-                                required
-                                value={id}
-                                onChange={(e) => setId(e.target.value)}
-                                placeholder="OPERATOR_CODE"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm font-bold outline-none focus:border-luminous-blue/50 focus:bg-white/10 transition-all placeholder:text-white/20"
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <div className="flex justify-between items-center ml-4 mr-1">
-                                <label className="text-[9px] font-black text-white/40 uppercase tracking-widest">Access Key</label>
-                                <button type="button" onClick={() => setMode('recovery')} className="text-[8px] font-black text-luminous-blue uppercase tracking-widest hover:underline">Forgot?</button>
-                            </div>
-                            <input 
-                                type="password" 
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm font-bold outline-none focus:border-luminous-blue/50 focus:bg-white/10 transition-all placeholder:text-white/20"
-                            />
-                        </div>
-                        {error && (
-                            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-[10px] font-black uppercase tracking-widest text-center animate-shake">
-                                {error}
-                            </div>
-                        )}
-                        <button 
-                            type="submit"
-                            disabled={isThinking}
-                            className="w-full bg-luminous-blue hover:bg-hacker-blue text-white py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-luminous-blue/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                        >
-                            {isThinking ? <Activity className="animate-spin" size={16} /> : <Zap size={16} />}
-                            Initiate Session
-                        </button>
-                    </form>
-                ) : (
-                    <form onSubmit={handleRecovery} className="space-y-4">
-                        <div className="space-y-1">
-                            <label className="text-[9px] font-black text-white/40 uppercase tracking-widest ml-4">Registrar Email</label>
-                            <input 
-                                type="email" 
-                                required
-                                value={recoveryEmail}
-                                onChange={(e) => setRecoveryEmail(e.target.value)}
-                                placeholder="name@charter-staff.internal"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm font-bold outline-none focus:border-luminous-blue/50 focus:bg-white/10 transition-all placeholder:text-white/20"
-                            />
-                        </div>
-                        {error && (
-                            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-500 text-[10px] font-black uppercase tracking-widest text-center">
-                                {error}
-                            </div>
-                        )}
-                        <div className="flex gap-2">
-                            <button type="button" onClick={() => setMode('login')} className="flex-1 py-4 text-white/40 text-[9px] font-black uppercase tracking-widest hover:text-white transition-all">Back</button>
-                            <button 
-                                type="submit"
-                                disabled={isThinking}
-                                className="flex-2 bg-amber-500 hover:bg-amber-400 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
-                            >
-                                {isThinking ? <Activity size={14} className="animate-spin" /> : <ShieldAlert size={14} />}
-                                Request Audit
-                            </button>
-                        </div>
-                    </form>
-                )}
-            </div>
-        </div>
-    );
-};
+// Helper functions removed as they are now handled by child components.
 
 const FulfillmentPortal = () => {
-    const [user, setUser] = useState(null);
     const [activeModule, setActiveModule] = useState('ra');
-    const [staffRole, setStaffRole] = useState('staff');
     const [showSettings, setShowSettings] = useState(false);
-    const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState(null);
+
+    const { user, staffRole, loading, setLoading, handleLoginSuccess, handleLogout } = useStaffAuth();
 
     // RA-Specific Shared State (Persisted during module switches)
     const [queue, setQueue] = useState([]);
@@ -258,207 +63,43 @@ const FulfillmentPortal = () => {
         return saved ? JSON.parse(saved) : ['Tax Mail', 'Annual Report', 'State Notice'];
     });
 
-    // Watch Folder State
-    const [watchFolder, setWatchFolder] = useState(() => localStorage.getItem('cl_watch_folder') || 'C:\\Scanner\\RA-Inbox');
-    const [editingFolder, setEditingFolder] = useState(false);
-    const [folderDraft, setFolderDraft] = useState(() => localStorage.getItem('cl_watch_folder') || 'C:\\Scanner\\RA-Inbox');
-    const [isScanning, setIsScanning] = useState(false);
-    const [fileBuffer, setFileBuffer] = useState([]); // Real File objects from local OS
-    const folderInputRef = useRef(null);
-
-    // Inquiry-Specific Shared State
-    const [inquiries, setInquiries] = useState([]);
-    const [activeInquiry, setActiveInquiry] = useState(null);
-    const [messages, setMessages] = useState([]);
-
-    // --- RA INGESTION ENGINE ---
-    const triggerFolderPicker = () => {
-        folderInputRef.current?.click();
-    };
-
-    const mapLocalFileToQueueItem = (file) => ({
-        id: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        docTitle: file.name,
-        entity: '',
-        hubId: '',
-        sunbizId: '',
-        category: 'Unclassified',
-        received: 'Just Scanned',
-        status: 'Inbound',
-        initials: '??',
-        aiStatus: 'needs_review',
-        aiConfidence: 0,
-        rawFile: file, // Keep reference to binary
-        preview: {
-            heading: file.name,
-            body: `Local document pending binary analysis... (${(file.size / 1024).toFixed(1)} KB)`
-        },
-        meta: {
-            size: `${(file.size / 1024).toFixed(1)} KB`,
-            type: file.type
+    // Watch Folder State & Document Ingestion Hook
+    const {
+        watchFolder,
+        isScanning,
+        fileBuffer,
+        folderInputRef,
+        setWatchFolder,
+        triggerFolderPicker,
+        handleFolderSelect,
+        handleScanFolder
+    } = useDocumentIngestion({
+        user,
+        operatorNode: CURRENT_OPERATOR.node,
+        setToast,
+        onIngestionComplete: (processedNewItems, duplicatesCount) => {
+            if (processedNewItems.length > 0) {
+                setQueue(prev => [...processedNewItems, ...prev]);
+                setActiveItem(processedNewItems[0].id);
+                setActiveModule('ra');
+                setViewMode('queue');
+                setToast({ 
+                    type: 'success', 
+                    message: `Ingested ${processedNewItems.length} documents. ${duplicatesCount > 0 ? `(${duplicatesCount} duplicates skipped)` : ''}` 
+                });
+            } else if (duplicatesCount > 0) {
+                setToast({ type: 'warning', message: `All ${duplicatesCount} documents were identified as duplicates and skipped.` });
+            }
         }
     });
 
-    const handleScanFolder = async () => {
-        if (fileBuffer.length === 0) {
-            setToast({ type: 'info', message: 'No new documents detected in buffer.' });
-            return;
-        }
-
-        setIsScanning(true);
-        const processedNewItems = [];
-        let duplicatesCount = 0;
-
-        for (const file of fileBuffer) {
-            try {
-                const contentHash = await calculateSHA256(file);
-                
-                // 1. Check for global duplicates (liability prevention)
-                const { data: existingDoc } = await supabase
-                    .from('registered_agent_documents')
-                    .select('id')
-                    .eq('content_hash', contentHash)
-                    .maybeSingle();
-                
-                const { data: existingLog } = await supabase
-                    .from('ra_service_log')
-                    .select('id')
-                    .eq('document_hash', contentHash)
-                    .maybeSingle();
-
-                if (existingDoc || existingLog) {
-                    duplicatesCount++;
-                    continue; 
-                }
-
-                // 2. Persistent Ingest: Upload to pending storage
-                const ext = file.name.split('.').pop();
-                const path = `pending/${Date.now()}_${Math.random().toString(36).substr(2,9)}.${ext}`;
-                
-                const { error: uploadError } = await supabase.storage
-                    .from('ra-documents')
-                    .upload(path, file);
-                
-                if (uploadError) throw uploadError;
-
-                // 3. Create Service Log Entry (Status: RECEIVED)
-                // This persistent record ensures the document is tracked even if the UI is closed.
-                const { data: logEntry, error: logError } = await supabase
-                    .from('ra_service_log')
-                    .insert({
-                        document_name: file.name,
-                        document_hash: contentHash,
-                        status: 'RECEIVED',
-                        staff_id: user.id,
-                        node_id: CURRENT_OPERATOR.node,
-                        staff_notes: `Initial ingestion from ${watchFolder}`,
-                        file_path: path
-                    })
-                    .select()
-                    .single();
-
-                if (logError) {
-                    // Logic for specific PG/PostgREST schema errors (Qodo Robustness)
-                    const errorDetail = logError.message || logError.details || 'Unknown DB Error';
-                    if (errorDetail.includes('column') && errorDetail.includes('does not exist')) {
-                         throw new Error(`Schema Mismatch: ${errorDetail}. Please contact system administrator.`);
-                    }
-                    throw logError;
-                }
-
-                // 4. Map to UI Queue Item
-                const item = mapLocalFileToQueueItem(file);
-                item.id = logEntry.id; // Sync with DB ID
-                item.contentHash = contentHash;
-                item.filePath = path;
-                processedNewItems.push(item);
-
-            } catch (err) {
-                console.error(`Failed to ingest ${file.name}:`, err);
-                setToast({ type: 'error', message: `Critical failure on ${file.name}` });
-            }
-        }
-        
-        if (processedNewItems.length > 0) {
-            setQueue(prev => [...processedNewItems, ...prev]);
-            
-            // Log to Immutable Audit Ledger
-            try {
-                const auditEntries = processedNewItems.map(item => ({
-                    user_id: user.id,
-                    action: 'DOC_RECEIVED',
-                    actor_type: 'CHARTER_ADMIN',
-                    actor_email: user.email,
-                    outcome: 'SUCCESS',
-                    metadata: {
-                        file_name: item.docTitle,
-                        source_node: CURRENT_OPERATOR.node,
-                        watch_folder: watchFolder,
-                        hash: item.contentHash
-                    }
-                }));
-                await supabase.from('ra_document_audit').insert(auditEntries);
-            } catch (auditErr) {
-                console.warn('Silent Audit Failure:', auditErr);
-            }
-        }
-
-        setFileBuffer([]); // Clear buffer after ingestion
-        setIsScanning(false);
-        
-        if (processedNewItems.length > 0) {
-            setActiveItem(processedNewItems[0].id);
-            setActiveModule('ra');
-            setViewMode('queue');
-            setToast({ 
-                type: 'success', 
-                message: `Ingested ${processedNewItems.length} documents. ${duplicatesCount > 0 ? `(${duplicatesCount} duplicates skipped)` : ''}` 
-            });
-        } else if (duplicatesCount > 0) {
-            setToast({ type: 'warning', message: `All ${duplicatesCount} documents were identified as duplicates and skipped.` });
-        }
-    };
-
-    const handleFolderSelect = (e) => {
-        const files = Array.from(e.target.files).filter(f => 
-            f.type.includes('pdf') || f.type.includes('image') || f.name.match(/\.(pdf|jpg|jpeg|png)$/i)
-        );
-        
-        if (files.length > 0) {
-            setFileBuffer(files);
-            setToast({ type: 'info', message: `${files.length} documents staged for ingestion.` });
-        }
-        // Reset input so same folder can be picked again if needed
-        e.target.value = '';
-    };
-
-    const handleSaveFolder = () => {
-        setWatchFolder(folderDraft);
-        localStorage.setItem('cl_watch_folder', folderDraft);
-        setEditingFolder(false);
-        setToast({ type: 'success', message: 'Watch folder configuration updated.' });
-    };
-
-    const cancelFolderEdit = () => {
-        setFolderDraft(watchFolder);
-        setEditingFolder(false);
-    };
-
     // --- LOGIC ---
     useEffect(() => {
-        const checkUser = async () => {
-            console.warn('⚠️ DIAGNOSTIC MODE: Bypassing Auth Check ⚠️');
-            setUser({
-                id: 'staff-dev-override',
-                email: 'admin@charterlegacy.com',
-                app_metadata: { staff_role: 'Superuser' }
-            });
-            setStaffRole('Superuser');
+        // Load initial data only if we have an authenticated user and auth is done loading
+        if (user && !loading) {
             loadInitialData();
-            setLoading(false);
-        };
-        checkUser();
-    }, []);
+        }
+    }, [user, loading]);
 
     const loadInitialData = async () => {
         try {
@@ -535,80 +176,13 @@ const FulfillmentPortal = () => {
         }
     };
 
-    const handleLogout = async () => {
-        await supabase.auth.signOut();
-        setUser(null);
+    const handleLogoutWithHook = async () => {
+        await handleLogout();
+        // Clear local state if necessary
     };
 
-    // --- RENDER HELPERS ---
-    const renderModuleSidebar = () => (
-        <aside className="w-80 bg-luminous-ink border-r border-white/5 flex flex-col p-6 shrink-0">
-            <div className="mb-12 px-4">
-                <h2 className="text-xl font-black text-white uppercase tracking-tighter">Workhorse.</h2>
-                <p className="text-[9px] text-luminous-blue font-black uppercase tracking-[0.3em] opacity-80 mt-1">Personnel Interface v2.1</p>
-            </div>
-
-            <nav className="flex-1 space-y-2">
-                {MODULES.map(mod => (
-                    <button 
-                        key={mod.id}
-                        onClick={() => !mod.locked && setActiveModule(mod.id)}
-                        className={`w-full group relative p-5 rounded-[28px] text-left transition-all duration-300 border ${
-                            activeModule === mod.id 
-                                ? 'bg-white/10 border-white/10 shadow-xl' 
-                                : 'hover:bg-white/5 border-transparent'
-                        } ${mod.locked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-colors ${
-                                activeModule === mod.id ? 'bg-luminous-blue text-white' : 'bg-white/5 text-white/40 group-hover:text-white/60'
-                            }`}>
-                                <mod.icon size={18} />
-                            </div>
-                            <div className="min-w-0">
-                                <h3 className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
-                                    activeModule === mod.id ? 'text-white' : 'text-white/40 group-hover:text-white/60'
-                                }`}>
-                                    {mod.label}
-                                </h3>
-                                <p className="text-[9px] text-white/20 font-medium italic truncate mt-0.5">{mod.desc}</p>
-                            </div>
-                            {mod.locked && <Lock size={12} className="ml-auto text-white/10" />}
-                            {activeModule === mod.id && (
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-luminous-blue shadow-[0_0_12px_rgba(45,108,223,0.8)]" />
-                            )}
-                        </div>
-                    </button>
-                ))}
-            </nav>
-
-            <div className="mt-auto space-y-4 px-4">
-                <div className="p-5 bg-white/5 rounded-[32px] border border-white/5">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-900 border border-white/10 flex items-center justify-center text-white text-[10px] font-black">
-                            {getInitials(user?.email?.split('@')[0], user?.email)}
-                        </div>
-                        <div className="min-w-0">
-                            <p className="text-[10px] font-black text-white uppercase tracking-tight truncate">{user?.email?.split('@')[0] || 'AL-901'}</p>
-                            <p className="text-[8px] text-luminous-blue font-black uppercase tracking-widest">{staffRole}</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-2">
-                        <button onClick={handleLogout} className="flex-1 py-3 bg-white/5 hover:bg-red-500/10 hover:text-red-500 text-white/40 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
-                            <LogOut size={10} /> Exit Session
-                        </button>
-                        <button 
-                            onClick={() => setShowSettings(true)} 
-                            className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white/40 rounded-xl flex items-center justify-center gap-2 transition-all group"
-                        >
-                            <Settings size={14} className="group-hover:rotate-45 transition-transform" />
-                            <span className="text-[8px] font-black uppercase tracking-widest">Settings</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </aside>
-    );
+    // --- RENDER ---
+    // Render helpers removed; transitioning to pure functional shell components.
 
     if (loading) {
         return (
@@ -620,12 +194,20 @@ const FulfillmentPortal = () => {
     }
 
     if (!user) {
-        return <StaffLoginForm onLoginSuccess={setUser} />;
+        return <StaffLoginForm onLoginSuccess={handleLoginSuccess} />;
     }
 
     return (
         <div className="h-screen bg-[#F8F9FA] flex overflow-hidden">
-            {renderModuleSidebar()}
+            <FulfillmentSidebar 
+                modules={MODULES}
+                activeModule={activeModule}
+                setActiveModule={setActiveModule}
+                user={user}
+                staffRole={staffRole}
+                onLogout={handleLogoutWithHook}
+                onOpenSettings={() => setShowSettings(true)}
+            />
             
             <main className="flex-1 p-8 lg:p-12 xl:p-16 overflow-hidden flex flex-col">
                 <div className="max-w-[1400px] w-full mx-auto h-full flex flex-col min-h-0">
@@ -713,21 +295,12 @@ const FulfillmentPortal = () => {
                 </div>
             </main>
 
-            <footer className="fixed bottom-0 left-80 right-0 h-10 px-8 border-t border-gray-100 bg-white/50 backdrop-blur-md flex items-center justify-between z-40">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[8px] font-black text-luminous-ink uppercase tracking-widest">{CURRENT_OPERATOR.node} // CONNECTED</span>
-                    </div>
-                    <div className="w-px h-3 bg-gray-200" />
-                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Operator: {user?.email?.split('@')[0]}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                    <p className="text-[8px] font-medium text-gray-400 italic">Security Layer: AES-256-GCM Encryption Active</p>
-                </div>
-            </footer>
+            <FulfillmentFooter 
+                operatorNode={CURRENT_OPERATOR.node}
+                userEmail={user?.email}
+            />
 
-            {toast && <Toast {...toast} onDismiss={() => setToast(null)} />}
+            {toast && <FulfillmentToast {...toast} onDismiss={() => setToast(null)} />}
 
             {/* Settings Overlay */}
             {showSettings && (
