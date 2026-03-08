@@ -99,10 +99,22 @@ const CertificateOfStatusWizard = ({ llcData, onClose, onComplete }) => {
   const handleSetupCheckout = async () => {
     setLoading(true);
     try {
+      // Eager status sync — prevent duplicate orders
+      if (llcData?.id) {
+        await supabase
+          .from('llcs')
+          .update({ status: 'Requesting Certificate', updated_at: new Date().toISOString() })
+          .eq('id', llcData.id);
+      }
+
       const { data: intentData, error } = await supabase.functions.invoke(
         "create-payment-intent",
         {
-          body: { packageId: certified ? 'cert_status_certified' : 'cert_status_standard', userId: llcData?.user_id || 'system_fallback' },
+          body: {
+            packageId: certified ? 'cert_status_certified' : 'cert_status_standard',
+            userId: llcData?.user_id || 'system_fallback',
+            amount: Math.round(stateFee * 100),
+          },
         },
       );
       if (error) {
@@ -138,7 +150,7 @@ const CertificateOfStatusWizard = ({ llcData, onClose, onComplete }) => {
             entity_name: llcData?.llc_name,
             document_number: llcData?.document_number || llcData?.sunbiz_document_number || '',
             confirmation_code: code,
-            certified_copy: certified,
+            certificate_type: certified ? 'Certified Copy' : 'Standard',
             total_paid: stateFee,
           },
           status: "PENDING",
@@ -149,7 +161,12 @@ const CertificateOfStatusWizard = ({ llcData, onClose, onComplete }) => {
           user_id: llcData?.user_id,
           action: "CERTIFICATE_OF_STATUS_ORDERED",
           actor_type: "CLIENT",
-          metadata: { confirmation_code: code, certified_copy: certified, total_paid: stateFee, entity_name: llcData?.llc_name },
+          metadata: {
+            confirmation_code: code,
+            certificate_type: certified ? 'Certified Copy' : 'Standard',
+            total_paid: stateFee,
+            entity_name: llcData?.llc_name,
+          },
       }]);
 
       setStep(4);

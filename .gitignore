@@ -31,3 +31,8 @@ npm-debug.log*
 # Temporary files
 tmp/
 temp/
+
+# Playwright (SECURITY: auth state contains JWT tokens)
+playwright/.auth/
+playwright-report/
+test-results/

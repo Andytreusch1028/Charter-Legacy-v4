@@ -26,7 +26,7 @@ serve(async (req) => {
 
   try {
     // 1. Parse Request Body
-    const { packageId, userId } = await req.json()
+    const { packageId, userId, amount: dynamicAmount } = await req.json()
 
     if (!packageId || !userId) {
       throw new Error('Missing packageId or userId')
@@ -56,6 +56,22 @@ serve(async (req) => {
         case 'annual_report':
             amount = 19900 // $199.00
             description = 'Florida Annual Report Renewal'
+            break
+        case 'cert_status_standard':
+            amount = 500 // $5.00
+            description = 'Certificate of Status — Standard'
+            break
+        case 'cert_status_certified':
+            amount = 3000 // $30.00
+            description = 'Certificate of Status — Certified Copy'
+            break
+        case 'dba_renewal':
+            amount = 5000 // $50.00
+            description = 'DBA Renewal — Statutory Filing'
+            break
+        case 'reinstatement':
+            amount = dynamicAmount || 10000 // dynamic, default $100.00
+            description = 'LLC Reinstatement — Florida'
             break
         default:
             throw new Error('Invalid Package ID')
