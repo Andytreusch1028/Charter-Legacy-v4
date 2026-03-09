@@ -9,7 +9,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "vite"
+    "start": "vite",
+    "e2e": "playwright test"
   },
   "keywords": [],
   "author": "",
