@@ -29,7 +29,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Lint
         if: ${{ hashFiles('.eslintrc.*') != '' }}
@@ -48,6 +48,9 @@ jobs:
         env:
           CI: true
 
+      - name: Enforce import boundaries (dependency-cruiser)
+        run: npx --yes dependency-cruiser --config .dependency-cruiser.js src --validate
+
   e2e:
     name: Playwright E2E (optional)
     runs-on: ubuntu-latest
@@ -64,7 +67,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
