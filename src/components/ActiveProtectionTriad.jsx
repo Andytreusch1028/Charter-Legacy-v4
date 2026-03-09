@@ -96,10 +96,18 @@ const ActiveProtectionTriad = ({
                     icon={Building2}
                     label="Business"
                     sublabel="Entity Shield"
-                    status="Active"
-                    detail="Annual report filed · Good standing · BOI submitted"
+                    status={llcData?.llc_status || "Active"}
+                    detail={
+                        llcData?.llc_status === 'Dissolving' ? "Dissolution in progress · Legal status pending" :
+                        llcData?.llc_status === 'Requesting Certificate' ? "Certificate of Status processing · Verification active" :
+                        "Annual report filed · Good standing · BOI submitted"
+                    }
                     cta="Manage Entity"
-                    accentColor="green"
+                    accentColor={
+                        llcData?.llc_status === 'Dissolving' ? "purple" : 
+                        llcData?.llc_status === 'Requesting Certificate' ? "blue" : 
+                        "green"
+                    }
                     onClick={() => setIsEntityShieldOpen(true)}
                 />
 
@@ -108,8 +116,12 @@ const ActiveProtectionTriad = ({
                     icon={Fingerprint}
                     label="Owner"
                     sublabel="Personal Shield"
-                    status="Active"
-                    detail="14 brokers removed · Identity suppressed · Alerts on"
+                    status={llcData?.privacy_shield_active ? "Active" : "Protected"}
+                    detail={
+                        llcData?.privacy_shield_active 
+                        ? "14 brokers removed · Identity suppressed · Alerts on"
+                        : "Nominee services active · Address obfuscated"
+                    }
                     cta="View Report"
                     accentColor="purple"
                     onClick={() => setIsPrivacyShieldOpen(true)}

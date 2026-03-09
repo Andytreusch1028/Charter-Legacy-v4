@@ -41,7 +41,7 @@ export const OAContent = ({ companyName }) => (
   </>
 );
 
-export const BankContent = ({ companyName }) => (
+export const BankContent = ({ companyName, onOpenMercuryApply }) => (
   <>
     <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm text-[#007AFF]">
        <Landmark size={32} />
@@ -72,7 +72,7 @@ export const BankContent = ({ companyName }) => (
           
           <div className="grid gap-3">
              {/* Mercury */}
-             <a href="https://mercury.com/partner/charter-legacy" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-[#007AFF] hover:shadow-md transition-all group">
+             <div onClick={onOpenMercuryApply} className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-[#007AFF] hover:shadow-md transition-all group cursor-pointer">
                  <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-[#007AFF] flex items-center justify-center font-black text-xs text-white">M</div>
                     <span className="font-bold text-black group-hover:text-[#007AFF] transition-colors">Mercury</span>
@@ -80,7 +80,7 @@ export const BankContent = ({ companyName }) => (
                  <span className="text-[10px] uppercase font-black tracking-widest text-gray-400 group-hover:text-[#007AFF] flex items-center gap-1">
                     Open Account <ArrowRight size={12} />
                  </span>
-             </a>
+             </div>
 
              {/* Chase */}
              <a href="https://www.chase.com/business" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-[#007AFF] hover:shadow-md transition-all group">

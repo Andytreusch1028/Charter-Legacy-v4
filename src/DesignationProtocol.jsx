@@ -20,7 +20,7 @@ const DesignationProtocol = ({ user, onSuccess }) => {
     const [raAddress, setRaAddress] = useState('');
     const [raSignature, setRaSignature] = useState('');
 
-    const [members, setMembers] = useState([{ name: '', email: user?.email || '', role: 'Manager', address: '' }]);
+    const [members, setMembers] = useState([{ name: '', email: user?.email || '', role: 'Manager', address: '', percentage: 100 }]);
     
     // Ownership Structure (Double LLC)
     const [ownershipStructure, setOwnershipStructure] = useState('direct'); // 'direct' | 'holding'
@@ -190,7 +190,7 @@ const DesignationProtocol = ({ user, onSuccess }) => {
             alert("Maximum of 6 members/managers allowed for online filing.");
             return;
         }
-        setMembers([...members, { name: '', email: '', role: 'Member', address: '' }]);
+        setMembers([...members, { name: '', email: '', role: 'Member', address: '', percentage: 0 }]);
     };
 
     const updateMember = (index, field, value) => {
@@ -479,22 +479,36 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                                                     setMembers(newM);
                                                 }} className="text-red-400 hover:text-red-600"><X size={14} /></button>}
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <input 
-                                                    type="text" 
-                                                    placeholder="Full Name" 
-                                                    value={member.name}
-                                                    onChange={(e) => updateMember(idx, 'name', e.target.value)}
-                                                    className="bg-white p-3 rounded-xl text-sm font-bold outline-none border border-gray-200 focus:border-black"
-                                                />
-                                                <select 
-                                                    value={member.role}
-                                                    onChange={(e) => updateMember(idx, 'role', e.target.value)}
-                                                    className="bg-white p-3 rounded-xl text-sm font-bold outline-none border border-gray-200 focus:border-black"
-                                                >
-                                                    <option>Authorized Member</option>
-                                                    <option>Manager</option>
-                                                </select>
+                                            <div className="grid grid-cols-12 gap-4">
+                                                <div className="col-span-6">
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Full Name" 
+                                                        value={member.name}
+                                                        onChange={(e) => updateMember(idx, 'name', e.target.value)}
+                                                        className="w-full bg-white p-3 rounded-xl text-sm font-bold outline-none border border-gray-200 focus:border-black"
+                                                    />
+                                                </div>
+                                                <div className="col-span-4">
+                                                    <select 
+                                                        value={member.role}
+                                                        onChange={(e) => updateMember(idx, 'role', e.target.value)}
+                                                        className="w-full bg-white p-3 rounded-xl text-sm font-bold outline-none border border-gray-200 focus:border-black"
+                                                    >
+                                                        <option>Authorized Member</option>
+                                                        <option>Manager</option>
+                                                    </select>
+                                                </div>
+                                                <div className="col-span-2 relative">
+                                                    <input 
+                                                        type="number" 
+                                                        placeholder="%" 
+                                                        value={member.percentage}
+                                                        onChange={(e) => updateMember(idx, 'percentage', e.target.value)}
+                                                        className="w-full bg-white p-3 rounded-xl text-sm font-bold outline-none border border-gray-200 focus:border-black text-center pr-6"
+                                                    />
+                                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-black">%</span>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -516,11 +530,17 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                                             name: `${holdingCompanyName} (${holdingCompanyState})`, 
                                             email: user?.email, 
                                             role: 'Manager', // MGR
-                                            address: '' 
+                                            address: '',
+                                            percentage: 100
                                         }]);
                                     } else {
                                         if (members.some(m => !m.name.trim())) {
                                             alert("Please enter names for all members.");
+                                            return;
+                                        }
+                                        const total = members.reduce((sum, m) => sum + Number(m.percentage || 0), 0);
+                                        if (total !== 100) {
+                                            alert(`Total ownership must equal 100%. Current total: ${total}%`);
                                             return;
                                         }
                                     }

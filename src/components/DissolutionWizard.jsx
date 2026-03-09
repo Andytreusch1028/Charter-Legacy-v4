@@ -97,10 +97,22 @@ const DissolutionWizard = ({ llcData, onClose, onComplete }) => {
   const handleSetupCheckout = async () => {
     setLoading(true);
     try {
+      // Eager status sync — prevent duplicate dissolution orders
+      if (llcData?.id) {
+        await supabase
+          .from('llcs')
+          .update({ status: 'Dissolving', updated_at: new Date().toISOString() })
+          .eq('id', llcData.id);
+      }
+
       const { data: intentData, error } = await supabase.functions.invoke(
         "create-payment-intent",
         {
-          body: { packageId: 'llc_dissolution', userId: llcData?.user_id || 'system_fallback' },
+          body: {
+            packageId: 'llc_dissolution',
+            userId: llcData?.user_id || 'system_fallback',
+            amount: 3500,
+          },
         },
       );
       if (error) {
@@ -131,7 +143,7 @@ const DissolutionWizard = ({ llcData, onClose, onComplete }) => {
       if (llcData?.id) {
         await supabase
           .from("llcs")
-          .update({ llc_status: 'Dissolving' })
+          .update({ status: 'Dissolving', updated_at: new Date().toISOString() })
           .eq('id', llcData.id);
       }
 
@@ -144,6 +156,7 @@ const DissolutionWizard = ({ llcData, onClose, onComplete }) => {
             entity_name: llcData?.llc_name,
             document_number: llcData?.document_number || llcData?.sunbiz_document_number || '',
             confirmation_code: code,
+            filing_type: 'Articles of Dissolution',
             total_paid: 35.0,
           },
           status: "PENDING",
@@ -154,7 +167,13 @@ const DissolutionWizard = ({ llcData, onClose, onComplete }) => {
           user_id: llcData?.user_id,
           action: "DISSOLUTION_ORDERED",
           actor_type: "CLIENT",
-          metadata: { confirmation_code: code, total_paid: 35.0, entity_name: llcData?.llc_name },
+          metadata: {
+            confirmation_code: code,
+            filing_type: 'Articles of Dissolution',
+            total_paid: 35.0,
+            entity_name: llcData?.llc_name,
+            document_number: llcData?.document_number || llcData?.sunbiz_document_number || '',
+          },
       }]);
 
       setStep(5);

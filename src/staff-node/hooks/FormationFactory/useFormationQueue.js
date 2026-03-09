@@ -26,7 +26,7 @@ export const useFormationQueue = (supabase) => {
                             client_id: llc.user_id,
                             entityName: llc.llc_name || 'Unnamed Entity',
                             type: isPLLC ? 'PLLC' : 'LLC',
-                            action_type: llc.llc_status === 'AR Pending' ? 'ANNUAL_REPORT' : llc.llc_status === 'Reinstating' ? 'REINSTATEMENT' : llc.llc_status === 'Dissolving' ? 'DISSOLUTION' : 'FORMATION',
+                            action_type: llc.llc_status === 'AR Pending' ? 'ANNUAL_REPORT' : llc.llc_status === 'Reinstating' ? 'REINSTATEMENT' : llc.llc_status === 'Dissolving' ? 'DISSOLUTION' : llc.llc_status === 'Requesting Certificate' ? 'CERTIFICATE_OF_STATUS' : llc.llc_status === 'Renewing' ? 'DBA_RENEWAL' : 'FORMATION',
                             document_number: llc.sunbiz_document_number || '',
                             status: llc.llc_status || 'AWAITING_REVIEW',
                             submitted: new Date(llc.created_at).toLocaleDateString(),
@@ -99,7 +99,64 @@ export const useFormationQueue = (supabase) => {
                         });
                 }
 
-                let finalFormations = mapped ? [...mapped, ...mappedDbas] : [...mappedDbas];
+                // 3. Fetch marketing_queue (wizard orders)
+                const { data: mqData } = await supabase
+                    .from('marketing_queue')
+                    .select('*')
+                    .eq('status', 'PENDING')
+                    .order('created_at', { ascending: false });
+
+                // Map event_type to action_type
+                const EVENT_TO_ACTION = {
+                    'CERTIFICATE_OF_STATUS': 'CERTIFICATE_OF_STATUS',
+                    'DISSOLUTION': 'DISSOLUTION',
+                    'DBA_RENEWAL': 'DBA_RENEWAL',
+                    'REINSTATEMENT': 'REINSTATEMENT',
+                    'ANNUAL_REPORT': 'ANNUAL_REPORT',
+                };
+
+                let mappedOrders = [];
+                if (mqData) {
+                    // Collect entity IDs already in the LLC/DBA feeds to deduplicate
+                    const existingEntityIds = new Set([
+                        ...mapped.map(f => f.id),
+                        ...mappedDbas.map(f => f.id),
+                    ]);
+
+                    mappedOrders = mqData
+                        .filter(order => {
+                            const entityId = order.metadata?.entity_id;
+                            // Skip if this entity already appears in LLC/DBA feeds
+                            return !entityId || !existingEntityIds.has(entityId);
+                        })
+                        .map(order => {
+                            const meta = order.metadata || {};
+                            return {
+                                id: `mq-${order.id}`,
+                                client_id: order.email || 'unknown',
+                                entityName: meta.entity_name || 'Pending Order',
+                                type: meta.certificate_type ? 'CERT' : meta.filing_type ? 'FILING' : 'LLC',
+                                action_type: EVENT_TO_ACTION[order.event_type] || order.event_type,
+                                document_number: meta.document_number || '',
+                                status: 'PENDING',
+                                submitted: new Date(order.created_at).toLocaleDateString(),
+                                owner: order.email || 'Client',
+                                priority: order.event_type === 'DISSOLUTION' ? 'critical' : 'high',
+                                confirmation_code: meta.confirmation_code || '',
+                                total_paid: meta.total_paid || 0,
+                                certificate_type: meta.certificate_type || '',
+                                filing_type: meta.filing_type || '',
+                                filingOptions: {},
+                                principalAddress: { street: '', suite: '', city: '', state: '', zip: '' },
+                                mailingAddress: { isSame: true, street: '', suite: '', city: '', state: '', zip: '' },
+                                registeredAgent: { type: 'BUSINESS', businessName: 'Charter Legacy Services LLC', firstName: '', lastName: '', signature: '', street: '', city: '', state: '', zip: '' },
+                                correspondence: { name: order.email || 'Client', email: order.email || '' },
+                                authPersonnel: []
+                            };
+                        });
+                }
+
+                let finalFormations = [...mapped, ...mappedDbas, ...mappedOrders];
                 
                 // Always inject the AR Demo card in local dev for testing purposes
                 if (window.location.hostname === 'localhost') {

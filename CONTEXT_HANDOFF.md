@@ -1,73 +1,46 @@
-# Charter Legacy v4 - Context Handoff Protocol
+# Charter Legacy — Context Handoff
 
-## 🚀 Mission Status: "Operational Handbook & Scrivener Phase Complete"
+## 🎯 Current Goal
+**Client Dashboard: Wiring live statuses to UI rings (and Entity cards)**
 
-**Date:** February 7, 2026
-**Previous Agent:** The Architect / The Conductor
-
-### 🎯 Objective
-
-We have successfully implemented the end-to-end "Formation to Operation" flow. The user can now:
-
-1.  **Purchase** a Standard LLC ($249) via Stripe (or Mock Mode).
-2.  **Authenticate** (New or Existing User with Magic Link fallback).
-3.  **Designate** their LLC details (Name, Address, Members) via the `DesignationProtocol` wizard.
-4.  **Manage** their new entity in `DashboardZenith` (Obsidian Aesthetic).
-5.  **Generate** official documents (Operating Agreement, Banking Resolution) instantly via `FoundersBlueprint`.
+We were working on pulling live data from Supabase and wiring it to the "UI rings" or "Entity cards" on the client-facing dashboard. 
 
 ---
 
-### 🏗️ Critical Architecture Updates
-
-#### 1. The Designation Protocol (`src/DesignationProtocol.jsx`)
-
-- **Purpose:** Intercepts users who have paid but NOT yet named their company.
-- **Logic:** Checks `llcs` table for `llc_name === 'Pending Formation'`.
-- **Flow:** 4-Step Wizard (Name Check -> Address Selection -> Member Appointment -> Filing Execution).
-- **Database:** Updates the text record in Supabase to the real LLC name.
-
-#### 2. The High-Tech Scrivener (`src/FoundersBlueprint.jsx`)
-
-- **Purpose:** Generates legal PDFs client-side using `pdf-lib`.
-- **Status:** **Live & Functional.**
-- **Features:**
-  - **Operating Agreement:** dynamically inserts LLC Name, Members, and Dates into a formal legal template.
-  - **Banking Resolution:** Generates authorization to open bank accounts.
-  - **Interaction:** "Sign Digitally" and "Generate PDF" buttons trigger immediate downloads.
-
-#### 3. Authentication Resilience (`src/App.jsx`)
-
-- **Issue Solved:** Existing users entering wrong passwords during checkout were stuck.
-- **Fix:** Added logic to detect `Account exists` + `Invalid credentials`.
-- **Feature:** Displays a **"Forgot Password? Email me a one-time login link"** button to rescue the sale.
+## ✅ Completed in Previous Session
+1. **Certificate of Status Wizard & Dissolution Wizard** 
+   - Wired eager status syncs to the `llcs` table (e.g., `'Requesting Certificate'`, `'Dissolving'`).
+   - Passed dynamic cent amounts to the `create-payment-intent` Edge Function.
+2. **Payment Intent Edge Function (`create-payment-intent`)**
+   - Added support and IDs for Certificate of Status, DBA Renewal, and Reinstatement.
+3. **RA Sentry (Staff Console)**
+   - Wired `FormationQueueList.jsx` and `useFormationQueue.js` to fetch live pending `marketing_queue` orders.
+   - Merged these orders smoothly into the unified Fulfillment Portal feed, bypassing mock data.
+4. **Security Hardening**
+   - Scrubbed leaked JWT Playwright tokens from Git history using `git filter-branch` and updated `.gitignore`.
 
 ---
 
-### ⚠️ Current Blockers & Infrastructure
+## 🚧 Current Blocker / Context for Next Agent
+The final task on our checklist is to **"Wire live statuses to UI rings on the Client Dashboard"**. 
 
-- **Browser Agent Failure:** The previous session's `browser_subagent` failed to initialize due to a missing `$HOME` environment variable.
-- **Impact:** We could NOT run the automated "Auditor" test script to visually verify the flow.
-- **Action Required:** **The new agent MUST verify the flow manually or via a working browser agent.**
+However, we hit a roadblock identifying exactly *which* React component renders these "UI Rings". 
 
----
+**What we tried:**
+- Investigated `DashboardZenith.jsx`, `useDashboardData.js`, `ActiveProtectionTriad.jsx`, `EntityShieldConsole.jsx`, `SentinelStatusBoard.jsx`, and `BusinessSelector.jsx`.
+- Grep-searched the codebase for `Ring`, `circle`, `strokeDasharray`, and strings like `"Entity Card"` or `"Client Dashboard"`.
+- Attempted to use Playwright tools to view the application visually (the automated headless browser is unsupported on the local Windows machine, and a custom script captured a blank page, possibly due to client-side loading states/hydration.)
 
-### 📝 Next Steps for the Incoming Agent
-
-1.  **Verify Infrastructure:** Check if the `browser_subagent` is working in the new session.
-2.  **Run "The Auditor" Test:**
-    - Navigate to `localhost:5173`.
-    - Complete a purchase (Mock Mode).
-    - Complete the Designation Protocol (Name: "Test Ventures LLC").
-    - Open "Founder's Blueprint".
-    - **Click "Sign Digitally" on the Operating Agreement** to verify PDF download works.
-3.  **Future Feature:**
-    - **The Iron Vault:** Ensure the "Completed" status of Blueprint steps is persisted to Supabase (currently local state only in some parts).
+**What the Next Agent Needs from the User:**
+To proceed immediately without guessing, the next agent should ask the user to provide:
+1. The **exact filename** (e.g., `StatusWidget.jsx`) where the rings/cards are located.
+2. OR: **Specific text** that appears inside or right next to those rings (so the agent can safely grep search for it).
 
 ---
 
-### 📂 Key Files to Review
+## 🛠️ State Reference
+- **Local Dev Server Hook:** We know `useDashboardData.js` is responsible for fetching the entities/DBAs from Supabase and pushing real-time updates over channels. 
+- **Workspace:** `C:\Charter-Legacy v4\`
+- **Language/Framework:** React / Vite.
 
-- `src/App.jsx` (Checkout & Auth Logic)
-- `src/DashboardZenith.jsx` (Main Hub & State Management)
-- `src/DesignationProtocol.jsx` (The Formation Wizard)
-- `src/FoundersBlueprint.jsx` (The PDF Engine)
+*Instructions: Paste this document precisely into the new conversation to instantly align the agent on the exact current state and blocker.*

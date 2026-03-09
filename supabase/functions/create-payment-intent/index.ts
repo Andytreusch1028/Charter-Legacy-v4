@@ -73,6 +73,10 @@ serve(async (req) => {
             amount = dynamicAmount || 10000 // dynamic, default $100.00
             description = 'LLC Reinstatement — Florida'
             break
+        case 'llc_dissolution':
+            amount = 3500 // $35.00
+            description = 'LLC Dissolution — Articles of Dissolution'
+            break
         default:
             throw new Error('Invalid Package ID')
     }

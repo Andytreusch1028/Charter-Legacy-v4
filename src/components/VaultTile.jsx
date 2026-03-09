@@ -2,10 +2,15 @@ import React from 'react';
 import { Lock, Activity } from 'lucide-react';
 import { usePermissions } from '../hooks/usePermissions.jsx';
 
-const VaultTile = ({ onClick, locked, mode = 'MONOLITH', successionData }) => {
+const VaultTile = ({ onClick, locked, mode = 'MONOLITH', successionData, liveStatus }) => {
     // If we passed locked prop, use it. Otherwise, use hook.
     // In DashboardZenith we pass `locked` but we can also use hook here.
     const { setIsUpgradeModalOpen } = usePermissions();
+
+    const isSyncing = liveStatus?.isSyncing;
+    const status = liveStatus?.systemStatus || 'SECURE';
+    const breachAlert = liveStatus?.breachAlert;
+
 
     // LOCKED STATE (Envy Node)
     if (locked) {
@@ -182,11 +187,19 @@ const VaultTile = ({ onClick, locked, mode = 'MONOLITH', successionData }) => {
                                 <span className="text-[9px] font-black uppercase tracking-[0.25em] text-gray-600">Heritage Vault</span>
                             </div>
                             <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest
-                                ${isSealed
-                                    ? 'bg-[#d4af37]/10 border-[#d4af37]/20 text-[#d4af37]'
-                                    : 'bg-white/5 border-white/5 text-gray-500'}`}>
-                                <div className={`w-1.5 h-1.5 rounded-full ${isSealed ? 'bg-[#d4af37] shadow-[0_0_6px_rgba(212,175,55,0.8)] animate-pulse' : 'bg-gray-600'}`}></div>
-                                {isSealed ? 'Sealed' : 'Unsealed'}
+                                ${breachAlert 
+                                    ? 'bg-red-500/10 border-red-500/20 text-red-500'
+                                    : isSyncing
+                                        ? 'bg-luminous-blue/10 border-luminous-blue/20 text-luminous-blue'
+                                        : isSealed
+                                            ? 'bg-[#d4af37]/10 border-[#d4af37]/20 text-[#d4af37]'
+                                            : 'bg-white/5 border-white/5 text-gray-500'}`}>
+                                <div className={`w-1.5 h-1.5 rounded-full ${
+                                    breachAlert ? 'bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]' :
+                                    isSyncing ? 'bg-luminous-blue animate-spin shadow-[0_0_8px_rgba(0,122,255,0.8)]' :
+                                    isSealed ? 'bg-[#d4af37] shadow-[0_0_6px_rgba(212,175,55,0.8)] animate-pulse' : 
+                                    'bg-gray-600'}`}></div>
+                                {breachAlert ? 'Breach Detected' : isSyncing ? 'Syncing...' : isSealed ? 'Sealed' : 'Unsealed'}
                             </div>
                         </div>
 
@@ -194,7 +207,11 @@ const VaultTile = ({ onClick, locked, mode = 'MONOLITH', successionData }) => {
                         <div className="flex-1 flex flex-col justify-center relative z-10">
                             {isSealed ? (
                                 /* ── SEALED STATE ── */
-                                <div className="space-y-4">
+                                <div className="space-y-4 relative">
+                                    {/* Ambient Sealed Rings - Dynamic Speed/Color */}
+                                    <div className={`absolute -inset-10 border ${breachAlert ? 'border-red-500/20' : 'border-[#d4af37]/10'} rounded-full ${isSyncing ? 'animate-[spin_5s_linear_infinite]' : 'animate-[spin_30s_linear_infinite]'} pointer-events-none`} />
+                                    <div className={`absolute -inset-12 border border-dashed ${breachAlert ? 'border-red-500/10' : 'border-[#d4af37]/5'} rounded-full ${isSyncing ? 'animate-[spin_8s_linear_infinite_reverse]' : 'animate-[spin_50s_linear_infinite_reverse]'} pointer-events-none`} />
+                                    
                                     <div>
                                         <p className="text-[9px] text-gray-600 uppercase tracking-[0.2em] font-bold mb-1">Your legacy is protected</p>
                                         <p className="text-3xl font-black text-white leading-tight tracking-tight">

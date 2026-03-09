@@ -20,6 +20,7 @@ import ActiveProtectionTriad from './components/ActiveProtectionTriad';
 import ActionAlerts from './components/dashboard/ActionAlerts';
 import DashboardModals from './components/dashboard/DashboardModals';
 import { useDashboardData } from './hooks/useDashboardData';
+import { useLiveStatus } from './hooks/useLiveStatus';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardZenith = ({ user, initialData }) => {
@@ -37,6 +38,8 @@ const DashboardZenith = ({ user, initialData }) => {
       setShowDesignation
   } = useDashboardData(user, initialData, setProtocolData);
 
+  const liveStatus = useLiveStatus(llcData?.id, user?.id);
+
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [blueprintStep, setBlueprintStep] = useState('ein');
   const [isRAConsoleOpen, setIsRAConsoleOpen] = useState(false);
@@ -46,6 +49,9 @@ const DashboardZenith = ({ user, initialData }) => {
   const [isReinstatementWizardOpen, setIsReinstatementWizardOpen] = useState(false);
   const [isDissolutionWizardOpen, setIsDissolutionWizardOpen] = useState(false);
   const [isCertStatusWizardOpen, setIsCertStatusWizardOpen] = useState(false);
+  const [isBOIWizardOpen, setIsBOIWizardOpen] = useState(false);
+  const [isMercuryWizardOpen, setIsMercuryWizardOpen] = useState(false);
+  const [isLedgerOpen, setIsLedgerOpen] = useState(false);
   
   // Gatekeeper Role check for UI rendering
   const currentRole = user?.user_metadata?.role || 'customer';
@@ -301,12 +307,17 @@ const DashboardZenith = ({ user, initialData }) => {
                                                     setIsAnnualReportWizardOpen(true);
                                                 } else if (step === 'dba') {
                                                     setIsDBAWizardOpen(true);
+                                                } else if (step === 'boi') {
+                                                    setIsBOIWizardOpen(true);
                                                 } else {
                                                     setBlueprintStep(typeof step === 'string' ? step : 'ein');
                                                     setIsBlueprintOpen(true);
                                                 }
                                             }} 
                                             mode="SWISS" // Using SWISS mode for compactness in column
+                                            llcData={llcData}
+                                            companyName={llcData?.llc_name}
+                                            onOpenMercuryApply={() => setIsMercuryWizardOpen(true)}
                                         />
                                     </div>
                                 </div>
@@ -348,6 +359,7 @@ const DashboardZenith = ({ user, initialData }) => {
                                             locked={!user?.permissions?.heritage_vault}
                                             mode="CUPERTINO"
                                             successionData={protocolData}
+                                            liveStatus={liveStatus}
                                         />
                                     </div>
 
@@ -386,6 +398,9 @@ const DashboardZenith = ({ user, initialData }) => {
           isReinstatementWizardOpen={isReinstatementWizardOpen} setIsReinstatementWizardOpen={setIsReinstatementWizardOpen}
           isDissolutionWizardOpen={isDissolutionWizardOpen} setIsDissolutionWizardOpen={setIsDissolutionWizardOpen}
           isCertStatusWizardOpen={isCertStatusWizardOpen} setIsCertStatusWizardOpen={setIsCertStatusWizardOpen}
+          isBOIWizardOpen={isBOIWizardOpen} setIsBOIWizardOpen={setIsBOIWizardOpen}
+          isMercuryWizardOpen={isMercuryWizardOpen} setIsMercuryWizardOpen={setIsMercuryWizardOpen}
+          isLedgerOpen={isLedgerOpen} setIsLedgerOpen={setIsLedgerOpen}
       />
     </>
   );

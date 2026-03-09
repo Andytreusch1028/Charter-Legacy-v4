@@ -11,6 +11,9 @@ import DBARenewalWizard from '../DBARenewalWizard';
 import ReinstatementWizard from '../ReinstatementWizard';
 import DissolutionWizard from '../DissolutionWizard';
 import CertificateOfStatusWizard from '../CertificateOfStatusWizard';
+import BOIWizard from '../BOIWizard';
+import MercuryApplyWizard from '../MercuryApplyWizard';
+import MembershipLedger from './MembershipLedger';
 
 const DashboardModals = ({
     user,
@@ -27,7 +30,10 @@ const DashboardModals = ({
     isDBARenewalWizardOpen, setIsDBARenewalWizardOpen,
     isReinstatementWizardOpen, setIsReinstatementWizardOpen,
     isDissolutionWizardOpen, setIsDissolutionWizardOpen,
-    isCertStatusWizardOpen, setIsCertStatusWizardOpen
+    isCertStatusWizardOpen, setIsCertStatusWizardOpen,
+    isBOIWizardOpen, setIsBOIWizardOpen,
+    isMercuryWizardOpen, setIsMercuryWizardOpen,
+    isLedgerOpen, setIsLedgerOpen
 }) => {
     return (
         <>
@@ -124,6 +130,33 @@ const DashboardModals = ({
                         llcData={llcData} 
                         onClose={() => setIsCertStatusWizardOpen(false)}
                         onComplete={() => setIsCertStatusWizardOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
+            <AnimatePresence>
+                {isBOIWizardOpen && (
+                    <BOIWizard 
+                        llcData={llcData} 
+                        onClose={() => setIsBOIWizardOpen(false)}
+                        onComplete={() => setIsBOIWizardOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {isMercuryWizardOpen && (
+                    <MercuryApplyWizard 
+                        llcData={llcData} 
+                        onClose={() => setIsMercuryWizardOpen(false)} 
+                    />
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {isLedgerOpen && (
+                    <MembershipLedger 
+                        llcData={llcData} 
+                        onClose={() => setIsLedgerOpen(false)} 
                     />
                 )}
             </AnimatePresence>

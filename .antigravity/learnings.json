@@ -290,6 +290,15 @@
           "pattern": "Update the parent entity status (e.g., 'Renewing') the MOMENT a checkout intent is initialized to prevent duplicate filing attempts while payment is pending.",
           "impact": "High - Eliminates race conditions and duplicate filing costs.",
           "reuse_guidance": "Apply to any high-stakes filing wizard logic."
+        },
+        {
+          "id": "learning-039",
+          "date": "2026-03-08",
+          "success": "High-Fidelity Vitreous Wizard UI Pattern",
+          "pattern": "Consolidated use of a fixed, blurred backdrop (`bg-slate-900/60 backdrop-blur-md`), large radius container (`rounded-[40px]`), and Institutional Typography (`text-[10px] uppercase tracking-[0.4em]`) across all compliance wizards. Standardizes technical labels (Federal Compliance / Brand Expansion) to justify premium filing fees.",
+          "impact": "High - Ensures brand coherence and institutional trust across disparate filing systems.",
+          "reuse_guidance": "MANDATORY: All future wizards (Annual Reports, Dissolutions) must inherit these visual tokens. Refer to BOIWizard.jsx for the definitive header and shell structure.",
+          "prevention_rule": "NEVER use generic modal shells for statutory actions. Use the Vitreous Institutional Header to maintain the 'Charter Legacy' brand fidelity."
         }
       ]
     },
@@ -361,7 +370,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 28,
-    "last_updated": "2026-03-07T21:07:00Z"
+    "total_learnings": 29,
+    "last_updated": "2026-03-08T23:25:00Z"
   }
 }

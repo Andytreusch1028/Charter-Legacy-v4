@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check, FileText, Building2, Landmark, Shield, ChevronRight, Loader2, Download, ScrollText, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react';
+import { X, Check, FileText, Building2, Landmark, Shield, ChevronRight, Loader2, Download, ScrollText, CheckCircle2, ArrowRight, AlertCircle, Award } from 'lucide-react';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 const BlueprintStep = ({ title, status, icon: Icon, active, onClick, children }) => (
@@ -27,7 +27,7 @@ const BlueprintStep = ({ title, status, icon: Icon, active, onClick, children })
   </div>
 );
 
-const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', initialStep = 'ein' }) => {
+const FoundersBlueprint = ({ isOpen, onClose, companyName, llcData, mode = 'MONOLITH', initialStep = 'ein', onOpenMercuryApply, onOpenLedger }) => {
   const [activeStep, setActiveStep] = useState(initialStep);
   const [completedSteps, setCompletedSteps] = useState([]);
   const [generating, setGenerating] = useState(false);
@@ -148,22 +148,26 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
                      <div className="space-y-2">
                         <div className="flex items-center justify-between group/item cursor-pointer hover:bg-gray-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('articles'); }}>
                             <span className="text-xs font-bold text-slate-700 group-hover/item:text-blue-600 transition-colors">Articles of Organization</span>
-                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">FILED</span>
+                            <span className={`text-[9px] font-mono ${llcData?.llc_status === 'Setting Up' ? 'text-amber-500 bg-amber-50 animate-pulse' : 'text-gray-400 bg-gray-50'} px-1.5 py-0.5 rounded border border-gray-100 uppercase`}>
+                                {llcData?.llc_status === 'Setting Up' ? 'Processing' : 'Filed'}
+                            </span>
                         </div>
                         <div className="flex items-center justify-between group/item cursor-pointer hover:bg-gray-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('ein'); }}>
                             <span className="text-xs font-bold text-slate-700 group-hover/item:text-blue-600 transition-colors">EIN Designation</span>
-                            <span className="text-[9px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">ISSUED</span>
+                            <span className={`text-[9px] font-mono ${llcData?.llc_status === 'Setting Up' ? 'text-amber-500 bg-amber-50 animate-pulse' : 'text-gray-400 bg-gray-50'} px-1.5 py-0.5 rounded border border-gray-100 uppercase`}>
+                                {llcData?.llc_status === 'Setting Up' ? 'Pending' : 'Issued'}
+                            </span>
                         </div>
                         <div className="flex items-center justify-between group/item cursor-pointer hover:bg-orange-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('boi'); }}>
                             <span className="text-xs font-bold text-slate-700 group-hover/item:text-orange-600 transition-colors">BOI Report (FinCEN)</span>
-                            <span className="text-[9px] font-mono text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded animate-pulse cursor-pointer border border-orange-200/50 shadow-[0_0_10px_rgba(249,115,22,0.1)]">
-                              PENDING (START)
+                            <span className={`text-[9px] font-mono ${llcData?.boi_filed ? 'text-gray-400 bg-gray-50' : 'text-orange-500 bg-orange-50 animate-pulse'} px-1.5 py-0.5 rounded border border-orange-200/50 shadow-[0_0_10px_rgba(249,115,22,0.1)] uppercase`}>
+                                {llcData?.boi_filed ? 'Filed' : 'Pending (Start)'}
                             </span>
                         </div>
                         <div className="flex items-center justify-between group/item cursor-pointer hover:bg-amber-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('annual_report'); }}>
                             <span className="text-xs font-bold text-slate-700 group-hover/item:text-amber-600 transition-colors">2026 Annual Report</span>
-                            <span className="text-[9px] font-mono text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded cursor-pointer animate-pulse border border-amber-200 hover:bg-amber-100 hover:scale-110 transition-all">
-                              DUE (MAY 1)
+                            <span className={`text-[9px] font-mono ${llcData?.annual_report_filed_at ? 'text-gray-400 bg-gray-50' : 'text-amber-500 bg-amber-50 animate-pulse'} px-1.5 py-0.5 rounded border border-amber-200 hover:bg-amber-100 hover:scale-110 transition-all uppercase`}>
+                                {llcData?.annual_report_filed_at ? 'Filed' : 'Due (May 1)'}
                             </span>
                         </div>
                      </div>
@@ -174,8 +178,8 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
                      <div className="space-y-2 mt-2">
                         <div className="flex items-center justify-between group/item cursor-pointer hover:bg-emerald-50/50 p-2 -mx-2 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onClose('dba'); }}>
                             <span className="text-xs font-bold text-slate-700 group-hover/item:text-emerald-600 transition-colors">Register DBA (Fictitious Name)</span>
-                            <span className="text-[9px] font-mono text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded cursor-pointer border border-emerald-200 hover:bg-emerald-100 transition-all uppercase shadow-[0_0_10px_rgba(16,185,129,0.1)]">
-                                Optional
+                            <span className={`text-[9px] font-mono ${llcData?.llc_status === 'Renewing' ? 'text-purple-500 bg-purple-50 animate-pulse border-purple-200' : 'text-emerald-600 bg-emerald-50 border-emerald-200'} px-1.5 py-0.5 rounded cursor-pointer border hover:bg-emerald-100 transition-all uppercase shadow-[0_0_10px_rgba(16,185,129,0.1)]`}>
+                                {llcData?.llc_status === 'Renewing' ? 'Renewing' : 'Optional'}
                             </span>
                         </div>
                      </div>
@@ -398,9 +402,9 @@ const FoundersBlueprint = ({ isOpen, onClose, companyName, mode = 'MONOLITH', in
                {activeStep === 'articles' && <ArticlesContent companyName={companyName} />}
                {activeStep === 'ein' && <EINContent companyName={companyName} />}
                {activeStep === 'oa' && <OAContent companyName={companyName} />}
-               {activeStep === 'banking' && <BankContent companyName={companyName} />}
-               {activeStep === 'boi' && <BOIContent companyName={companyName} />}
-               {activeStep === 'ledger' && <LedgerContent companyName={companyName} />}
+               {activeStep === 'banking' && <BankContent companyName={companyName} onOpenMercuryApply={onOpenMercuryApply} />}
+               {activeStep === 'boi' && <BOIContent companyName={companyName} onStartWizard={() => onClose('boi')} />}
+               {activeStep === 'ledger' && <LedgerContent companyName={companyName} onOpenLedger={onOpenLedger} />}
                {activeStep === 'annual_report' && (
                  <div className="text-center p-8 bg-black/40 border border-white/10 rounded-3xl">
                      <Building2 size={48} className="mx-auto text-amber-500 mb-6" />
@@ -499,7 +503,7 @@ const OAContent = ({ companyName }) => (
   </>
 );
 
-const BankContent = ({ companyName }) => (
+const BankContent = ({ companyName, onOpenMercuryApply }) => (
   <>
     <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(255,255,255,0.02)] text-purple-400 group transition-all duration-500 hover:border-purple-500/50 hover:bg-purple-500/10 hover:shadow-[0_0_40px_rgba(168,85,247,0.2)]">
        <Landmark size={36} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-500" />
@@ -516,15 +520,42 @@ const BankContent = ({ companyName }) => (
             Suggested Partner Banks
        </h4>
        <ul className="space-y-6 text-[14px] text-gray-300 font-light">
-         <li className="flex items-center gap-5 group/item cursor-pointer"><div className="w-10 h-10 rounded-[12px] bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 group-hover/item:bg-purple-500/10 group-hover/item:border-purple-500/30 transition-all shadow-sm"><Check size={16} strokeWidth={2} /></div> <span className="group-hover/item:text-white transition-colors">Mercury (Tech-Forward)</span></li>
-         <li className="flex items-center gap-5 group/item cursor-pointer"><div className="w-10 h-10 rounded-[12px] bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 group-hover/item:bg-purple-500/10 group-hover/item:border-purple-500/30 transition-all shadow-sm"><Check size={16} strokeWidth={2} /></div> <span className="group-hover/item:text-white transition-colors">Chase Business (Traditional)</span></li>
-         <li className="flex items-center gap-5 group/item cursor-pointer"><div className="w-10 h-10 rounded-[12px] bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 group-hover/item:bg-purple-500/10 group-hover/item:border-purple-500/30 transition-all shadow-sm"><Check size={16} strokeWidth={2} /></div> <span className="group-hover/item:text-white transition-colors">Relay Financial (No Fees)</span></li>
+         <li 
+           onClick={onOpenMercuryApply}
+           className="flex items-center gap-5 group/item cursor-pointer hover:bg-white/5 p-2 -m-2 rounded-2xl transition-all"
+         >
+           <div className="w-10 h-10 rounded-[12px] bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 group-hover/item:bg-purple-500/10 group-hover/item:border-purple-500/30 transition-all shadow-sm">
+             <Check size={16} strokeWidth={2} />
+           </div> 
+           <div className="flex flex-col">
+             <span className="group-hover/item:text-white transition-colors font-medium">Mercury (Tech-Forward)</span>
+             <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Recommended Partner</span>
+           </div>
+         </li>
+         <li 
+           onClick={() => window.open('https://www.chase.com/business', '_blank')}
+           className="flex items-center gap-5 group/item cursor-pointer hover:bg-white/5 p-2 -m-2 rounded-2xl transition-all"
+         >
+           <div className="w-10 h-10 rounded-[12px] bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 group-hover/item:bg-purple-500/10 group-hover/item:border-purple-500/30 transition-all shadow-sm">
+             <Check size={16} strokeWidth={2} />
+           </div> 
+           <span className="group-hover/item:text-white transition-colors">Chase Business (Traditional)</span>
+         </li>
+         <li 
+           onClick={() => window.open('https://relayfi.com/register', '_blank')}
+           className="flex items-center gap-5 group/item cursor-pointer hover:bg-white/5 p-2 -m-2 rounded-2xl transition-all"
+         >
+           <div className="w-10 h-10 rounded-[12px] bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 group-hover/item:bg-purple-500/10 group-hover/item:border-purple-500/30 transition-all shadow-sm">
+             <Check size={16} strokeWidth={2} />
+           </div> 
+           <span className="group-hover/item:text-white transition-colors">Relay Financial (No Fees)</span>
+         </li>
        </ul>
     </div>
   </>
 );
 
-const BOIContent = ({ companyName }) => (
+const BOIContent = ({ companyName, onStartWizard }) => (
   <>
     <div className="w-24 h-24 bg-orange-500/10 border border-orange-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(249,115,22,0.1)] text-orange-500 group transition-all duration-500 hover:border-orange-500/50 hover:bg-orange-500/20 hover:shadow-[0_0_40px_rgba(249,115,22,0.3)]">
        <Shield size={36} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-500" />
@@ -550,7 +581,10 @@ const BOIContent = ({ companyName }) => (
              </div>
         </div>
 
-        <button className="w-full py-5 bg-orange-600/90 text-white rounded-2xl font-bold text-[12px] uppercase tracking-[0.2em] hover:bg-orange-500 transition-all shadow-[0_0_30px_rgba(249,115,22,0.3)] hover:shadow-[0_0_40px_rgba(249,115,22,0.5)] flex items-center justify-center gap-3 group focus:outline-none">
+        <button 
+          onClick={onStartWizard}
+          className="w-full py-5 bg-orange-600/90 text-white rounded-2xl font-bold text-[12px] uppercase tracking-[0.2em] hover:bg-orange-500 transition-all shadow-[0_0_30px_rgba(249,115,22,0.3)] hover:shadow-[0_0_40px_rgba(249,115,22,0.5)] flex items-center justify-center gap-3 group focus:outline-none"
+        >
             Compile Federal Report <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform duration-300"/>
         </button>
         
@@ -560,19 +594,28 @@ const BOIContent = ({ companyName }) => (
     </div>
   </>
 );
-const LedgerContent = ({ companyName }) => (
+const LedgerContent = ({ companyName, onOpenLedger }) => (
   <>
-    <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(255,255,255,0.02)] text-gray-400 group transition-all duration-500">
-       <FileText size={36} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-500" />
+    <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(255,255,255,0.02)] text-blue-400 group transition-all duration-500 hover:border-blue-500/50 hover:bg-blue-500/10 hover:shadow-[0_0_40px_rgba(59,130,246,0.2)]">
+       <Award size={36} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-500" />
     </div>
     <div className="text-center mt-8">
         <h2 className="text-5xl font-light tracking-tight text-white mb-4">Membership <span className="font-medium text-gray-500">Ledger.</span></h2>
         <p className="text-gray-400 font-light mt-4 max-w-md mx-auto text-[15px] leading-relaxed">
-        This document tracks capitalization and ownership units.
+        This document tracks capitalization and ownership units for <strong className="text-white font-medium">{companyName}</strong>.
         </p>
     </div>
-    <div className="h-40 bg-black/40 rounded-[32px] border border-white/10 w-full max-w-lg mx-auto flex items-center justify-center mt-10 opacity-50">
-        <p className="font-bold uppercase tracking-[0.3em] text-[10px] text-gray-500">Feature Arriving Soon</p>
+    <div className="mt-10 space-y-6 w-full max-w-lg mx-auto">
+        <button 
+          onClick={onOpenLedger}
+          className="w-full py-5 bg-blue-600/90 text-white rounded-2xl font-bold text-[12px] uppercase tracking-[0.2em] hover:bg-blue-500 transition-all shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:shadow-[0_0_40px_rgba(37,99,235,0.5)] flex items-center justify-center gap-3 group focus:outline-none"
+        >
+            Access Cap Table <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform duration-300"/>
+        </button>
+        
+        <p className="text-[10px] text-center text-gray-500 font-bold uppercase tracking-widest mt-4">
+            Security Issue Ready • Synchronized with Sunbiz
+        </p>
     </div>
   </>
 );

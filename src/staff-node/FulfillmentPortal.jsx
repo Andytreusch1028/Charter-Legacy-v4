@@ -63,6 +63,11 @@ const FulfillmentPortal = () => {
         return saved ? JSON.parse(saved) : ['Tax Mail', 'Annual Report', 'State Notice'];
     });
 
+    // Inquiry & Communication State
+    const [inquiries, setInquiries] = useState([]);
+    const [activeInquiry, setActiveInquiry] = useState(null);
+    const [messages, setMessages] = useState([]);
+
     // Watch Folder State & Document Ingestion Hook
     const {
         watchFolder,
@@ -170,11 +175,94 @@ const FulfillmentPortal = () => {
                 const nodeId = settingsData.find(s => s.key === 'node_id')?.value;
                 if (nodeId) CURRENT_OPERATOR.node = nodeId;
             }
+
+            // 5. Load Communication Data
+            await loadCommunicationData();
             
         } catch (err) {
             console.error('Data Load Error:', err);
         }
     };
+
+    const loadCommunicationData = async () => {
+        try {
+            const { data: inquiryData } = await supabase
+                .from('ra_inquiry_threads')
+                .select('*, profiles(full_name, email)')
+                .order('updated_at', { ascending: false });
+            
+            if (inquiryData) {
+                setInquiries(inquiryData);
+                // Only set active if none is selected
+                if (inquiryData.length > 0 && !activeInquiry) {
+                    setActiveInquiry(inquiryData[0]);
+                }
+            }
+        } catch (err) {
+            console.error('Inquiry Load Error:', err);
+        }
+    };
+
+    const fetchMessages = useCallback(async (threadId) => {
+        if (!threadId) return;
+        try {
+            const { data } = await supabase
+                .from('ra_inquiry_messages')
+                .select('*')
+                .eq('thread_id', threadId)
+                .order('created_at', { ascending: true });
+            if (data) setMessages(data);
+        } catch (err) {
+            console.error('Message Fetch Error:', err);
+        }
+    }, [supabase]);
+
+    useEffect(() => {
+        if (activeInquiry?.id) {
+            fetchMessages(activeInquiry.id);
+
+            // Subscribe to new messages for THIS thread
+            const messageChannel = supabase
+                .channel(`staff-messages-${activeInquiry.id}`)
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'ra_inquiry_messages',
+                    filter: `thread_id=eq.${activeInquiry.id}`
+                }, (payload) => {
+                    setMessages(prev => {
+                        // Avoid duplicates
+                        if (prev.find(m => m.id === payload.new.id)) return prev;
+                        return [...prev, payload.new];
+                    });
+                })
+                .subscribe();
+
+            return () => {
+                supabase.removeChannel(messageChannel);
+            };
+        }
+    }, [activeInquiry?.id, fetchMessages, supabase]);
+
+    useEffect(() => {
+        if (user) {
+            // Subscribe to thread updates/new threads
+            const threadChannel = supabase
+                .channel('staff-threads')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'ra_inquiry_threads'
+                }, () => {
+                    loadCommunicationData();
+                })
+                .subscribe();
+
+            return () => {
+                supabase.removeChannel(threadChannel);
+            };
+        }
+    }, [user, supabase]);
 
     const handleLogoutWithHook = async () => {
         await handleLogout();

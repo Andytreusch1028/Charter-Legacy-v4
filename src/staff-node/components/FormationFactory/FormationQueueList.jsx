@@ -35,9 +35,22 @@ const FormationQueueList = ({
                         <h4 className="text-lg font-black text-luminous-ink uppercase tracking-tight mb-1 group-hover:text-luminous-blue transition-colors">
                             {formation.entityName}
                         </h4>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-4">
-                            {formation.type} · {formation.owner}
-                        </p>
+                        <div className="flex items-center gap-2 mb-4">
+                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md ${
+                                formation.action_type === 'FORMATION' ? 'bg-indigo-50 text-indigo-500' :
+                                formation.action_type === 'ANNUAL_REPORT' ? 'bg-emerald-50 text-emerald-500' :
+                                formation.action_type === 'CERTIFICATE_OF_STATUS' ? 'bg-cyan-50 text-cyan-500' :
+                                formation.action_type === 'DISSOLUTION' ? 'bg-red-50 text-red-500' :
+                                formation.action_type === 'REINSTATEMENT' ? 'bg-amber-50 text-amber-500' :
+                                formation.action_type?.includes('DBA') ? 'bg-purple-50 text-purple-500' :
+                                'bg-gray-100 text-gray-500'
+                            }`}>
+                                {formation.action_type?.replace(/_/g, ' ') || 'UNKNOWN'}
+                            </span>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest truncate">
+                                · {formation.owner}
+                            </span>
+                        </div>
                         
                         <div className="space-y-3 mb-6">
                             <div className="flex justify-between items-center text-[10px]">

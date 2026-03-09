@@ -1,0 +1,268 @@
+﻿commit b4b791b7861da512222b2bd64f2bbd9f7a4a0ea9
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Mar 7 21:30:11 2026 -0500
+
+    security: remove leaked JWT token from playwright auth state, add playwright dirs to .gitignore
+
+M	.gitignore
+D	playwright-report/index.html
+M	src/components/CertificateOfStatusWizard.jsx
+M	supabase/functions/create-payment-intent/index.ts
+
+commit 524b71d12c5333aebfac70cd2767ed00051f7149
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Mar 7 21:20:48 2026 -0500
+
+    feat: wire DBA Renewal & Reinstatement wizards to Supabase ΓÇö dynamic fees, status sync, audit trail, fulfillment metadata enrichment
+
+M	.antigravity/learnings.json
+M	playwright-report/index.html
+M	src/RegisteredAgentConsole.jsx
+M	src/components/DBARenewalWizard.jsx
+M	src/components/ReinstatementWizard.jsx
+M	src/staff-node/FulfillmentPortal.jsx
+A	src/staff-node/components/FulfillmentPortal/FulfillmentFooter.jsx
+A	src/staff-node/components/FulfillmentPortal/FulfillmentSidebar.jsx
+A	src/staff-node/components/FulfillmentPortal/FulfillmentToast.jsx
+A	src/staff-node/components/FulfillmentPortal/StaffLoginForm.jsx
+A	src/staff-node/hooks/FulfillmentPortal/useDocumentIngestion.js
+A	src/staff-node/hooks/FulfillmentPortal/useStaffAuth.js
+A	tests/formation.spec.js
+A	tests/fulfillment.spec.js
+
+commit 94dec9316fcbfaec4cef18b077917b248084ed29
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Mar 7 18:03:53 2026 -0500
+
+    chore: Institutionalize Orchestrator Shell pattern from FormationFactory refactor
+
+M	.antigravity/learnings.json
+
+commit fca28fe0ed437dc2b53441610104d84eb934f29f
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Mar 7 17:56:07 2026 -0500
+
+    Refactor FormationFactory.jsx into decoupled hooks and components
+
+A	src/staff-node/components/FormationFactory/AutomationHubModal.jsx
+A	src/staff-node/components/FormationFactory/FormationDashboardHeader.jsx
+A	src/staff-node/components/FormationFactory/FormationQueueList.jsx
+A	src/staff-node/components/FormationFactory/SpecEditorModal.jsx
+A	src/staff-node/hooks/FormationFactory/useFormationQueue.js
+A	src/staff-node/hooks/FormationFactory/useTinyfishAutomation.js
+M	src/staff-node/modules/FormationFactory.jsx
+
+commit f23d14ba8c5049e38b3a7e009fc0923ca5b88090
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Mar 7 16:41:31 2026 -0500
+
+    Refactor RASentry.jsx: Extract OCR logic, actions, and subcomponents
+
+A	page_dump.html
+A	playwright-report/index.html
+A	sentry_dump.html
+M	src/App.jsx
+M	src/staff-node/modules/RASentry.jsx
+A	src/staff-node/modules/components/SentryModals.jsx
+A	src/staff-node/modules/components/SentryQueueSidebar.jsx
+A	src/staff-node/modules/components/SentryWorkspace.jsx
+A	src/staff-node/modules/hooks/useOCR.js
+A	src/staff-node/modules/hooks/useSentryActions.js
+M	test-results/.last-run.json
+M	tests/auth.setup.js
+A	tests/sentry.spec.js
+
+commit af784018de7b6f9163fd40640f3f58547b3b7198
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Mar 7 16:21:03 2026 -0500
+
+    test: configure automated headless playwright auth via supabase magic links
+
+A	playwright.config.js
+A	tests/auth.setup.js
+
+commit d464024e0a167b925a5b255f499f9addc024e368
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Mar 7 16:15:21 2026 -0500
+
+    test: add playwright dependencies and fix dashboard routing in Sner-test
+
+M	package-lock.json
+M	package.json
+M	tests/dashboard.spec.js
+
+commit 0031970d7b0640ee4b77a01a3a9cf359b9259039
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Mar 7 15:36:53 2026 -0500
+
+    refactor: complete Phase 3 extractions for DashboardZenith
+
+M	src/DashboardZenith.jsx
+A	src/components/dashboard/ActionAlerts.jsx
+A	src/components/dashboard/DashboardModals.jsx
+A	src/hooks/useDashboardData.js
+A	test-results/.last-run.json
+A	tests/dashboard.spec.js
+
+commit a2991404eda510b9e0ae35ac65229a3ff382f332
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Mar 7 15:26:26 2026 -0500
+
+    feat: implement Epic 16 telemetry loop, Epic 17 prior bug fixes in AIGrowthConsole & DBAWizard, and Epic 18 architect workflow
+
+A	.agent/workflows/architect_refactor.md
+M	.agent/workflows/conductor_architect.md
+M	.agent/workflows/marketing_agent.md
+A	.agents/workflows/decapod_strict_mode.md
+A	ALL_TEST_CREDENTIALS.md
+M	Discovery Onboarding.jsx
+A	local-schema.sql
+M	package-lock.json
+M	package.json
+A	scripts/check-hero-variants.mjs
+A	scripts/seo-analyzer.js
+A	scripts/test-rpc.mjs
+M	src/App.jsx
+M	src/DashboardZenith.jsx
+M	src/FoundersBlueprint.jsx
+M	src/SpecSheet.jsx
+M	src/components/AnnualReportWizard.jsx
+A	src/components/AnswerCapsule.jsx
+A	src/components/CertificateOfStatusWizard.jsx
+A	src/components/DBARenewalWizard.jsx
+A	src/components/DBAWizard.jsx
+A	src/components/DissolutionWizard.jsx
+M	src/components/RADocumentAuditLog.jsx
+A	src/components/ReinstatementWizard.jsx
+M	src/components/SEOHead.jsx
+M	src/hooks/useHeroVariant.js
+A	src/lib/localAI.js
+A	src/lib/rbac.config.js
+M	src/staff-node/FulfillmentPortal.jsx
+M	src/staff-node/modules/FormationFactory.jsx
+M	src/staff-node/modules/RASentry.jsx
+M	src/zones/admin/AIGrowthConsole.jsx
+A	src/zones/admin/AnalysisConsoleTab.jsx
+M	src/zones/admin/SEOConsoleTab.jsx
+A	src/zones/admin/VariantGraphs.jsx
+M	src/zones/marketing/Landing.jsx
+M	supabase/functions/generate-hero-variant/index.ts
+A	supabase/migrations/20260302232500_fix_ra_storage_insert.sql
+A	supabase/migrations/20260302233633_fix_ra_storage_insert_pending.sql
+A	supabase/migrations/20260303043401_fix_ra_storage_insert_pending.sql
+A	supabase/migrations/20260303043708_fix_ra_storage_insert_pending_again.sql
+A	supabase/migrations/20260303044000_fix_ra_storage_all.sql
+A	supabase/migrations/20260303044558_debug_anon_storage.sql
+A	supabase/migrations/20260303045500_debug_anon_db.sql
+A	supabase/migrations/20260303155500_epic_7_seo_telemetry.sql
+A	supabase/migrations/20260304004800_epic_7_seo_telemetry_v2.sql
+A	supabase/migrations/20260304005000_epic_7_answer_capsules.sql
+A	supabase/migrations/20260304012500_epic_8_variation_b.sql
+A	supabase/migrations/20260304022000_fix_hero_variants_rls.sql
+A	supabase/migrations/20260304024500_insert_pending_variants_rpc.sql
+A	supabase/migrations/20260304030000_insert_pending_variants_rpc_v2.sql
+A	supabase/migrations/20260304031500_track_variant_metrics_rpc.sql
+A	supabase/migrations/20260304040000_epic_14_variant_metrics.sql
+A	supabase/migrations/20260305000001_create_dbas_table.sql
+A	supabase/migrations/20260307000000_epic_16_traffic_rotator.sql
+A	supabase_secrets.txt
+A	types_supabase.ts
+
+commit b8f1e804f5026fea586957431bbe0b49ee8ab38c
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sun Mar 1 22:44:44 2026 -0500
+
+    feat(seo): Implement Agentic Discoverability Console and dynamic route injection
+
+M	src/components/SEOHead.jsx
+M	src/zones/admin/AIGrowthConsole.jsx
+A	src/zones/admin/SEOConsoleTab.jsx
+A	supabase/migrations/20260302033858_create_seo_discoverability.sql
+
+commit 5c9b51782d1bc007c32c9a56f003d656b975c807
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sun Mar 1 22:33:25 2026 -0500
+
+    feat(seo): Implement HelmetProvider, SEOHead component, and llms.txt protocol
+
+M	package-lock.json
+M	package.json
+M	public/llms.txt
+M	src/App.jsx
+M	src/zones/marketing/Landing.jsx
+
+commit 6c70daa317935cf5fb0030a1068b847867a4792b
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sun Mar 1 22:28:33 2026 -0500
+
+    feat(entity-shield): Implement checkout flow for Annual Report
+
+A	scripts/test-inject-drafts.js
+A	scripts/test-inject-drafts.sql
+M	src/components/AnnualReportWizard.jsx
+M	src/components/EntityShieldConsole.jsx
+M	src/staff-node/modules/FormationFactory.jsx
+M	supabase/functions/create-payment-intent/index.ts
+
+commit 1fc9d29e2deeedc2ef8b5a8816bcafdf2f0afe60
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Feb 28 18:26:30 2026 -0500
+
+    feat: Enhance Marketing Dashboard with Tabs, metrics, platform icons, and discard logic
+
+M	src/zones/admin/MarketingDashboard.jsx
+
+commit 5822d8bb930fde10508e20cb7026ee5285474761
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Feb 28 10:12:33 2026 -0500
+
+    fix: Resolve Supabase schema_migrations_pkey index collision and deploy Marketing Queue sql
+
+R100	supabase/migrations/20260214_registered_agent_config.sql	supabase/migrations/20260214000001_registered_agent_config.sql
+R100	supabase/migrations/20260214_registered_agent_content.sql	supabase/migrations/20260214000002_registered_agent_content.sql
+R100	supabase/migrations/20260218_ai_classification_engine.sql	supabase/migrations/20260218000001_ai_classification_engine.sql
+R100	supabase/migrations/20260218_ra_document_audit.sql	supabase/migrations/20260218000002_ra_document_audit.sql
+R100	supabase/migrations/20260218_ra_inquiries_and_fulfillment.sql	supabase/migrations/20260218000003_ra_inquiries_and_fulfillment.sql
+R100	supabase/migrations/20260218_staff_roles_and_partitioning.sql	supabase/migrations/20260218000004_staff_roles_and_partitioning.sql
+R100	supabase/migrations/20260220_clients_database.sql	supabase/migrations/20260220000001_clients_database.sql
+R100	supabase/migrations/20260220_ra_sentry_enhancements.sql	supabase/migrations/20260220000002_ra_sentry_enhancements.sql
+R100	supabase/migrations/20260220_ra_service_log_patch.sql	supabase/migrations/20260220000003_ra_service_log_patch.sql
+R096	supabase/migrations/20260220_ra_storage_policies.sql	supabase/migrations/20260220000004_ra_storage_policies.sql
+R085	supabase/migrations/20260220_staff_recovery_protocol.sql	supabase/migrations/20260220000005_staff_recovery_protocol.sql
+R082	supabase/migrations/20260220_transparency_ledger.sql	supabase/migrations/20260220000006_transparency_ledger.sql
+R083	supabase/migrations/20260227_marketing_queue.sql	supabase/migrations/20260227000001_marketing_queue.sql
+R090	supabase/migrations/name_shield_waitlist.sql	supabase/migrations/20260228000001_name_shield_waitlist.sql
+
+commit 2d34e32fd2b190aa2aa436b1673f637cabe0c558
+Author: Andy Treusch <imalive.nowwhat@gmail.com>
+Date:   Sat Feb 28 10:07:01 2026 -0500
+
+    feat: Implement the Aggregate Trigger Service and Marketing Milestones
+
+A	.agent/workflows/customer_bluecollar.md
+A	.agent/workflows/customer_professional.md
+M	.agent/workflows/marketing_agent.md
+M	src/App.jsx
+M	src/DashboardZenith.jsx
+M	src/FoundersBlueprint.jsx
+M	src/SpecSheet.jsx
+A	src/components/AnnualReportWizard.jsx
+M	src/components/BusinessStoryTimeline.jsx
+M	src/components/EntityShieldConsole.jsx
+M	src/components/ProbateSimulator.jsx
+M	src/components/VaultTile.jsx
+M	src/hooks/useHeroVariant.js
+A	src/lib/MarketingEngine.js
+A	src/lib/MarketingTriggerService.js
+A	src/lib/succession/AnnualReviewService.js
+M	src/lib/succession/SuccessionRegistry.js
+M	src/lib/succession/SuccessionSuite.jsx
+M	src/lib/succession/components/HeritageConsole.jsx
+M	src/lib/succession/components/LegalArtifacts.jsx
+M	src/lib/succession/components/ProtocolWizard.jsx
+A	src/lib/succession/components/SovereignVerify.jsx
+M	src/lib/succession/useSuccession.js
+A	src/zones/admin/MarketingDashboard.jsx
+M	src/zones/marketing/Landing.jsx
+A	supabase/migrations/20260227_marketing_queue.sql
+A	supabase/migrations/name_shield_waitlist.sql
