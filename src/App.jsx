@@ -3,8 +3,9 @@ import { supabase } from './lib/supabase';
 import { 
   Shield, ArrowRight, Lock, Zap, CheckCircle2, Fingerprint, 
   ChevronRight, X, Stethoscope, HardHat, Plus, Anchor, 
-  History, Settings, HeartPulse, ShieldCheck, Menu, Brain, Check, Star, CreditCard, Loader2, Mail
+  History, Settings, HeartPulse, ShieldCheck, Menu, Brain, Check, Star, CreditCard, Loader2, Mail, Building2, Landmark, Users, Vault, Video
 } from 'lucide-react';
+import DoubleLLCExplainer from './DoubleLLCExplainer';
 
 /**
  * CHARTER LEGACY v3.1.0 // THE "RULE OF THREE" REVERSION
@@ -497,6 +498,9 @@ const SpecSheet = ({ item, isOpen, onClose, onSuccess }) => {
 import LoginModal from './LoginModal';
 import DashboardZenith from './DashboardZenith';
 import ZenithDialog from './ZenithDialog';
+import StaffConsole from './StaffConsole';
+import RegisteredAgentConsole from './RegisteredAgentConsole';
+import { isEnabled } from './shared/flags/flags';
 
 // --- MAIN APPLICATION ---
 
@@ -507,6 +511,7 @@ export default function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   // Shared User State for lifting up from SpecSheet
   const [appUser, setAppUser] = useState(null);
+  const [showDoubleLLCExplainer, setShowDoubleLLCExplainer] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -531,6 +536,18 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
 
+    // Check for staff route
+    if (window.location.pathname === '/staff' && isEnabled('newStaffNode')) {
+        setView('staff');
+        if (!appUser) setIsLoginOpen(true);
+    }
+    
+    // Check for RA route
+    if (window.location.pathname === '/ra') {
+        setView('ra');
+        if (!appUser) setIsLoginOpen(true);
+    }
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('keydown', handleKeyDown);
@@ -539,7 +556,13 @@ export default function App() {
 
   const handleDashboardTransition = (user) => {
       setAppUser(user);
-      setView('dashboard');
+      if (window.location.pathname === '/staff' && isEnabled('newStaffNode')) {
+          setView('staff');
+      } else if (window.location.pathname === '/ra') {
+          setView('ra');
+      } else {
+          setView('dashboard');
+      }
       setSelectedPackage(null);
       setIsLoginOpen(false);
   };
@@ -571,7 +594,7 @@ export default function App() {
       description: "For General Contractors. DBPR integration and license attachment.", 
       plainEnglish: "We form your LLC and assist with linking it to your Contractor's License. Includes the standard 'Verification of Authority' document often required for permitting.",
       features: ['DBPR License Linking', 'Qualifier License Attachment', 'Permit-Ready Documents', 'Free Legacy Protocol (Will/Trust)'] 
-    }
+    },
   ];
 
   const willPackage = { 
@@ -592,9 +615,18 @@ export default function App() {
       return <DashboardZenith user={appUser} />;
   }
 
+  if (view === 'staff' && appUser) {
+      return <StaffConsole user={appUser} />;
+  }
+
+  if (view === 'ra' && appUser) {
+      return <RegisteredAgentConsole />;
+  }
+
   return (
     <div className="min-h-screen bg-[#FBFBFD] text-[#1D1D1F] font-sans antialiased selection:bg-[#D4AF37] selection:text-white relative overflow-x-hidden">
       <ZenithDialog />
+      <DoubleLLCExplainer isOpen={showDoubleLLCExplainer} onClose={() => setShowDoubleLLCExplainer(false)} />
       <style>{`
         .bg-mesh { background-image: radial-gradient(at 50% 0%, rgba(29, 29, 31, 0.03) 0, transparent 70%), radial-gradient(at 100% 100%, rgba(0, 122, 255, 0.05) 0, transparent 60%); }
         .text-glow { text-shadow: 0 0 60px rgba(0, 122, 255, 0.15); }
@@ -675,61 +707,245 @@ export default function App() {
                  ))}
               </div>
                
-               <p className="text-center text-xs text-gray-400 font-medium italic max-w-2xl mx-auto border-t border-gray-100 pt-8">
+  <p className="text-center text-xs text-gray-400 font-medium italic max-w-2xl mx-auto border-t border-gray-100 pt-8 mt-16">
+                  * All packages include Florida Registered Agent service, free for the first 12 months. Service automatically renews at $129/year to maintain your privacy shield. Cancel anytime.
+               </p>
+
+               {/* THE SOVEREIGN UPGRADE - DOUBLE LLC HIGHLIGHT */}
+               <div className="mt-32 max-w-5xl mx-auto">
+                  <div className="relative rounded-[40px] overflow-hidden bg-[#0A0A0B] border border-gray-800 shadow-2xl group cursor-pointer group/sovereign">
+                      {/* Background Effects */}
+                      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
+                      <div className="absolute -right-20 -top-40 w-96 h-96 bg-[#00D084] rounded-full blur-[128px] opacity-10 group-hover:opacity-20 transition-opacity duration-700" />
+                      
+                      <div className="relative z-10 p-12 md:p-20 grid md:grid-cols-2 gap-12 items-center">
+                          <div className="space-y-8">
+                              <div className="inline-flex items-center gap-3 px-4 py-2 bg-[#1A1A1A] rounded-full border border-gray-800 backdrop-blur-md">
+                                  <Shield size={14} className="text-[#00D084] animate-pulse" />
+                                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00D084]">Maximum Anonymity Protocol</span>
+                              </div>
+                              
+                              <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter leading-[0.9]">
+                                  Total Business<br/> Anonymity.
+                              </h3>
+                              
+                              <p className="text-lg text-gray-400 font-medium leading-relaxed">
+                                  We set up an anonymous shield that disconnects your personal name from your business ownership. This stops your name from appearing on state records or business-related searches, ensuring your identity stays private while you build your company.
+                              </p>
+
+                              <div className="flex flex-wrap gap-4 pt-4">
+                                  {['No Public Name', 'Asset Segregation', 'Wyoming Jurisdiction', 'Institutional Grade'].map((feat, i) => (
+                                      <div key={i} className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+                                          <Check size={12} className="text-[#00D084]" /> {feat}
+                                      </div>
+                                  ))}
+                              </div>
+
+                              <div className="mt-8 flex items-center gap-8">
+                                <button 
+                                    onClick={() => {
+                                        handleSelection({
+                                            id: 'sovereign_upgrade',
+                                            title: 'The Sovereign Strategy',
+                                            price: '$999',
+                                            icon: Shield,
+                                            description: 'The ultimate privacy architecture. Dual-entity structure for absolute anonymity.',
+                                            plainEnglish: 'We set up two companies for you. One in Florida to do business, and one in Wyoming to own the Florida company so your name never appears on Sunbiz.',
+                                            features: ['Florida Operating LLC', 'Wyoming Holding LLC', 'Registered Agent for Both', 'EIN for Both', 'Inter-Company Agreement']
+                                        });
+                                    }}
+                                    className="bg-white text-black px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-105 transition-transform flex items-center gap-3 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
+                                >
+                                    Deploy Protocol <ArrowRight size={16} />
+                                </button>
+                                
+                                <button 
+                                    onClick={() => setShowDoubleLLCExplainer(true)}
+                                    className="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest border-b border-gray-800 hover:border-white transition-colors pb-1"
+                                >
+                                    HOW IT WORKS.
+                                </button>
+                              </div>
+                           </div>
+
+                          {/* Visual Diagram */}
+                          <div className="relative h-full min-h-[300px] flex items-center justify-center">
+                              <div className="relative z-10 w-64 h-80 bg-[#1A1A1A] rounded-2xl border border-gray-800 p-6 flex flex-col justify-between transform rotate-3 hover:rotate-0 transition-transform duration-500 shadow-2xl">
+                                  <div className="flex justify-between items-start opacity-50">
+                                      <Building2 size={24} className="text-white" />
+                                      <div className="w-8 h-5 border-2 border-white/20 rounded-full" />
+                                  </div>
+                                  <div>
+                                      <div className="text-[10px] font-black uppercase text-gray-500 mb-1">Florida Entity</div>
+                                      <div className="text-xl font-black text-white">Operating Co.</div>
+                                      <div className="h-px w-full bg-gray-800 my-4" />
+                                      <div className="flex items-center gap-2">
+                                          <div className="w-2 h-2 rounded-full bg-[#00D084]" />
+                                          <span className="text-[10px] font-bold text-gray-400">Manager: Holding Co.</span>
+                                      </div>
+                                  </div>
+                              </div>
+                              
+                              {/* The Ghost Card */}
+                              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-12 -ml-12 w-64 h-80 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6 flex flex-col justify-between transform -rotate-6 hover:-rotate-12 transition-transform duration-500 z-0">
+                                   <div className="flex justify-between items-start opacity-30">
+                                      <Landmark size={24} className="text-white" />
+                                  </div>
+                                  <div className="opacity-50">
+                                      <div className="text-[10px] font-black uppercase text-gray-400 mb-1">Wyoming Entity</div>
+                                      <div className="text-xl font-black text-white">Holding Co.</div>
+                                      <div className="h-px w-full bg-white/10 my-4" />
+                                      <div className="flex items-center gap-2">
+                                          <Users size={12} className="text-white" />
+                                          <span className="text-[10px] font-bold text-gray-300">Owner: You</span>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+               </div>
+               
+               <p className="text-center text-xs text-gray-400 font-medium italic max-w-2xl mx-auto border-t border-gray-100 pt-16 mt-16">
                  * All packages include Florida Registered Agent service, free for the first 12 months. Service automatically renews at $129/year to maintain your privacy shield. Cancel anytime.
+                 <br/><br/>
+                 * The Double LLC Strategy involves a one-time upgrade fee of $999. It is compatible with all foundation packages.
+                 <br/>
+                 * Includes 12 months of RA service for BOTH entities. Renews at $250/year total to maintain dual-state anonymity.
                </p>
            </div>
         </section>
 
-        {/* SUCCESSION / WILL SECTION */}
-        <section className="py-40 px-6 bg-[#1D1D1F] text-white relative overflow-hidden rounded-t-[3rem] -mt-12">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#007AFF]/10 to-transparent pointer-events-none" />
-           <div className="max-w-[1400px] mx-auto grid lg:grid-cols-2 gap-24 items-center relative z-10">
-              <div className="space-y-12">
-                 <div className="space-y-6">
-                    <div className="inline-flex items-center gap-2 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em]">
-                       <Anchor size={14} />
-                       <span>Succession Protocol</span>
+        {/* THE HERITAGE BLUEPRINT - LEGACY VAULT REDESIGN */}
+        <section id="legacy-vault" className="py-40 px-6 bg-[#0F0F10] text-white relative overflow-hidden rounded-t-[3rem] -mt-12">
+           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
+           <div className="absolute -left-40 top-1/4 w-96 h-96 bg-[#D4AF37] rounded-full blur-[160px] opacity-10" />
+           
+           <div className="max-w-[1400px] mx-auto relative z-10">
+              <div className="grid lg:grid-cols-2 gap-24 items-center">
+                 <div className="space-y-12">
+                    <div className="space-y-6">
+                       <div className="inline-flex items-center gap-2 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.3em] bg-[#D4AF37]/10 px-4 py-2 rounded-full border border-[#D4AF37]/20">
+                          <Vault size={14} />
+                          <span>Heritage Grade Protocol</span>
+                       </div>
+                       <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.9] text-white">
+                          Secure The <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#886B1D]">Legacy.</span>
+                       </h2>
+                       <p className="text-2xl text-gray-400 font-medium italic leading-relaxed max-w-xl">
+                         "You built the machine. Now ensure the handover is automated. The Legacy Vault is the bridge between your operational present and your family's future."
+                       </p>
                     </div>
-                    <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none text-white">Secure The <span className="text-[#007AFF]">Driver.</span></h2>
-                    <p className="text-2xl text-gray-400 font-medium italic leading-relaxed">
-                      "You built the vehicle. Now protect the driver. The Legacy Vault integrates with your Charter to ensure your shares transfer automatically."
-                    </p>
-                 </div>
-                 <div className="space-y-6">
-                    {willPackage.features.map((feature, i) => (
-                      <div key={i} className="flex items-center gap-4 text-lg font-bold uppercase tracking-wide text-gray-300">
-                         <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[#D4AF37]">
-                            <Check size={16} strokeWidth={3} />
-                         </div>
-                         {feature}
-                      </div>
-                    ))}
-                 </div>
-                 <div className="pt-4">
-                    <button onClick={() => handleSelection(willPackage)} className="bg-white text-black px-12 py-6 rounded-full font-black text-lg uppercase tracking-widest hover:bg-[#D4AF37] hover:text-black hover:scale-105 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] flex items-center gap-4">
-                       Add Legacy Vault - $199/yr <ArrowRight size={24} />
-                    </button>
-                 </div>
-              </div>
 
-              {/* Will Card Representation */}
-              <div className="relative">
-                 <div className="absolute -inset-4 bg-gradient-to-br from-[#007AFF] to-[#D4AF37] rounded-[55px] opacity-20 blur-2xl" />
-                 <PackageCard 
-                    {...willPackage} 
-                    active={false} 
-                    onClick={() => handleSelection(willPackage)} 
-                    isDark={false}
-                 />
+                    <div className="grid gap-8">
+                       {[
+                          {
+                             icon: ShieldCheck,
+                             title: "The Probate Bypass",
+                             desc: "Integrated directly with your LLC's Operating Agreement. Shares transfer to heirs instantly upon a succession event, skipping 18+ months of court red tape."
+                          },
+                          {
+                             icon: History,
+                             title: "Compliance Heartbeat",
+                             desc: "The vault monitors your activity. Should a 'Total Blackout' occur, the Sentinel Protocol triggers. Access coordinates are securely dispatched to your successor."
+                          },
+                          {
+                             icon: Video,
+                             title: "Video Bequests",
+                             desc: "High-fidelity instructions and personal messages. Don't leave your family guessing—explain the context behind the commerce in your own voice."
+                          }
+                       ].map((item, i) => (
+                          <div key={i} className="flex gap-6 group">
+                             <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#D4AF37] group-hover:scale-110 transition-transform duration-500">
+                                <item.icon size={24} />
+                             </div>
+                             <div className="space-y-2">
+                                <h4 className="text-lg font-black uppercase tracking-tight text-white">{item.title}</h4>
+                                <p className="text-sm text-gray-500 leading-relaxed font-medium">{item.desc}</p>
+                             </div>
+                          </div>
+                       ))}
+                    </div>
+
+                    <div className="pt-8">
+                       <button 
+                          onClick={() => handleSelection(willPackage)} 
+                          className="group relative bg-[#D4AF37] text-black px-16 py-8 rounded-[40px] font-black text-xl uppercase tracking-widest overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-[0_20px_50px_-20px_rgba(212,175,55,0.5)]"
+                       >
+                          <span className="relative z-10 flex items-center gap-4">
+                             Add Legacy Vault - /yr <ArrowRight size={28} />
+                          </span>
+                          <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
+                       </button>
+                    </div>
+                 </div>
+
+                 {/* VISUAL BLUEPRINT / ANATOMY */}
+                 <div className="relative">
+                    <div className="absolute -inset-10 bg-[#D4AF37]/5 rounded-[60px] blur-3xl" />
+                    <div className="relative bg-[#151516] rounded-[50px] border border-white/10 p-12 md:p-16 shadow-[0_40px_100px_-30px_rgba(0,0,0,0.5)] overflow-hidden">
+                       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#D4AF37]/10 to-transparent" />
+                       
+                       <div className="space-y-12 relative z-10">
+                          <div className="flex items-center justify-between border-b border-white/5 pb-8">
+                             <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center text-gray-400 font-mono text-xs">0x1</div>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Structural Anatomy</span>
+                             </div>
+                             <Fingerprint size={24} className="text-[#D4AF37]" />
+                          </div>
+
+                          <div className="space-y-8">
+                             {/* The "Safe" Visualization */}
+                             <div className="relative w-full aspect-square max-w-[300px] mx-auto">
+                                <div className="absolute inset-0 border-[20px] border-white/5 rounded-full animate-[spin_20s_linear_infinite]" />
+                                <div className="absolute inset-4 border border-dashed border-[#D4AF37]/30 rounded-full" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                   <div className="w-40 h-40 bg-[#1A1A1B] rounded-[40px] border-2 border-[#D4AF37] flex items-center justify-center shadow-[0_0_80px_rgba(212,175,55,0.2)]">
+                                      <Lock size={64} className="text-[#D4AF37]" />
+                                   </div>
+                                </div>
+                                {/* Data Points */}
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#1c1c1e] px-4 py-2 rounded-full border border-gray-800 text-[10px] font-bold text-white shadow-xl">
+                                   256-Bit Encrypted
+                                </div>
+                                <div className="absolute top-1/4 -right-12 bg-[#1c1c1e] px-4 py-2 rounded-full border border-gray-800 text-[10px] font-bold text-[#D4AF37] shadow-xl">
+                                   Offline Backup
+                                </div>
+                                <div className="absolute bottom-1/4 -left-12 bg-[#1c1c1e] px-4 py-2 rounded-full border border-gray-800 text-[10px] font-bold text-gray-300 shadow-xl">
+                                   Probate Shield
+                                </div>
+                             </div>
+
+                             <div className="bg-black/40 rounded-3xl p-8 border border-white/5 backdrop-blur-sm space-y-6">
+                                <div className="flex items-center justify-between">
+                                   <span className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">Vault Status</span>
+                                   <span className="px-3 py-1 bg-[#D4AF37]/20 rounded-full text-[8px] font-black text-[#D4AF37] uppercase animate-pulse">Armored</span>
+                                </div>
+                                <div className="space-y-3">
+                                   <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                      <div className="h-full w-3/4 bg-gradient-to-r from-[#D4AF37] to-[#886B1D]" />
+                                   </div>
+                                   <div className="flex justify-between text-[9px] font-bold uppercase tracking-tighter text-gray-500">
+                                      <span>Security Integrity</span>
+                                      <span>99.9%</span>
+                                   </div>
+                                </div>
+                                <p className="text-[10px] text-gray-500 font-medium leading-relaxed italic text-center">
+                                   "The Heritage Protocol ensures your most sensitive data—passwords, deeds, and recorded wishes—never enter the public domain while ensuring your heirs receive them exactly when needed."
+                                </p>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
               </div>
            </div>
         </section>
 
         {/* PRIVACY FEATURE */}
         <section id="privacy" className="py-48 px-6 bg-[#1D1D1F] text-white text-center overflow-hidden relative">
-           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-           <div className="max-w-4xl mx-auto space-y-16 relative z-10">
+           <div className="max-w-[1000px] mx-auto space-y-12 relative z-10">
               <div className="w-20 h-20 bg-white/10 rounded-3xl flex items-center justify-center mx-auto text-[#007AFF] shadow-[0_0_60px_rgba(0,122,255,0.3)]"><Settings size={40} /></div>
               <h2 className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">The DeLand Hub.</h2>
               <p className="text-2xl text-gray-400 font-medium italic leading-relaxed">
@@ -756,7 +972,7 @@ export default function App() {
 
       <footer className="py-32 bg-white text-center flex flex-col items-center gap-10">
          <span className="font-black text-3xl uppercase tracking-tighter">Charter <span className="italic-serif lowercase">Legacy</span></span>
-         <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.6em]">Florida Business Hub • High-Tech Scrivener • v3.1.0</p>
+         <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.6em]">Florida Business Hub â€¢ High-Tech Scrivener â€¢ v3.1.0</p>
       </footer>
 
       <SpecSheet 

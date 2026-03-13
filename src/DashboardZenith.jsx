@@ -10,6 +10,8 @@ import FoundersBlueprint from './FoundersBlueprint';
 import SuccessionSuite from './SuccessionSuite';
 
 import DesignationProtocol from './DesignationProtocol';
+import StatusRing from './components/StatusRing';
+import { useCompliance } from './hooks/useCompliance';
 
 const DashboardZenith = ({ user, initialData }) => {
   const [loading, setLoading] = useState(true);
@@ -23,6 +25,9 @@ const DashboardZenith = ({ user, initialData }) => {
   
   // Steve Mode: Power Tools
   const [privacyMode, setPrivacyMode] = useState(false);
+
+  // Compliance & Statutory Monitoring
+  const compliance = useCompliance(user, llcData);
 
   const handleExport = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(llcData, null, 2));
@@ -257,16 +262,31 @@ const DashboardZenith = ({ user, initialData }) => {
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Privacy Shield</span>
-                                    <span className="text-base font-bold text-[#0A0A0B] flex items-center gap-2">
-                                        <Shield size={16} className={llcData?.privacy_shield_active ? "text-[#00D084]" : "text-gray-300"} />
+                                    <span className="text-base font-bold text-[#0A0A0B] flex items-center gap-4">
+                                        <StatusRing 
+                                            percentage={llcData?.privacy_shield_active ? 100 : 0}
+                                            color={llcData?.privacy_shield_active ? "#00D084" : "#FF3B30"}
+                                            size={48}
+                                            strokeWidth={4}
+                                        >
+                                            <Shield size={16} className={llcData?.privacy_shield_active ? "text-[#00D084]" : "text-[#FF3B30]"} />
+                                        </StatusRing>
                                         {llcData?.privacy_shield_active ? "Engaged" : "Inactive"}
                                     </span>
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Renewal</span>
-                                    <span className="text-base font-bold text-[#0A0A0B] opacity-40 flex items-center gap-2">
-                                        <Clock size={16} />
-                                        Auto-Renew (Year 1)
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Statutory Health</span>
+                                    <span className="text-base font-bold text-[#0A0A0B] flex items-center gap-4">
+                                        <StatusRing 
+                                            percentage={compliance.healthScore}
+                                            color={compliance.pulseColor}
+                                            size={48}
+                                            strokeWidth={4}
+                                            pulse={compliance.healthScore < 100}
+                                        >
+                                            <Activity size={16} style={{ color: compliance.pulseColor }} />
+                                        </StatusRing>
+                                        {compliance.healthScore}% Integrity
                                     </span>
                                 </div>
                             </div>
@@ -308,16 +328,28 @@ const DashboardZenith = ({ user, initialData }) => {
                                         </div>
                                     </div>
 
-                                    <div className="p-8 bg-[#FAFAFA] rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-center gap-4 opacity-50 cursor-not-allowed">
-                                        <div>
-                                            <h3 className="text-xl font-black uppercase tracking-tight text-[#0A0A0B] mb-1">Florida Annual Report</h3>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Locked until Jan 1, 2027</p>
-                                        </div>
-                                        <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                                            <div className="w-[5%] h-full bg-[#0A0A0B]"></div>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
-                                            <Lock size={12} /> Filing window closed
+                                    <div className="p-8 bg-white rounded-3xl border border-gray-100 shadow-xl flex items-center gap-8 group hover:scale-[1.02] transition-transform cursor-pointer">
+                                        <StatusRing 
+                                            percentage={compliance.healthScore}
+                                            color={compliance.pulseColor}
+                                            size={100}
+                                            strokeWidth={8}
+                                            pulse={compliance.healthScore < 100}
+                                        >
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-xl font-black" style={{ color: compliance.pulseColor }}>{compliance.healthScore}%</span>
+                                                <span className="text-[8px] font-black uppercase text-gray-400">Health</span>
+                                            </div>
+                                        </StatusRing>
+                                        <div className="flex-1">
+                                            <h3 className="text-xl font-black uppercase tracking-tight text-[#0A0A0B] mb-1">Statutory Pulse</h3>
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
+                                                {compliance.daysToDeadline ? `Deadline: ${compliance.daysToDeadline} Days` : "All filings active"}
+                                            </p>
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full animate-pulse`} style={{ backgroundColor: compliance.pulseColor }}></div>
+                                                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Live Monitoring</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

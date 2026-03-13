@@ -10,7 +10,7 @@ type FlagName =
 
 const defaultFlags: Record<FlagName, boolean> = {
   newDashboard: false,
-  newStaffNode: false,
+  newStaffNode: true,
   newWizards: false,
   v2DataClients: false,
   strictServicesLayer: false,
