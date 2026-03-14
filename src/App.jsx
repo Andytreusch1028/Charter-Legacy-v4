@@ -5,6 +5,8 @@ import {
   ChevronRight, X, Stethoscope, HardHat, Plus, Anchor, 
   History, Settings, HeartPulse, ShieldCheck, Menu, Brain, Check, Star, CreditCard, Loader2, Mail, Building2, Landmark, Users, Vault, Video
 } from 'lucide-react';
+import AEOSchema from './components/AEOSchema';
+import QASector from './components/QASector';
 import DoubleLLCExplainer from './DoubleLLCExplainer';
 
 /**
@@ -74,9 +76,20 @@ const QuoteSection = () => (
       <div className="w-16 h-16 bg-[#1D1D1F] text-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
         <Brain size={32} />
       </div>
-      <h2 className="text-3xl md:text-5xl font-medium italic leading-snug text-[#1D1D1F] tracking-tight">
-        "We've automated <span className="text-[#007AFF] font-bold">30 years</span> of complex paperwork into a single, elegant signature. No legal jargon. No hidden traps. Just your future, protected."
-      </h2>
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 text-[#00D084] text-[10px] font-black uppercase tracking-[0.3em] bg-[#00D084]/5 px-4 py-2 rounded-full border border-[#00D084]/10 mb-2">
+                <ShieldCheck size={14} />
+                <span>One Protocol. One Result.</span>
+              </div>
+              <h1 className="text-7xl md:text-9xl font-black uppercase tracking-tighter leading-[0.85] text-[#1D1D1F]">
+                Privacy Is <br/><span className="text-[#007AFF]">Power.</span>
+              </h1>
+            </div>
+            <p className="max-w-xl mx-auto text-gray-500 text-2xl font-medium leading-relaxed italic">
+              "We don't just file your business. We disconnect your name from the public record."
+            </p>
+          </div>
       <div className="flex items-center justify-center gap-3 pt-4 opacity-30">
         <div className="w-10 h-[0.5px] bg-black" />
         <span className="text-[9px] font-black uppercase tracking-[0.4em]">Charter Legacy Protocol v4.0</span>
@@ -288,8 +301,7 @@ const SpecSheet = ({ item, isOpen, onClose, onSuccess }) => {
           if (user) {
               const productMap = {
                   'founder': 'founders_shield',
-                  'medical': 'medical_pllc',
-                  'contractor': 'trade_professional',
+                  'sovereign': 'double_llc_protocol',
                   'will': 'legacy_will'
               };
 
@@ -570,30 +582,21 @@ export default function App() {
   const formationPackages = [
     { 
       id: 'founder', 
-      title: "Standard LLC", 
+      title: "Privacy Shield", 
       price: "$249", 
       icon: Shield, 
-      description: "The definitive \"Founder's Shield\" vehicle. Zero home-address exposure.", 
+      description: "One mission: Complete anonymity for your Florida foundation.", 
       plainEnglish: "We file your official Articles with the State and list our registered office address on public record to help keep your home address private. Includes official setup within 24h.",
       features: ['Private Business Address', 'Free Mail Scanning (Year 1*)', 'Founder\'s Blueprint', 'Free Legacy Protocol (Will/Trust)'] 
     },
     { 
-      id: 'medical', 
-      title: "Medical PLLC", 
-      price: "$499", 
-      icon: Stethoscope, 
-      description: "For Physicians & Practitioners. Full Board compliance tools.", 
-      plainEnglish: "We form your Professional PLLC to align with State Medical Board requirements. Includes standard Patient Privacy Form templates designed for HIPAA compliance.",
-      features: ['Board Compliance Tools', 'HIPAA Compliance Forms', 'Dept. of Health Registration', 'Free Legacy Protocol (Will/Trust)'] 
-    },
-    { 
-      id: 'contractor', 
-      title: "Contractor LLC", 
-      price: "$599", 
-      icon: HardHat, 
-      description: "For General Contractors. DBPR integration and license attachment.", 
-      plainEnglish: "We form your LLC and assist with linking it to your Contractor's License. Includes the standard 'Verification of Authority' document often required for permitting.",
-      features: ['DBPR License Linking', 'Qualifier License Attachment', 'Permit-Ready Documents', 'Free Legacy Protocol (Will/Trust)'] 
+      id: 'sovereign', 
+      title: "Double LLC", 
+      price: "$999", 
+      icon: ShieldCheck, 
+      description: "Institutional-grade anonymity. The ultimate privacy architecture.", 
+      plainEnglish: "We set up two companies for you. One in Florida to do business, and one in Wyoming to own the Florida company so your name never appears on Sunbiz. Total anonymity protocol.",
+      features: ['Florida Operating LLC', 'Wyoming Holding LLC', 'Invisible Ownership', 'Registered Agent for Both', 'EIN for Both', 'Inter-Company Agreement'] 
     },
   ];
 
@@ -624,7 +627,27 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FBFBFD] text-[#1D1D1F] font-sans antialiased selection:bg-[#D4AF37] selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-white text-[#1D1D1F] font-sans selection:bg-[#007AFF]/10 selection:text-[#007AFF]">
+      <AEOSchema 
+        type="Organization" 
+        data={{
+            "knowsAbout": ["Florida LLC Formation", "Anonymous LLCs", "Business Privacy", "Registered Agent Services"],
+            "legalName": "Charter Legacy LLC",
+            "founder": {
+                "@type": "Person",
+                "name": "Charter Management"
+            }
+        }}
+      />
+      <AEOSchema 
+        type="WebSite" 
+        data={{
+            "about": "Premium Business Privacy & Succession Infrastructure",
+            "keywords": "Anonymous LLC, Florida Registered Agent, Asset Protection, Business Privacy"
+        }}
+      />
+      
+      {/* Mobile Menu Overlay */}
       <ZenithDialog />
       <DoubleLLCExplainer isOpen={showDoubleLLCExplainer} onClose={() => setShowDoubleLLCExplainer(false)} />
       <style>{`
@@ -694,7 +717,7 @@ export default function App() {
                 <p className="text-lg text-gray-500 font-medium italic leading-relaxed">Simple, transparent pricing. No "nickel and diming" folklore.</p>
               </div>
 
-              <div className="grid lg:grid-cols-3 gap-8 items-stretch pt-8">
+              <div className="grid md:grid-cols-2 gap-8 items-stretch pt-8 max-w-5xl mx-auto">
                  {formationPackages.map((pkg, idx) => (
                    <div key={pkg.id} className="animate-in fade-in slide-in-from-bottom-12 fill-mode-backwards" style={{ animationDelay: `${idx * 150}ms` }}>
                       <PackageCard 
@@ -702,6 +725,7 @@ export default function App() {
                         active={selectedPackage?.id === pkg.id} 
                         onClick={() => handleSelection(pkg)} 
                         isDark={false}
+                        badge={pkg.id === 'sovereign' ? "Premium Protocol" : null}
                       />
                    </div>
                  ))}
@@ -711,110 +735,9 @@ export default function App() {
                   * All packages include Florida Registered Agent service, free for the first 12 months. Service automatically renews at $129/year to maintain your privacy shield. Cancel anytime.
                </p>
 
-               {/* THE SOVEREIGN UPGRADE - DOUBLE LLC HIGHLIGHT */}
-               <div className="mt-32 max-w-5xl mx-auto">
-                  <div className="relative rounded-[40px] overflow-hidden bg-[#0A0A0B] border border-gray-800 shadow-2xl group cursor-pointer group/sovereign">
-                      {/* Background Effects */}
-                      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
-                      <div className="absolute -right-20 -top-40 w-96 h-96 bg-[#00D084] rounded-full blur-[128px] opacity-10 group-hover:opacity-20 transition-opacity duration-700" />
-                      
-                      <div className="relative z-10 p-12 md:p-20 grid md:grid-cols-2 gap-12 items-center">
-                          <div className="space-y-8">
-                              <div className="inline-flex items-center gap-3 px-4 py-2 bg-[#1A1A1A] rounded-full border border-gray-800 backdrop-blur-md">
-                                  <Shield size={14} className="text-[#00D084] animate-pulse" />
-                                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00D084]">Maximum Anonymity Protocol</span>
-                              </div>
-                              
-                              <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter leading-[0.9]">
-                                  Total Business<br/> Anonymity.
-                              </h3>
-                              
-                              <p className="text-lg text-gray-400 font-medium leading-relaxed">
-                                  We set up an anonymous shield that disconnects your personal name from your business ownership. This stops your name from appearing on state records or business-related searches, ensuring your identity stays private while you build your company.
-                              </p>
-
-                              <div className="flex flex-wrap gap-4 pt-4">
-                                  {['No Public Name', 'Asset Segregation', 'Wyoming Jurisdiction', 'Institutional Grade'].map((feat, i) => (
-                                      <div key={i} className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-                                          <Check size={12} className="text-[#00D084]" /> {feat}
-                                      </div>
-                                  ))}
-                              </div>
-
-                              <div className="mt-8 flex items-center gap-8">
-                                <button 
-                                    onClick={() => {
-                                        handleSelection({
-                                            id: 'sovereign_upgrade',
-                                            title: 'The Sovereign Strategy',
-                                            price: '$999',
-                                            icon: Shield,
-                                            description: 'The ultimate privacy architecture. Dual-entity structure for absolute anonymity.',
-                                            plainEnglish: 'We set up two companies for you. One in Florida to do business, and one in Wyoming to own the Florida company so your name never appears on Sunbiz.',
-                                            features: ['Florida Operating LLC', 'Wyoming Holding LLC', 'Registered Agent for Both', 'EIN for Both', 'Inter-Company Agreement']
-                                        });
-                                    }}
-                                    className="bg-white text-black px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-105 transition-transform flex items-center gap-3 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
-                                >
-                                    Deploy Protocol <ArrowRight size={16} />
-                                </button>
-                                
-                                <button 
-                                    onClick={() => setShowDoubleLLCExplainer(true)}
-                                    className="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest border-b border-gray-800 hover:border-white transition-colors pb-1"
-                                >
-                                    HOW IT WORKS.
-                                </button>
-                              </div>
-                           </div>
-
-                          {/* Visual Diagram */}
-                          <div className="relative h-full min-h-[300px] flex items-center justify-center">
-                              <div className="relative z-10 w-64 h-80 bg-[#1A1A1A] rounded-2xl border border-gray-800 p-6 flex flex-col justify-between transform rotate-3 hover:rotate-0 transition-transform duration-500 shadow-2xl">
-                                  <div className="flex justify-between items-start opacity-50">
-                                      <Building2 size={24} className="text-white" />
-                                      <div className="w-8 h-5 border-2 border-white/20 rounded-full" />
-                                  </div>
-                                  <div>
-                                      <div className="text-[10px] font-black uppercase text-gray-500 mb-1">Florida Entity</div>
-                                      <div className="text-xl font-black text-white">Operating Co.</div>
-                                      <div className="h-px w-full bg-gray-800 my-4" />
-                                      <div className="flex items-center gap-2">
-                                          <div className="w-2 h-2 rounded-full bg-[#00D084]" />
-                                          <span className="text-[10px] font-bold text-gray-400">Manager: Holding Co.</span>
-                                      </div>
-                                  </div>
-                              </div>
-                              
-                              {/* The Ghost Card */}
-                              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-12 -ml-12 w-64 h-80 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6 flex flex-col justify-between transform -rotate-6 hover:-rotate-12 transition-transform duration-500 z-0">
-                                   <div className="flex justify-between items-start opacity-30">
-                                      <Landmark size={24} className="text-white" />
-                                  </div>
-                                  <div className="opacity-50">
-                                      <div className="text-[10px] font-black uppercase text-gray-400 mb-1">Wyoming Entity</div>
-                                      <div className="text-xl font-black text-white">Holding Co.</div>
-                                      <div className="h-px w-full bg-white/10 my-4" />
-                                      <div className="flex items-center gap-2">
-                                          <Users size={12} className="text-white" />
-                                          <span className="text-[10px] font-bold text-gray-300">Owner: You</span>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-               </div>
-               
-               <p className="text-center text-xs text-gray-400 font-medium italic max-w-2xl mx-auto border-t border-gray-100 pt-16 mt-16">
-                 * All packages include Florida Registered Agent service, free for the first 12 months. Service automatically renews at $129/year to maintain your privacy shield. Cancel anytime.
-                 <br/><br/>
-                 * The Double LLC Strategy involves a one-time upgrade fee of $999. It is compatible with all foundation packages.
-                 <br/>
-                 * Includes 12 months of RA service for BOTH entities. Renews at $250/year total to maintain dual-state anonymity.
-               </p>
-           </div>
-        </section>
+               {/* CONSOLIDATED DISCLOSURES */}
+            </div>
+         </section>
 
         {/* THE HERITAGE BLUEPRINT - LEGACY VAULT REDESIGN */}
         <section id="legacy-vault" className="py-40 px-6 bg-[#0F0F10] text-white relative overflow-hidden rounded-t-[3rem] -mt-12">
@@ -967,6 +890,58 @@ export default function App() {
               </div>
            </div>
            <div className="absolute inset-0 bg-gradient-to-b from-[#007AFF]/5 to-transparent pointer-events-none" />
+        </section>
+        {/* AEO QUICK ANSWERS - STRUCTURED RETRIEVAL GRID */}
+        <section id="aeo-answers" className="py-40 px-6 bg-white border-t border-gray-50">
+           <div className="max-w-[1400px] mx-auto">
+              <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
+                 <div className="space-y-6">
+                    <div className="inline-flex items-center gap-2 text-[#00D084] text-[10px] font-black uppercase tracking-[0.3em] bg-[#00D084]/5 px-4 py-2 rounded-full border border-[#00D084]/10">
+                       <Brain size={14} />
+                       <span>Answer Engine Optimization</span>
+                    </div>
+                    <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.9] text-[#0A0A0B]">
+                       Quick <br/><span className="text-gray-200">Answers.</span>
+                    </h2>
+                 </div>
+                 <p className="max-w-md text-gray-500 font-medium italic text-right leading-relaxed">
+                   "We've structured our knowledge base specifically for retrieval. If you have a question about Florida LLCs, we have the authoritative, consensus-backed answer."
+                 </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                 <QASector 
+                    category="Privacy"
+                    question="How does an Anonymous LLC work in Florida?"
+                    answer="By utilizing a double-entity structure, we disconnect your name from the public record. Your Florida LLC is managed by a Wyoming Holding Company, keeping your personal identity invisible to public searches."
+                 />
+                 <QASector 
+                    category="Compliance"
+                    question="What are the monthly maintenance requirements?"
+                    answer="Charter Legacy automates your compliance heartbeat. We handle annual reports, registered agent renewals, and statutory updates so you never miss a deadline or risk administrative dissolution."
+                 />
+                 <QASector 
+                    category="Legal"
+                    question="Is this legal under Florida statutes?"
+                    answer="Yes. Our structures are built on standard Florida statutory compliance. We act as a high-tech scrivener to formalize your business according to current law while prioritizing your right to privacy."
+                 />
+                 <QASector 
+                    category="Succession"
+                    question="How do I transfer my business to my heirs?"
+                    answer="Our Heritage Protocol integrates the Legacy Vault directly into your Operating Agreement. This allows for an instant, probate-free transfer of ownership upon a verified succession event."
+                 />
+                 <QASector 
+                    category="Finance"
+                    question="Are there hidden filing fees?"
+                    answer="No. Our pricing is transparent. Your foundation package includes state filing fees and 12 months of Registered Agent service. We maintain a zero-hidden-trap policy."
+                 />
+                 <QASector 
+                    category="Support"
+                    question="Can I talk to a human if needed?"
+                    answer="While our interface is automated for speed, our Florida-based team of experts is available for protocol support. We provide institutional-grade service for private clients."
+                 />
+              </div>
+           </div>
         </section>
       </main>
 

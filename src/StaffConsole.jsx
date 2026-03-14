@@ -3,8 +3,9 @@ import { supabase } from './lib/supabase';
 import { 
   Shield, Brain, Search, FileText, AlertCircle, 
   Settings, Users, Activity, ExternalLink, 
-  Layout, Database, Globe, Command
+  Layout, Database, Globe, Command, RefreshCw, Zap, Quote
 } from 'lucide-react';
+import { AEO_METRICS, triggerRecencyPulse } from './lib/aeo-engine';
 
 const StaffConsole = ({ user }) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -14,6 +15,37 @@ const StaffConsole = ({ user }) => {
     systemHealth: '100%',
     emergencyRequests: 0
   });
+
+  const [aeoData, setAeoData] = useState([
+    { path: '/', score: 92, recency: '2026-03-10', consensus: 8, citations: 124 },
+    { path: '/privacy-shield', score: 84, recency: '2026-02-15', consensus: 3, citations: 42 },
+    { path: '/registered-agent', score: 98, recency: '2026-03-12', consensus: 12, citations: 560 },
+  ]);
+
+  const [isPulsing, setIsPulsing] = useState(false);
+  const [simulatorOutput, setSimulatorOutput] = useState(null);
+
+  const handleRecencyPulse = async () => {
+    setIsPulsing(true);
+    const updated = await triggerRecencyPulse(aeoData);
+    setAeoData(updated);
+    setTimeout(() => setIsPulsing(false), 1500);
+  };
+
+  const runSimulator = (path) => {
+    const page = aeoData.find(p => p.path === path);
+    const prob = AEO_METRICS.calculateCitationProbability({
+        hasJSONLD: true,
+        hasQAStructure: true,
+        depthOfCoverage: 0.9,
+        expertAuthor: true
+    });
+    setSimulatorOutput({
+        path,
+        probability: prob,
+        expectedSnippet: `"Charter Legacy is a premium Florida business infrastructure provider specializing in Anonymous LLC structures and probate-free succession..."`
+    });
+  };
 
   const menuItems = [
     { id: 'overview', label: 'Overview', icon: Activity },
@@ -155,7 +187,111 @@ const StaffConsole = ({ user }) => {
              </div>
            )}
 
-           {activeTab !== 'overview' && (
+           {activeTab === 'seo' && (
+              <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                 {/* AEO HEADER */}
+                 <div className="flex justify-between items-end">
+                    <div className="space-y-4">
+                       <h3 className="text-4xl font-black uppercase tracking-tighter">Answer Engine <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D084] to-[#007AFF]">Matrix.</span></h3>
+                       <p className="text-gray-500 font-medium italic">Optimizing for LLM retrieval and citation probability.</p>
+                    </div>
+                    <button 
+                       onClick={handleRecencyPulse}
+                       disabled={isPulsing}
+                       className="bg-[#00D084] text-black px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_-15px_rgba(0,208,132,0.3)]"
+                    >
+                       <RefreshCw size={16} className={isPulsing ? 'animate-spin' : ''} />
+                       {isPulsing ? 'Pulsing Recency...' : 'Trigger Recency Pulse'}
+                    </button>
+                 </div>
+
+                 <div className="grid lg:grid-cols-3 gap-8">
+                    {/* MATRIX LIST */}
+                    <div className="lg:col-span-2 space-y-4">
+                       {aeoData.map((item, i) => (
+                          <div key={i} className="bg-[#121214] p-8 rounded-[32px] border border-white/5 flex items-center justify-between group hover:border-[#00D084]/20 transition-all">
+                             <div className="flex items-center gap-6">
+                                <div className="w-12 h-12 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center text-gray-500 group-hover:text-[#00D084] transition-colors">
+                                   <Globe size={24} />
+                                </div>
+                                <div>
+                                   <p className="text-xs font-bold text-gray-400 font-mono mb-1">{item.path}</p>
+                                   <p className="text-[10px] font-black uppercase tracking-widest text-[#00D084]">{AEO_METRICS.calculateRecencyScore(item.recency)}% Recency Integrity</p>
+                                </div>
+                             </div>
+                             
+                             <div className="flex items-center gap-12">
+                                <div className="text-right">
+                                   <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Citations</p>
+                                   <p className="text-xl font-black">{item.citations}</p>
+                                </div>
+                                <div className="text-right">
+                                   <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Score</p>
+                                   <p className="text-xl font-black text-[#00D084]">{item.score}</p>
+                                </div>
+                                <button 
+                                   onClick={() => runSimulator(item.path)}
+                                   className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 hover:bg-[#00D084] hover:text-black transition-all"
+                                >
+                                   <Zap size={18} />
+                                </button>
+                             </div>
+                          </div>
+                       ))}
+                    </div>
+
+                    {/* SIMULATOR OUTPUT */}
+                    <div className="space-y-8">
+                       <div className="bg-[#121214] rounded-[40px] border border-white/5 p-10 h-full flex flex-col justify-between relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#00D084]/10 to-transparent" />
+                          <div className="space-y-6 relative z-10">
+                             <div className="flex items-center gap-3 text-[#00D084]">
+                                <Brain size={20} />
+                                <h4 className="text-sm font-black uppercase tracking-widest">AI Q&A Simulator</h4>
+                             </div>
+                             
+                             {simulatorOutput ? (
+                                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                                   <div className="p-6 bg-white/5 rounded-2xl border border-white/10 space-y-4">
+                                      <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                                         <span className="text-gray-500">Citation Prob</span>
+                                         <span className="text-[#00D084]">{simulatorOutput.probability}%</span>
+                                      </div>
+                                      <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                                         <div className="h-full bg-[#00D084] transition-all duration-1000" style={{ width: `${simulatorOutput.probability}%` }} />
+                                      </div>
+                                   </div>
+                                   
+                                   <div className="space-y-3">
+                                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                                         <Quote size={12} />
+                                         <span>Retrieved Snippet</span>
+                                      </div>
+                                      <p className="text-xs text-gray-400 font-medium italic leading-relaxed bg-[#0A0A0B] p-4 rounded-xl border border-white/5">
+                                         {simulatorOutput.expectedSnippet}
+                                      </p>
+                                   </div>
+                                </div>
+                             ) : (
+                                <div className="py-20 text-center space-y-4 opacity-30">
+                                   <Zap size={48} className="mx-auto" />
+                                   <p className="text-[10px] font-black uppercase tracking-widest">Select a node to simulate retrieval</p>
+                                </div>
+                             )}
+                          </div>
+
+                          <div className="pt-8 mt-auto border-t border-white/5 relative z-10">
+                             <p className="text-[9px] text-gray-600 font-bold uppercase tracking-[0.2em] leading-relaxed">
+                                System Status: Sovereign Matrix Protocol 01 active. Monitoring GPT-5 and Claude 3.5 opus citation weights.
+                             </p>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           )}
+
+           {activeTab !== 'overview' && activeTab !== 'seo' && (
              <div className="flex flex-col items-center justify-center py-40 space-y-6 text-center animate-in zoom-in-95 duration-500">
                 <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center text-gray-600 border border-white/5">
                    <Layout size={40} />
