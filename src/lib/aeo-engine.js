@@ -45,6 +45,52 @@ export const AEO_METRICS = {
         if (count > 5) return 80;
         if (count > 2) return 50;
         return 20;
+    },
+
+    /**
+     * ADVANCED METRICS (Infinite Tail)
+     */
+
+    // Grounding: Fact consistency and corroboration probability
+    calculateGroundingScore: (text, facts = []) => {
+        if (!text) return 0;
+        let hits = 0;
+        facts.forEach(f => {
+            if (text.toLowerCase().includes(f.toLowerCase())) hits++;
+        });
+        const ratio = hits / (facts.length || 1);
+        return Math.min(100, Math.round(ratio * 100));
+    },
+
+    // Neutrality: Measuring "salesy" vs. "educational" tone
+    // Low score = Pitchy/Aggressive, High score = Neutral/Reference-grade
+    calculateNeutralityIndex: (text) => {
+        const pitchWords = ['guaranteed', 'best', 'cheapest', 'proven', 'secret', 'miracle', 'revolutionary', 'buy now'];
+        let count = 0;
+        pitchWords.forEach(w => {
+            const regex = new RegExp(`\\b${w}\\b`, 'gi');
+            const matches = text.match(regex);
+            if (matches) count += matches.length;
+        });
+        
+        const score = 100 - (count * 15);
+        return Math.max(0, score);
+    },
+
+    // Passage Independence: How well a block stands alone for LLM ripple-out
+    calculatePassageStructure: (text) => {
+        if (!text) return 0;
+        const hasTopicSentence = /^[A-Z]/.test(text); // Starts with capital
+        const hasConclusion = /[.!?]$/.test(text); // Ends with punctuation
+        const length = text.split(' ').length;
+        const isIdealLength = length > 20 && length < 80; // LLM sweet spot for citations
+
+        let score = 40;
+        if (hasTopicSentence) score += 20;
+        if (hasConclusion) score += 20;
+        if (isIdealLength) score += 20;
+        
+        return score;
     }
 };
 

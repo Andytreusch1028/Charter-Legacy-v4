@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, Users, Clock, Shield, Lock, ChevronRight, Fingerprint, FileKey, Upload, Trash2, Eye, FileCheck, FileText, Archive, History, FileDown, RefreshCw, Filter, Brain, CheckCircle2, ShieldX, ArrowRight, ShieldCheck, MapPin, AlertCircle, Key, Box, Plus, Edit2, Vault, Disc, ShieldAlert, Terminal } from 'lucide-react';
+import SyncRecordModal from './components/SyncRecordModal';
 import { supabase as charterSupabase } from './lib/supabase';
 
 const SuiteStep = ({ title, icon: Icon, active, onClick, children }) => (
@@ -28,523 +29,219 @@ const SuiteStep = ({ title, icon: Icon, active, onClick, children }) => (
 );
 
 // Will Document Preview Component
-const LegalDocPreview = ({ data }) => (
-    <div className="bg-white text-black p-12 shadow-2xl max-w-2xl mx-auto min-h-[600px] my-4 border-2 border-gray-300 font-serif leading-relaxed text-justify relative">
-        <div className="absolute top-0 left-0 w-full h-2 bg-[#d4af37]"></div>
-        <h1 className="text-3xl font-black text-center mb-10 uppercase tracking-[0.2em] border-b-4 border-black pb-6">Last Will & Testament</h1>
-        
-        <p className="mb-8 text-lg">
-            I, <span className="font-bold border-b-2 border-black px-2">{data.fullName || "____________________"}</span>, 
-            a resident of <span className="font-bold border-b-2 border-black px-2">{data.county || "____________________"}</span> County, State of Florida, 
-            being of sound mind and memory, do hereby make, publish, and declare this to be my Last Will and Testament, hereby revoking all wills and codicils at any time heretofore made by me.
-        </p>
-
-        <h3 className="font-bold text-lg uppercase tracking-widest border-b-2 border-black inline-block mt-6 mb-4">Article I: Identification of Family</h3>
-        <p className="mb-6">
-            I am {data.maritalStatus === 'Married' ? "married to" : "currently"} <span className="font-bold border-b-2 border-black px-2">{data.spouseName || "unmarried"}</span>. 
-            I have <span className="font-bold border-b-2 border-black px-2">{data.childrenCount || "no"}</span> children{data.childrenNames ? ":" : "."} 
-            <span className="font-bold border-b-2 border-black px-2">{data.childrenNames || ""}</span>. 
-            All references in this Will to "my children" include the above-named children and any children hereafter born to or adopted by me.
-        </p>
-
-        <h3 className="font-bold text-lg uppercase tracking-widest border-b-2 border-black inline-block mt-6 mb-4">Article II: Payment of Debts</h3>
-        <p className="mb-6">
-            I direct that all my legally enforceable debts and funeral expenses be paid as soon as practicable after my death.
-        </p>
-
-        <h3 className="font-bold text-lg uppercase tracking-widest border-b-2 border-black inline-block mt-6 mb-4">Article III: Disposition of Property</h3>
-        <p className="mb-6">
-            I give, devise, and bequeath all the rest, residue, and remainder of my estate, both real and personal, of whatever nature and wherever situated, to 
-            <span className="font-bold border-b-2 border-black px-2 mx-1">{data.beneficiaryName || "____________________"}</span> 
-            {data.beneficiaryRelation && <span>(my <span className="italic">{data.beneficiaryRelation}</span>)</span>}, 
-            absolutely and in fee simple. If said beneficiary does not survive me, then I give such residue to my heirs-at-law as determined by the laws of the State of Florida.
-        </p>
-
-        <h3 className="font-bold text-lg uppercase tracking-widest border-b-2 border-black inline-block mt-6 mb-4">Article IV: Personal Representative</h3>
-        <p className="mb-6">
-            I nominate and appoint <span className="font-bold border-b-2 border-black px-2">{data.executorName || "____________________"}</span> 
-            to serve as Personal Representative of this, my Last Will and Testament. 
-            I direct that no bond or other security of any kind shall be required of any Personal Representative appointed hereunder.
-        </p>
-
-        <h3 className="font-bold text-lg uppercase tracking-widest border-b-2 border-black inline-block mt-6 mb-4">Article V: Digital Assets</h3>
-        <p className="mb-6">
-            I grant to my Personal Representative the power to access, handle, distribute, and dispose of my digital assets, including but not limited to email accounts, social media accounts, financial accounts, and the content stored within my <strong>Charter Legacy Vault</strong>, in accordance with the Florida Fiduciary Access to Digital Assets Act.
-        </p>
-
-        <h3 className="font-bold text-lg uppercase tracking-widest border-b-2 border-black inline-block mt-6 mb-4">Article VI: Powers</h3>
-        <p className="mb-6">
-            I grant to my Personal Representative all powers conferred upon personal representatives by the Florida Probate Code, as amended, 
-            including the power to sell, lease, or mortgage any real or personal property, public or private, without court order.
-        </p>
-
-        <div className="mt-16 pt-10 border-t-2 border-black break-inside-avoid">
-            <p className="mb-8">
-                IN WITNESS WHEREOF, I have hereunto set my hand and seal this ______ day of ________________, 20____.
-            </p>
-            <div className="flex justify-end pr-12">
-                <div className="text-center">
-                    <div className="w-64 border-b-2 border-black mb-2"></div>
-                    <p className="text-sm uppercase font-bold tracking-widest">{data.fullName || "TESTATOR"}</p>
-                </div>
+// AEO Ownership Transfer Protocol Preview (Unified Succession)
+const AEOTransferPreview = ({ data }) => (
+    <div className="bg-white p-12 text-black shadow-2xl rounded-sm border border-gray-200 font-serif max-w-2xl mx-auto min-h-[1000px] relative overflow-hidden">
+        {/* Anti-UPL Guard Watermark */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] select-none">
+            <div className="rotate-[-30deg] text-6xl font-black text-gray-900 border-8 border-gray-900 p-4 uppercase">
+                LLC Internal Protocol • Not Public Will
             </div>
         </div>
 
-        <div className="mt-16 pt-10 border-t-4 border-double border-black break-inside-avoid bg-gray-50 p-8 rounded-xl text-justify">
-             <h4 className="text-center font-bold uppercase underline mb-6 tracking-widest text-lg">Self-Proving Affidavit</h4>
-             <p className="text-sm mb-4 leading-relaxed">
-                STATE OF FLORIDA <br/>
-                COUNTY OF <span className="font-bold border-b border-black px-2">{data.county || "____________________"}</span>
-             </p>
-             <p className="text-sm mb-4 leading-relaxed">
-                I, <span className="font-bold border-b border-black px-2">{data.fullName || "Testator Name"}</span>, declare to the officer taking my acknowledgment of this instrument, and to the subscribing witnesses, that I sign this instrument as my will.
-             </p>
-             <p className="text-sm mb-6 leading-relaxed">
-                We, the witnesses, <span className="font-bold border-b border-black px-8">Witness 1 Name</span> and <span className="font-bold border-b border-black px-8">Witness 2 Name</span>, have been sworn by the officer signing below, and declare to that officer on our oaths that the testator declared the instrument to be the testator's will and signed it in our presence and that we each signed the instrument as a witness in the presence of the testator and of each other.
-             </p>
-
-             <div className="grid grid-cols-1 gap-6 mb-8">
-                <div className="text-right">
-                    <div className="w-64 border-b border-black ml-auto mb-1"></div>
-                    <p className="text-xs font-bold uppercase mr-20">Testator's Signature</p>
-                </div>
-                <div className="text-left">
-                    <div className="w-64 border-b border-black mb-1"></div>
-                    <p className="text-xs font-bold uppercase">Witness Signature</p>
-                </div>
-                <div className="text-left">
-                    <div className="w-64 border-b border-black mb-1"></div>
-                    <p className="text-xs font-bold uppercase">Witness Signature</p>
-                </div>
-             </div>
-
-             <p className="text-sm mb-4 leading-relaxed italic">
-                Acknowledged and subscribed before me by the testator, <span className="font-bold border-b border-black px-1">{data.fullName || "Testator"}</span>, who is personally known to me or who has produced identification, and sworn to and subscribed before me by the witnesses, on this ______ day of ________________, 20____.
-             </p>
-
-             <div className="mt-8 flex justify-start">
-                  <div className="text-center w-64">
-                      <div className="border-b border-black mb-2 h-10"></div>
-                      <p className="text-[10px] uppercase font-bold text-gray-500">Notary Public / Stamp</p>
-                  </div>
-             </div>
-        </div>
-        
-        <p className="mt-12 text-[9px] text-gray-400 text-center uppercase tracking-widest font-mono">
-            Generated by Charter Legacy · Page 1 of 1 · Form FL-WILL-STATUTORY
-        </p>
-    </div>
-);
-
-// Trust Document Preview Component
-const TrustDocPreview = ({ data }) => (
-    <div className="bg-white text-black p-12 shadow-2xl max-w-2xl mx-auto min-h-[800px] my-4 border-2 border-gray-300 font-serif leading-relaxed text-justify relative overflow-hidden">
-        {/* Obsidian Heritage Strip */}
-        <div className="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-[#d4af37] via-black to-[#d4af37]"></div>
-        
-        {/* Seal Placeholder */}
-        <div className="absolute top-12 right-12 w-20 h-20 border-4 border-double border-gray-200 rounded-full flex items-center justify-center opacity-40 rotate-12">
-            <span className="text-[8px] font-bold text-center uppercase tracking-tighter">Official Heritage<br/>Protocol Seal</span>
+        <div className="flex justify-between items-start mb-16 border-b-4 border-black pb-8">
+            <div className="space-y-1">
+                <h1 className="text-3xl font-black uppercase tracking-tighter leading-none">AEO Transfer Protocol</h1>
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Assignment of Membership Interest (Fixed Date/Event)</p>
+            </div>
+            <div className="text-right">
+                <div className="text-4xl font-black border-4 border-black p-2 inline-block leading-none">CL</div>
+                <p className="text-[8px] font-black uppercase tracking-widest mt-1">Charter Legacy</p>
+            </div>
         </div>
 
-        <h1 className="text-2xl font-black text-center mb-2 uppercase tracking-[0.3em] mt-8">The {data.fullName || "FOUNDER"}'S</h1>
-        <h1 className="text-3xl font-black text-center mb-12 uppercase tracking-[0.1em] border-b-4 border-black pb-8">Revocable Living Trust</h1>
-        
-        <div className="space-y-8">
+        <div className="space-y-8 text-sm leading-relaxed text-justify">
             <section>
-                <h3 className="font-bold text-lg uppercase tracking-widest border-b-2 border-black inline-block mb-4">Declaration of Trust</h3>
+                <h2 className="font-bold uppercase tracking-widest border-b border-black mb-4 pb-1 text-xs">I. The Parties</h2>
                 <p>
-                    This Revocable Living Trust is established this ______ day of ________________, 20____, by 
-                    <span className="font-bold border-b-2 border-black px-2 mx-1">{data.fullName || "____________________"}</span> 
-                    of <span className="font-bold border-b-2 border-black px-2">{data.county || "____________________"}</span> County, Florida (hereinafter referred to as the "Grantor").
+                    This Membership Interest Transfer Agreement (the "Protocol") is entered into by 
+                    <span className="font-bold border-b border-black px-1 mx-1">{data.ownerName || "____________________"}</span> 
+                    (the "Grantor/Member") regarding the membership interests in 
+                    <span className="font-bold border-b border-black px-1 mx-1">{data.companyName || "____________________"}</span>, 
+                    a Florida Limited Liability Company (the "Company").
                 </p>
             </section>
 
             <section>
-                <h3 className="font-bold text-lg uppercase tracking-widest border-b-2 border-black inline-block mb-4">Article I: Trust Name</h3>
+                <h2 className="font-bold uppercase tracking-widest border-b border-black mb-4 pb-1 text-xs">II. Designated Successor</h2>
                 <p>
-                    The trust established by this instrument shall be known as the <span className="font-bold italic">"The {data.fullName || "Founder"}'s Revocable Living Trust."</span>
+                    Upon the occurrence of the Transfer Event specified in Section III, the Grantor hereby assigns, transfers, and conveys 100% of their membership interest in the Company to:
                 </p>
-            </section>
-
-            <section>
-                <h3 className="font-bold text-lg uppercase tracking-widest border-b-2 border-black inline-block mb-4">Article II: Trustees</h3>
-                <p className="mb-4">
-                    The initial Trustee of this Trust shall be <span className="font-bold border-b-2 border-black px-2">
-                        {data.initialTrustees === 'Corporate Trustee' ? (data.corporateTrusteeName || "[CORPORATE TRUSTEE]") : 
-                         data.initialTrustees === 'Self & Spouse (Joint)' ? (`${data.fullName} and ${data.jointTrusteeName || "[SPOUSE NAME]"}`) :
-                         (data.fullName || "[GRANTOR NAME]")}
-                    </span>. 
-                    The Trustee shall have all powers granted to trustees under the Florida Trust Code.
-                </p>
-                <p>
-                    Upon the death, resignation, or incapacity of the initial Trustee, 
-                    <span className="font-bold border-b-2 border-black px-2">{data.successorTrustee || "____________________"}</span> 
-                    is hereby appointed as the Successor Trustee.
-                </p>
-            </section>
-
-            <section>
-                <h3 className="font-bold text-lg uppercase tracking-widest border-b-2 border-black inline-block mb-4">Article III: Beneficiaries</h3>
-                <p className="mb-4 italic text-gray-700">During my lifetime, the Grantor shall be the sole primary beneficiary of this Trust.</p>
-                <p>
-                    Upon the death of the Grantor, the Trust estate shall be distributed to the following designated beneficiaries:
-                    <span className="block mt-4 p-4 bg-gray-50 border border-gray-200 font-bold whitespace-pre-wrap">
-                        {data.trustBeneficiaries || "__________________________________________________"}
-                    </span>
-                </p>
-            </section>
-
-            <section className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                <div className="flex items-center gap-2 mb-2 text-[#d4af37]">
-                    <History size={16} />
-                    <h3 className="font-bold text-sm uppercase tracking-widest">Heritage Sync: Safety-Net Will</h3>
+                <div className="my-6 p-6 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <p className="text-[9px] font-black uppercase text-gray-400">Primary Successor Member</p>
+                            <p className="font-bold text-lg">{data.successorMember || "____________________"}</p>
+                        </div>
+                        <div>
+                            <p className="text-[9px] font-black uppercase text-gray-400">Relationship</p>
+                            <p className="font-bold">{data.successorRelation || "____________________"}</p>
+                        </div>
+                    </div>
                 </div>
-                <p className="text-xs leading-relaxed italic">
-                    The Grantor concurrently executes a "Pour-Over Will" nominating 
-                    <span className="font-bold border-b border-black px-1 mx-1">{data.safetyNetExecutor || "____________________"}</span> 
-                    as Personal Representative. This ensures any assets remaining outside the Trust at death are seamlessly transferred into this Trust for distribution.
+            </section>
+
+            <section>
+                <h2 className="font-bold uppercase tracking-widest border-b border-black mb-4 pb-1 text-xs">III. Transfer Event (AEO Logic)</h2>
+                <p>
+                    This transfer is intended to occur <span className="italic">Outside of the Probate Estate</span>. The Company shall recognize the Successor Member as the holder of all legal and economic interests immediately upon the certification of the Grantor's death or permanent incapacitation by a designated Successor Manager.
                 </p>
             </section>
 
-            <div className="mt-16 pt-10 border-t-2 border-black">
-                <p className="mb-12">
-                    IN WITNESS WHEREOF, the Grantor has signed this Trust Agreement on the date first above written.
+            <section>
+                <h2 className="font-bold uppercase tracking-widest border-b border-black mb-4 pb-1 text-xs">IV. Successor Management</h2>
+                <p>
+                    The Grantor nominates 
+                    <span className="font-bold border-b border-black px-1 mx-1">{data.successorManager || "____________________"}</span> 
+                    to serve as Successor Manager to facilitate the immediate continuity of LLC operations and ensure the transfer of membership interests is reflected in the Company's internal ledger.
                 </p>
-                <div className="flex flex-col items-end space-y-8 pr-12">
+            </section>
+
+            <div className="mt-20 pt-10 border-t-2 border-black space-y-12">
+                <div className="flex justify-between items-end">
                     <div className="text-center">
-                        <div className="w-64 border-b-2 border-black mb-2"></div>
-                        <p className="text-[10px] uppercase font-bold tracking-widest">Grantor / Trustee Signature</p>
+                        <div className="w-48 border-b-2 border-black mb-2"></div>
+                        <p className="text-[9px] font-bold uppercase tracking-widest">The Member (Grantor)</p>
                     </div>
                     <div className="text-center">
-                        <div className="w-64 border-b border-black mb-2 h-10"></div>
-                        <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Notary Acknowledgement</p>
+                        <div className="w-48 border-b-2 border-black mb-2 h-10"></div>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Notary Acknowledgement</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <p className="mt-16 text-[9px] text-gray-400 text-center uppercase tracking-widest font-mono">
-           Charter Legacy Protocol · Heritage Grade · Form FL-TRUST-REVOCABLE
-        </p>
+        <div className="absolute bottom-12 left-12 right-12 flex justify-between items-center text-[8px] font-mono text-gray-400 uppercase tracking-[0.2em]">
+            <span>Protocol FL-LLC-AEO-2024</span>
+            <span>Digital ID: {Math.random().toString(36).substring(2,10).toUpperCase()}</span>
+        </div>
     </div>
 );
 
-// Protocol Wizard Component (Handles Will & Trust Paths)
-const ProtocolWizard = ({ onClose, onComplete, mode = 'will', initialData }) => {
-    const isTrust = mode === 'trust';
+// Protocol Wizard Component (Handles AEO Ownership Transfer)
+const ProtocolWizard = ({ onClose, onComplete, initialData }) => {
     const [step, setStep] = useState(1);
 
     const [data, setData] = useState(initialData || {
-        // Common Fields
-        fullName: '',
-        county: '',
-        maritalStatus: 'Single',
-        spouseName: '',
-        childrenNames: '',
-        
-        // Will Specific
-        executorName: '',
-        beneficiaryName: '',
-        beneficiaryRelation: '',
-        
-        // Trust Specific
-        initialTrustees: 'Self (Standard)',
-        corporateTrusteeName: '',
-        jointTrusteeName: '',
-        successorTrustee: '',
-        trustBeneficiaries: '',
-        safetyNetExecutor: ''
+        ownerName: '',
+        companyName: '',
+        successorManager: '',
+        successorMember: '',
+        successorRelation: 'Spouse',
+        transferEvent: 'Death'
     });
 
     const handleChange = (field, value) => {
         setData(prev => ({ ...prev, [field]: value }));
     };
 
-    const totalSteps = isTrust ? 6 : 5;
+    const totalSteps = 5;
 
     const isStepValid = () => {
-        if (isTrust) {
-            switch(step) {
-                case 1: return data.fullName && data.county;
-                case 2: 
-                    if (data.initialTrustees === 'Corporate Trustee' && !data.corporateTrusteeName) return false;
-                    if (data.initialTrustees === 'Self & Spouse (Joint)' && !data.jointTrusteeName) return false;
-                    return data.initialTrustees;
-                case 3: return data.successorTrustee;
-                case 4: return data.trustBeneficiaries;
-                case 5: return data.safetyNetExecutor;
-                default: return true;
-            }
-        }
         switch(step) {
-            case 1: return data.fullName && data.county;
-            case 2: // Family
-                if (data.maritalStatus === 'Married' && !data.spouseName) return false;
-                return true; 
-            case 3: return data.executorName;
-            case 4: return data.beneficiaryName;
+            case 1: return data.ownerName;
+            case 2: return data.companyName;
+            case 3: return data.successorManager;
+            case 4: return data.successorMember;
             default: return true;
         }
     };
 
     const renderStep = () => {
-        if (isTrust) {
-            switch(step) {
-                case 1: // GRANTOR
-                    return (
-                        <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Grantor (The Founder)</label>
-                                <input 
-                                    value={data.fullName}
-                                    onChange={(e) => handleChange('fullName', e.target.value)}
-                                    className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                    placeholder="Your Full Legal Name"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">County of Venue</label>
-                                <input 
-                                    value={data.county}
-                                    onChange={(e) => handleChange('county', e.target.value)}
-                                    className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                    placeholder="e.g. Miami-Dade"
-                                />
-                            </div>
-                        </div>
-                    );
-                case 2: // TRUSTEES
-                    return (
-                        <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                            <div className="p-4 bg-[#d4af37]/10 rounded-xl border border-[#d4af37]/20 flex items-start gap-3">
-                                <Shield size={24} className="text-[#d4af37] flex-shrink-0" />
-                                <div>
-                                    <h5 className="text-[#d4af37] font-bold text-xs uppercase mb-1">Initial Trustee (The Guardian)</h5>
-                                    <p className="text-gray-400 text-[10px] leading-relaxed">By default, you are the Initial Trustee. This ensures you maintain 100% control over all assets during your lifetime.</p>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Initial Trustee Designation</label>
-                                <select 
-                                    value={data.initialTrustees}
-                                    onChange={(e) => handleChange('initialTrustees', e.target.value)}
-                                    className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                >
-                                    <option>Self (Standard)</option>
-                                    <option>Self & Spouse (Joint)</option>
-                                    <option>Corporate Trustee</option>
-                                </select>
-                            </div>
-
-                            {data.initialTrustees === 'Corporate Trustee' && (
-                                <div className="animate-in fade-in slide-in-from-top-2">
-                                    <label className="text-xs font-bold text-[#d4af37] uppercase tracking-widest mb-2 block">Corporate Trustee Name</label>
-                                    <input 
-                                        value={data.corporateTrusteeName}
-                                        onChange={(e) => handleChange('corporateTrusteeName', e.target.value)}
-                                        className="w-full bg-black/40 border border-[#d4af37]/50 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                        placeholder="e.g. Northern Trust, NA"
-                                    />
-                                    <p className="text-gray-600 text-[10px] mt-2 italic">Ensure the full legal entity name of the institution is provided.</p>
-                                </div>
-                            )}
-
-                            {data.initialTrustees === 'Self & Spouse (Joint)' && (
-                                <div className="animate-in fade-in slide-in-from-top-2">
-                                    <label className="text-xs font-bold text-[#d4af37] uppercase tracking-widest mb-2 block">Co-Trustee (Spouse) Name</label>
-                                    <input 
-                                        value={data.jointTrusteeName}
-                                        onChange={(e) => handleChange('jointTrusteeName', e.target.value)}
-                                        className="w-full bg-black/40 border border-[#d4af37]/50 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                        placeholder="Full Name of Co-Trustee"
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    );
-                case 3: // SUCCESSION
-                    return (
-                        <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Successor Trustee</label>
-                                <input 
-                                    value={data.successorTrustee}
-                                    onChange={(e) => handleChange('successorTrustee', e.target.value)}
-                                    className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                    placeholder="Primary Successor Name"
-                                />
-                                <p className="text-gray-600 text-[10px] mt-2">This person manages the trust only after you pass or become incapacitated.</p>
-                            </div>
-                        </div>
-                    );
-                case 4: // DISTRIBUTION
-                    return (
-                        <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Trust Beneficiaries</label>
-                                <textarea 
-                                    value={data.trustBeneficiaries}
-                                    onChange={(e) => handleChange('trustBeneficiaries', e.target.value)}
-                                    className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors min-h-[120px]"
-                                    placeholder="List names and percentages (e.g. Jane Doe 50%, John Doe 50%)"
-                                />
-                            </div>
-                        </div>
-                    );
-                case 5: // SAFETY-NET WILL
-                    return (
-                        <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                            <div className="bg-[#d4af37]/5 border border-[#d4af37]/20 rounded-2xl p-6">
-                                <div className="flex items-center gap-3 mb-4 text-[#d4af37]">
-                                    <History size={20} />
-                                    <h4 className="font-black uppercase text-sm">Safety-Net Sync (Pour-Over)</h4>
-                                </div>
-                                <p className="text-gray-400 text-xs leading-relaxed mb-6">
-                                    This "Pour-Over" Will form is a standard safety-net instrument. It is designed so that any assets remain titled in your individual name at the time of death are automatically "poured" into the Trust for distribution according to the Trust's private terms.
-                                </p>
-                                <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 block">Safety-Net Executor</label>
-                                    <input 
-                                        value={data.safetyNetExecutor}
-                                        onChange={(e) => handleChange('safetyNetExecutor', e.target.value)}
-                                        className="w-full bg-black/40 border border-gray-700 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                        placeholder="Full Name of Representative"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    );
-                case 6:
-                    return (
-                        <div className="animate-in zoom-in-95 duration-500">
-                             <TrustDocPreview data={data} />
-                        </div>
-                    );
-                default: return null;
-            }
-        }
-        
-        // STANDARD WILL LOGIC (Existing)
         switch(step) {
-            case 1:
+            case 1: // OWNER
                 return (
                     <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Full Legal Name</label>
-                            <input 
-                                value={data.fullName}
-                                onChange={(e) => handleChange('fullName', e.target.value)}
-                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                placeholder="e.g. Jonathan Doe"
-                            />
+                        <div className="p-4 bg-[#d4af37]/10 rounded-xl border border-[#d4af37]/20 flex items-start gap-3 mb-4">
+                            <Shield size={24} className="text-[#d4af37] flex-shrink-0" />
+                            <div>
+                                <h5 className="text-[#d4af37] font-bold text-xs uppercase mb-1">Grantor Identification</h5>
+                                <p className="text-gray-400 text-[10px] leading-relaxed">The current legal owner of the LLC membership interest who wishes to establish the transfer protocol.</p>
+                            </div>
                         </div>
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">County of Residence</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Owner Full Legal Name</label>
                             <input 
-                                value={data.county}
-                                onChange={(e) => handleChange('county', e.target.value)}
-                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                placeholder="e.g. Miami-Dade"
+                                value={data.ownerName}
+                                onChange={(e) => handleChange('ownerName', e.target.value)}
+                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors font-bold"
+                                placeholder="e.g. Jonathan A. Doe"
                             />
-                            <p className="text-gray-600 text-[10px] mt-2">* Must be a Florida resident for this form.</p>
                         </div>
                     </div>
                 );
-            case 2: // FAMILY DYNAMICS
-                 return (
+            case 2: // LLC INFO
+                return (
                     <div className="space-y-6 animate-in slide-in-from-right duration-500">
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Marital Status</label>
-                            <div className="grid grid-cols-2 gap-3">
-                                {['Single', 'Married', 'Divorced', 'Widowed'].map(status => (
-                                    <button
-                                        key={status}
-                                        onClick={() => handleChange('maritalStatus', status)}
-                                        className={`p-3 rounded-lg border text-sm font-bold transition-all ${
-                                            data.maritalStatus === status 
-                                            ? 'bg-[#d4af37] text-black border-[#d4af37]' 
-                                            : 'bg-[#1c1c1e] text-gray-400 border-gray-800 hover:border-gray-600'
-                                        }`}
-                                    >
-                                        {status}
-                                    </button>
-                                ))}
-                            </div>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Company Name (LLC)</label>
+                            <input 
+                                value={data.companyName}
+                                onChange={(e) => handleChange('companyName', e.target.value)}
+                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors font-bold"
+                                placeholder="Exact Legal Name of your LLC"
+                            />
+                            <p className="text-gray-600 text-[10px] mt-2 italic">* This must match your Articles of Organization exactly.</p>
                         </div>
-
-                        {data.maritalStatus === 'Married' && (
-                            <div className="animate-in fade-in slide-in-from-top-2">
-                                <label className="text-xs font-bold text-[#d4af37] uppercase tracking-widest mb-2 block">Spouse's Full Name</label>
+                    </div>
+                );
+            case 3: // SUCCESSOR MANAGER
+                return (
+                    <div className="space-y-6 animate-in slide-in-from-right duration-500">
+                         <div className="bg-black/40 border border-gray-800 rounded-2xl p-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Users size={18} className="text-[#d4af37]" />
+                                <h4 className="text-white font-bold text-sm uppercase tracking-tight">Successor Manager</h4>
+                            </div>
+                            <p className="text-gray-500 text-[10px] leading-relaxed mb-6">This person will have immediate authority to manage the LLC's bank accounts and operations until the membership interest is fully transferred.</p>
+                            <div>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Full Legal Name</label>
                                 <input 
-                                    value={data.spouseName}
-                                    onChange={(e) => handleChange('spouseName', e.target.value)}
-                                    className="w-full bg-black/40 border border-[#d4af37]/50 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                    placeholder="e.g. Jane Doe"
+                                    value={data.successorManager}
+                                    onChange={(e) => handleChange('successorManager', e.target.value)}
+                                    className="w-full bg-black/60 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
+                                    placeholder="Name of Successor Manager"
                                 />
                             </div>
-                        )}
-
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Children (Legal Heirs)</label>
-                            <textarea 
-                                value={data.childrenNames}
-                                onChange={(e) => {
-                                    handleChange('childrenNames', e.target.value);
-                                }}
-                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors min-h-[100px]"
-                                placeholder="List full names of all children, separated by commas. Leave blank if none."
-                            />
-                            <p className="text-gray-600 text-[10px] mt-2">Includes natural born and legally adopted children.</p>
                         </div>
                     </div>
                 );
-            case 3:
+            case 4: // SUCCESSOR MEMBER
                 return (
                     <div className="space-y-6 animate-in slide-in-from-right duration-500">
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Personal Representative (Executor)</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Primary Beneficiary (Successor Member)</label>
                             <input 
-                                value={data.executorName}
-                                onChange={(e) => handleChange('executorName', e.target.value)}
+                                value={data.successorMember}
+                                onChange={(e) => handleChange('successorMember', e.target.value)}
                                 className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                placeholder="Full Name of Executor"
-                            />
-                            <p className="text-gray-600 text-[10px] mt-2">The person responsible for administering your estate.</p>
-                        </div>
-                    </div>
-                );
-            case 4:
-                return (
-                    <div className="space-y-6 animate-in slide-in-from-right duration-500">
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Primary Beneficiary</label>
-                            <input 
-                                value={data.beneficiaryName}
-                                onChange={(e) => handleChange('beneficiaryName', e.target.value)}
-                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                placeholder="Full Name of Beneficiary"
+                                placeholder="Full Name of Heir"
                             />
                         </div>
                         <div>
                             <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Relationship</label>
-                            <input 
-                                value={data.beneficiaryRelation}
-                                onChange={(e) => handleChange('beneficiaryRelation', e.target.value)}
-                                className="w-full bg-black/40 border border-gray-800 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none transition-colors"
-                                placeholder="e.g. Son, Daughter, Friend"
-                            />
-                        </div>
-                        <div className="p-4 bg-[#d4af37]/10 rounded-xl border border-[#d4af37]/20">
-                            <h5 className="text-[#d4af37] font-bold text-xs uppercase mb-1">Residuary Clause</h5>
-                            <p className="text-gray-400 text-[10px]">This beneficiary will receive the valid residue of your estate (everything not otherwise specified).</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                {['Spouse', 'Child', 'Trust', 'Business Partner'].map(r => (
+                                    <button 
+                                        key={r}
+                                        onClick={() => handleChange('successorRelation', r)}
+                                        className={`py-3 rounded-xl text-xs font-bold transition-all border ${
+                                            data.successorRelation === r 
+                                            ? 'bg-[#d4af37] text-black border-[#d4af37]' 
+                                            : 'bg-black/40 text-gray-500 border-gray-800 hover:text-white hover:bg-gray-900 shadow-inner'
+                                        }`}
+                                    >
+                                        {r}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 );
             case 5:
                 return (
                     <div className="animate-in zoom-in-95 duration-500">
-                        <LegalDocPreview data={data} />
+                        <AEOTransferPreview data={data} />
                     </div>
                 );
             default:
@@ -553,16 +250,16 @@ const ProtocolWizard = ({ onClose, onComplete, mode = 'will', initialData }) => 
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-300">
         <div className="bg-[#1c1c1e] w-full max-w-3xl rounded-3xl border border-[#d4af37]/30 shadow-2xl overflow-hidden flex flex-col relative h-[85vh]">
             
             {/* Header */}
             <div className="bg-[#0A0A0B] p-6 border-b border-gray-800 flex justify-between items-center">
                 <div>
                      <h3 className="text-white font-black uppercase tracking-tight text-xl flex items-center gap-2">
-                        <Brain className="text-[#d4af37]" /> {isTrust ? 'Heritage Trust Protocol' : 'Official Will Drafter'}
+                        <Shield className="text-[#d4af37]" /> AEO Ownership Succession Protocol
                     </h3>
-                    <p className="text-gray-500 text-xs mt-1">{isTrust ? 'Integrated Living Trust & Pour-Over Sync' : 'Statutory Compliant Testamentary Instrument'}</p>
+                    <p className="text-gray-500 text-xs mt-1">Assignment of LLC Membership Interest (Outside of the Estate)</p>
                 </div>
                 <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors"><X size={24}/></button>
             </div>
@@ -580,9 +277,7 @@ const ProtocolWizard = ({ onClose, onComplete, mode = 'will', initialData }) => 
                 <div className="w-full max-w-2xl">
                     <h4 className="text-[#d4af37] font-bold uppercase tracking-widest text-xs mb-6 text-center">
                         Step {step} of {totalSteps}: {
-                            isTrust 
-                            ? ['Grantor Info', 'Trustee Designation', 'Succession Path', 'Distribution', 'Safety-Net Sync', 'Review Protocol'][step-1]
-                            : ['Personal Details', 'Family Dynamics', 'Executor', 'Beneficiaries', 'Review Draft'][step-1]
+                            ['Grantor Info', 'LLC Identification', 'Successor Management', 'Successor Member', 'Review Protocol'][step-1]
                         }
                     </h4>
                     {renderStep()}
@@ -608,14 +303,14 @@ const ProtocolWizard = ({ onClose, onComplete, mode = 'will', initialData }) => 
                         onClick={() => setStep(step + 1)} 
                         className="bg-white text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:bg-[#d4af37] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                        {((isTrust && step === 5) || (!isTrust && step === 4)) ? 'Generate Preview' : 'Next Step'} <ArrowRight size={14} />
+                        {step === 4 ? 'Generate Preview' : 'Next Step'} <ArrowRight size={14} />
                     </button>
                 ) : (
                      <button 
-                        onClick={() => onComplete({ ...data, type: isTrust ? 'Trust' : 'Will' })} 
+                        onClick={() => onComplete({ ...data, type: 'aeo' })} 
                         className="bg-[#d4af37] text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-[#d4af37]/20 flex items-center gap-2"
                     >
-                        <FileDown size={14} /> Approve & Download
+                        <FileDown size={14} /> Approve & Secure Protocol
                     </button>
                 )}
             </div>
@@ -684,7 +379,7 @@ const UpgradeModal = ({ onClose, onConfirm }) => {
                         </>
                     ) : (
                         <>
-                            Secure Checkout <ArrowRight size={16} />
+                            Continue <ArrowRight size={16} />
                         </>
                     )}
                 </button>
@@ -1317,6 +1012,7 @@ const HeritageDashboard = ({
   const [showCompareGrid, setShowCompareGrid] = useState(false); // Steve-Pro: Side-by-side tech view
   const [hasUnlockedOnce, setHasUnlockedOnce] = useState(false); // Steve-Pro: Quick-Look skip logic
   const [lastAuditTime, setLastAuditTime] = useState('0s ago'); // Steve-Pro: Liveliness marker
+  const [showSyncRecord, setShowSyncRecord] = useState(false);
   
   const handleArchiveDeputy = (id) => {
       setDeputies(prev => prev.map(d => d.id === id ? { ...d, archived: true } : d));
@@ -1469,9 +1165,10 @@ const HeritageDashboard = ({
   };
 
   // Identify the Active Protocol
-  const activeWill = docs.find(d => d.status === 'active' && d.label.includes('Will'));
-  const activeTrust = docs.find(d => d.status === 'active' && d.label.includes('Trust'));
-  const hasActiveProtocol = activeWill || activeTrust;
+  const activeAEO = docs.find(d => d.status === 'active' && (d.label?.includes('AEO') || d.label?.includes('Transfer Protocol')));
+  const activeWill = docs.find(d => d.status === 'active' && d.label?.includes('Will'));
+  const activeTrust = docs.find(d => d.status === 'active' && d.label?.includes('Trust'));
+  const hasActiveProtocol = activeAEO || activeWill || activeTrust;
   
   // SMART FILTER: Hide Corporate Docs, Show Personal/Mixed
   // Blocklist: Operating Agreements, EINs, Resolutions
@@ -1505,127 +1202,62 @@ const HeritageDashboard = ({
                 setShowWizard(false);
                 onDownloadWill(data);
             }}
-            mode={protocolPath} // Pass whether it's standalone will or trust-bundle will
+            mode={protocolPath} // Pass whether it's 'aeo'
             initialData={activeProtocolData}
         />
     )}
 
     {showProtocolSelector && (
         <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4 animate-in fade-in duration-500 overflow-y-auto">
-            <div className="max-w-5xl w-full py-12">
+            <div className="max-w-4xl w-full py-12">
                 <div className="text-center mb-12">
-                    <div className="inline-block px-3 py-1 bg-gray-800 rounded-full text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-4">
-                        Standard Form Templates
+                    <div className="inline-block px-3 py-1 bg-[#d4af37]/10 rounded-full text-[9px] text-[#d4af37] font-bold uppercase tracking-widest mb-4 border border-[#d4af37]/20">
+                        Outside of the Estate (AEO) Protocol
                     </div>
-                    <h2 className="text-4xl font-black uppercase text-white tracking-tighter mb-4 italic">Legacy Protocol Selection</h2>
-                    <p className="text-gray-500 text-sm max-w-lg mx-auto">Select the best way to help protect your family and your business. Offer includes both Traditional Will and Automated Living Trust options.</p>
+                    <h2 className="text-4xl font-black uppercase text-white tracking-tighter mb-4 italic">LLC Ownership Succession</h2>
+                    <p className="text-gray-500 text-sm max-w-lg mx-auto">Protect your business from the Florida Probate process. The AEO Protocol ensures immediate transfer of ownership to your beneficiary without court interference.</p>
                 </div>
 
-                {!showCompareGrid ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 animate-in slide-in-from-bottom-4">
-                        {/* OPTION 1: LIVING TRUST (THE STANDARD) */}
-                        <div 
-                            onClick={() => { setProtocolPath('trust'); setShowProtocolSelector(false); setShowStatutoryWarning(true); }}
-                            className="group relative bg-[#1c1c1e] border-2 border-[#d4af37] p-8 rounded-[48px] cursor-pointer hover:scale-[1.02] transition-all shadow-2xl shadow-[#d4af37]/10"
-                        >
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#d4af37] text-black text-[10px] font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg">
-                                Most Popular Choice <span className="opacity-40 text-[8px] ml-2">[Hit 1]</span>
-                            </div>
-                            <div className="w-20 h-20 bg-[#d4af37]/10 rounded-3xl flex items-center justify-center mb-8 text-[#d4af37] group-hover:bg-[#d4af37] group-hover:text-black transition-colors">
-                                <Shield size={40} />
-                            </div>
-                            <h3 className="text-2xl font-black text-white uppercase mb-4">Family Living Trust Plan</h3>
-                            <p className="text-gray-400 text-sm leading-relaxed mb-8">
-                                Designed to help your family stay out of court. Includes a <span className="text-white font-bold inline-flex items-center gap-1">Living Trust</span> and a <span className="text-[#d4af37] font-bold">Safety-Net Will</span>.
-                            </p>
-                            
-                            <div className="bg-black/20 p-5 rounded-2xl border border-[#d4af37]/10 mb-8">
-                                <h4 className="text-[#d4af37] text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                                    <Brain size={12} /> Why Choose This?
-                                </h4>
-                                <p className="text-gray-500 text-[10px] leading-relaxed">
-                                    Avoids the public court process while ensuring your <span className="text-white font-bold">Business Stays Running</span> even if you are unavailable.
-                                </p>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-3 mb-10">
-                                {['Designed to Avoid Court', 'Stay Private & Confidential', 'Operational Continuity', 'Rapid Transfer to Heirs'].map(f => (
-                                    <div key={f} className="flex items-center gap-3 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                                        <CheckCircle2 size={14} className="text-[#d4af37]" /> {f}
-                                    </div>
-                                ))}
-                            </div>
-                            
-                            <button className="w-full py-4 bg-[#d4af37] text-black font-black uppercase tracking-widest rounded-2xl group-hover:bg-white transition-colors shadow-lg shadow-[#d4af37]/20">Start This Plan</button>
+                <div className="grid grid-cols-1 gap-8 mb-12 animate-in slide-in-from-bottom-4">
+                    <div 
+                        onClick={() => { setProtocolPath('aeo'); setShowProtocolSelector(false); setShowStatutoryWarning(true); }}
+                        className="group relative bg-[#1c1c1e] border-2 border-[#d4af37] p-10 rounded-[48px] cursor-pointer hover:scale-[1.02] transition-all shadow-2xl shadow-[#d4af37]/20 flex flex-col items-center text-center"
+                    >
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#d4af37] text-black text-[10px] font-black uppercase tracking-[0.2em] px-8 py-2 rounded-full shadow-lg">
+                            Premium Security Protocol <span className="opacity-40 text-[8px] ml-2">[Ready]</span>
                         </div>
-
-                        {/* OPTION 2: STANDALONE WILL (THE TRADITIONALIST) */}
-                        <div 
-                            onClick={() => { setProtocolPath('will'); setShowProtocolSelector(false); setShowStatutoryWarning(true); }}
-                            className="group relative bg-[#0f0f10] border-2 border-slate-800 p-8 rounded-[48px] cursor-pointer hover:border-[#3b82f6]/50 hover:scale-[1.02] transition-all"
-                        >
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg group-hover:bg-[#3b82f6]">
-                                Valid Alternative <span className="opacity-40 text-[8px] ml-2">[Hit 2]</span>
-                            </div>
-                            <div className="w-20 h-20 bg-slate-900 rounded-3xl flex items-center justify-center mb-8 text-slate-500 group-hover:text-white transition-colors">
-                                <FileText size={40} />
-                            </div>
-                            <h3 className="text-2xl font-black text-white uppercase mb-4">Simple Legal Will</h3>
-                            <p className="text-gray-400 text-sm leading-relaxed mb-8">
-                                A traditional legal form. Provides <span className="text-white font-bold underline">Standard Instructions</span> for the court to handle your assets through the <span className="text-slate-300 font-bold">Public Court Process</span>.
-                            </p>
-                            
-                            <div className="space-y-4 mb-10">
-                                {['Subject to Public Court', 'Entries Become Public Record', 'Activation only after death', 'Takes 6-12 month process'].map(f => (
-                                    <div key={f} className="flex items-center gap-3 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                                        <Clock size={16} className="text-slate-700" /> {f}
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button className="w-full py-4 bg-slate-800 text-slate-300 font-black uppercase tracking-widest rounded-2xl group-hover:bg-white group-hover:text-black transition-colors">Start This Option</button>
+                        <div className="w-24 h-24 bg-[#d4af37]/10 rounded-3xl flex items-center justify-center mb-8 text-[#d4af37] group-hover:bg-[#d4af37] group-hover:text-black transition-all duration-500 rotate-3 group-hover:rotate-0">
+                            <Shield size={48} />
                         </div>
+                        <h3 className="text-3xl font-black text-white uppercase mb-4 tracking-tighter">AEO Ownership Transfer Protocol</h3>
+                        <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-xl">
+                            A specialized LLC Operating Agreement amendment that bypasses the probate estate. This protocol handles the <span className="text-white font-bold">Immediate Assignment</span> of your membership interest upon a triggering event (death or incapacity).
+                        </p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-10 overflow-hidden">
+                            {[
+                                { title: 'Bypasses Probate', desc: 'Assets transfer privately outside the public court system.', icon: Lock },
+                                { title: 'Instant Continuity', desc: 'Successor Manager takes control of bank accounts immediately.', icon: Clock },
+                                { title: 'UPL Compliant', desc: 'Strictly an LLC internal governance document.', icon: ShieldCheck },
+                                { title: 'Asset Protection', desc: 'Keeps LLC interests shielded from estate creditors.', icon: Shield }
+                            ].map((feat, i) => (
+                                <div key={i} className="bg-black/20 p-4 rounded-2xl border border-gray-800 text-left hover:border-[#d4af37]/30 transition-colors">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <feat.icon size={16} className="text-[#d4af37]" />
+                                        <h4 className="text-white text-[10px] font-black uppercase tracking-widest">{feat.title}</h4>
+                                    </div>
+                                    <p className="text-gray-500 text-[9px] leading-relaxed">{feat.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <button className="w-full max-w-sm py-5 bg-[#d4af37] text-black font-black uppercase tracking-[0.2em] rounded-2xl group-hover:bg-white transition-all shadow-xl shadow-[#d4af37]/20 flex items-center justify-center gap-3">
+                             Secure My LLC Interests <ArrowRight size={18} />
+                        </button>
                     </div>
-                ) : (
-                    <div className="bg-[#111] rounded-[48px] border border-gray-800 p-10 mb-12 animate-in zoom-in-95 duration-300">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b border-gray-800">
-                                    <th className="py-6 text-gray-600 uppercase text-[10px] font-black tracking-widest">Technical Feature</th>
-                                    <th className="py-6 text-[#d4af37] uppercase text-[10px] font-black tracking-widest">Living Trust Bundle</th>
-                                    <th className="py-6 text-slate-400 uppercase text-[10px] font-black tracking-widest">Standalone Will</th>
-                                </tr>
-                            </thead>
-                            <tbody className="text-xs">
-                                {[
-                                    { label: 'Privacy Status', trust: 'Confidential (Private)', will: 'Public Record (Court)' },
-                                    { label: 'Asset Protection', trust: 'Operational Continuity', will: 'Frozen Pending Probate' },
-                                    { label: 'Time to Transfer', trust: 'Rapid (Days/Weeks)', will: 'Standard (6-12 Months)' },
-                                    { label: 'Complexity', trust: 'Requires Funding (Titles)', will: 'Instructions Only' },
-                                    { label: 'Incapacity Support', trust: 'Active during your life', will: 'Death-only activation' },
-                                    { label: 'Cost Structure', trust: 'Premium Setup / No Probate', will: 'Low Setup / Court Fees' }
-                                ].map((row, i) => (
-                                    <tr key={row.label} className="border-b border-white/[0.03] group hover:bg-white/[0.02]">
-                                        <td className="py-5 text-gray-400 font-bold uppercase tracking-wider text-[9px]">{row.label}</td>
-                                        <td className="py-5 text-white font-medium">{row.trust}</td>
-                                        <td className="py-5 text-gray-500">{row.will}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+                </div>
                 
                 <div className="flex flex-col items-center gap-6 mt-8">
-                    <button 
-                        onClick={() => setShowCompareGrid(!showCompareGrid)}
-                        className="flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 rounded-full text-gray-400 hover:text-white hover:border-white/30 transition-all text-[9px] font-bold uppercase tracking-widest"
-                    >
-                        {showCompareGrid ? <FileText size={12} /> : <Filter size={12} />} 
-                        {showCompareGrid ? 'Switch to Benefit View' : 'Compare Technical Specs side-by-side'}
-                        <span className="opacity-30 ml-2">[Hit C]</span>
-                    </button>
-
                     <button 
                         onClick={() => setShowProtocolSelector(false)}
                         className="text-gray-500 hover:text-white font-bold uppercase text-[10px] tracking-[0.3em] flex items-center gap-2"
@@ -1662,41 +1294,39 @@ const HeritageDashboard = ({
                     <div className="flex items-center gap-3 mb-4">
                         <div>
                              <h3 className="text-2xl font-black text-white uppercase tracking-tight">
-                                {activeWill ? "Last Will & Testament" : activeTrust ? "Family Living Trust" : "Will or Living Trust Choice Protocol"}
+                                {activeAEO ? "AEO Transfer Protocol" : "LLC Ownership Succession Protocol"}
                             </h3>
                             <p className="text-[10px] text-[#d4af37] font-bold uppercase tracking-widest mt-0.5">
-                                {hasActiveProtocol ? "Active Heritage Plan" : "Step 1: Offer Will vs. Trust Choice"}
+                                {hasActiveProtocol ? "Active Heritage Plan" : "Step 1: Secure Business Continuity"}
                             </p>
                         </div>
                     </div>
 
                     <p className="text-gray-400 text-sm mb-6 leading-relaxed max-w-md">
-                        {activeTrust 
-                            ? `Your Living Trust was created on ${activeTrust.date}. Use the buttons below to view your plan or update your information.` 
-                            : activeWill 
-                                ? `Your Will was created on ${activeWill.date}. Use the buttons below to view or update your Will form.` 
-                                : "Begin your Heritage Protocol. We offer both Traditional Will and Automated Living Trust options to best suit your business and family needs."}
+                        {activeAEO 
+                            ? `Your AEO Transfer Protocol was established on ${activeAEO.date}. Use the buttons below to view your plan or update your succession data.` 
+                            : "Protect your LLC from probate. Our AEO protocol ensures your business remains operational and transfers privately to your designated heirs."}
                     </p>
 
                     <div className="flex gap-3">
                         {hasActiveProtocol ? (
                             <>
                                 <button onClick={() => {
-                                    setViewingDoc(activeTrust || activeWill);
-                                    addAuditEntry('VIEW_DOC', `Opened ${activeTrust?.label || activeWill?.label}`, 'Secure Viewer Session');
+                                    setViewingDoc(activeAEO || activeTrust || activeWill);
+                                    addAuditEntry('VIEW_DOC', `Opened ${activeAEO?.label || activeTrust?.label || activeWill?.label}`, 'Secure Viewer Session');
                                 }} className="px-6 py-3 bg-white text-black rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#d4af37] transition-all flex items-center gap-2">
-                                    <Eye size={14} /> View Sample Plan Preview
+                                    <Eye size={14} /> View Protocol Preview
                                 </button>
                                 <button onClick={() => {
-                                    setProtocolPath(activeTrust ? 'trust' : 'will');
+                                    setProtocolPath('aeo');
                                     setShowStatutoryWarning(true);
                                 }} className="px-6 py-3 bg-transparent border border-gray-700 text-gray-400 rounded-xl font-bold text-xs uppercase tracking-widest hover:text-white hover:border-white transition-all flex items-center gap-2">
-                                    <Edit2 size={14} /> Update Info
+                                    <Edit2 size={14} /> Update Succession Data
                                 </button>
                             </>
                         ) : (
                              <button onClick={() => setShowProtocolSelector(true)} className="px-8 py-4 bg-[#d4af37] text-black rounded-xl font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] shadow-xl shadow-[#d4af37]/20 transition-all flex items-center gap-2">
-                                <Brain size={16} /> Set Up Your Legacy Plan <AlertCircle size={14} className="opacity-50" title="Help & Guidance: Choose your path" />
+                                <ShieldCheck size={16} /> Secure LLC Ownership <AlertCircle size={14} className="opacity-50" title="Bypass Probate: Automated Continuity" />
                             </button>
                         )}
                     </div>
@@ -1713,7 +1343,7 @@ const HeritageDashboard = ({
                                 {isVaultUnlocked && (
                                     <button 
                                         onClick={() => {
-                                            const willLocation = locations.find(l => l.docType.includes('Will'));
+                                            const willLocation = locations?.find(l => l.docType.includes('Will'));
                                             if (willLocation) {
                                                 setEditingId(willLocation.id);
                                                 setEditData({ location: willLocation.location, notes: willLocation.notes || '' });
@@ -1731,7 +1361,7 @@ const HeritageDashboard = ({
                                     <Lock size={16} className="text-gray-600 mx-auto mb-2" />
                                     <p className="text-gray-600 text-xs font-mono">Unlock Vault to View</p>
                                 </div>
-                            ) : editingId === locations.find(l => l.docType.includes('Will'))?.id ? (
+                            ) : editingId === locations?.find(l => l.docType.includes('Will'))?.id ? (
                                 // EDIT MODE
                                 <div className="bg-black/40 border border-[#d4af37] rounded-lg p-4 space-y-4">
                                     <div>
@@ -1755,7 +1385,7 @@ const HeritageDashboard = ({
                                     <div className="flex gap-2 pt-2">
                                         <button 
                                             onClick={() => {
-                                                const willLocation = locations.find(l => l.docType.includes('Will'));
+                                                const willLocation = locations?.find(l => l.docType.includes('Will'));
                                                 if (willLocation) {
                                                     const updatedLoc = { ...willLocation, location: editData.location, notes: editData.notes };
                                                     onRemoveLocation(willLocation.id);
@@ -1782,14 +1412,14 @@ const HeritageDashboard = ({
                                         <div>
                                             <p className="text-[9px] text-gray-500 uppercase font-bold mb-1">Physical Location</p>
                                             <p className="text-gray-300 text-xs">
-                                                {locations.find(l => l.docType.includes('Will'))?.location || 'Not yet logged'}
+                                                {locations?.find(l => l.docType.includes('Will'))?.location || 'Not yet logged'}
                                             </p>
                                         </div>
-                                        {locations.find(l => l.docType.includes('Will'))?.notes && (
+                                        {locations?.find(l => l.docType.includes('Will'))?.notes && (
                                             <div>
                                                 <p className="text-[9px] text-[#d4af37] uppercase font-bold mb-1">Access Code / Key</p>
                                                 <p className="text-white font-mono text-xs bg-[#1c1c1e] px-2 py-1 rounded border border-gray-700 inline-block">
-                                                    {locations.find(l => l.docType.includes('Will'))?.notes}
+                                                    {locations?.find(l => l.docType.includes('Will'))?.notes}
                                                 </p>
                                             </div>
                                         )}
@@ -1804,21 +1434,9 @@ const HeritageDashboard = ({
                 <div className="md:col-span-1 border-l border-gray-800 pl-8 hidden md:block">
                      <div className="space-y-6">
                         <div>
-                            <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block mb-1">Status</span>
-                            {hasActiveProtocol ? (
-                                <span className="flex items-center gap-2 text-green-500 font-bold text-xs uppercase tracking-wider">
-                                    <CheckCircle2 size={14} /> Active & Valid
-                                </span>
-                            ) : (
-                                 <span className="flex items-center gap-2 text-[#d4af37] font-bold text-xs uppercase tracking-wider">
-                                    <Brain size={14} /> Selection Required
-                                </span>
-                            )}
-                        </div>
-                        <div>
                             <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block mb-1">Document Type</span>
                             <span className="text-white font-bold text-xs">
-                                {activeTrust ? "Heritage Living Trust" : activeWill ? "Last Will & Testament" : "No Protocol Selected"}
+                                {activeAEO ? "AEO Transfer Protocol" : activeTrust ? "Family Living Trust" : activeWill ? "Last Will & Testament" : "None Established"}
                             </span>
                         </div>
                      </div>
@@ -2229,6 +1847,31 @@ const HeritageDashboard = ({
                      </div>
 
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Video Heritage Card (New SyncRecord Entry) */}
+                        <div className="bg-gradient-to-br from-[#1c1c1e] to-black rounded-2xl border border-[#d4af37]/30 p-6 flex flex-col justify-between shadow-lg shadow-[#d4af37]/5">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-[#d4af37]/10 rounded-xl text-[#d4af37]">
+                                    <Video size={20} />
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">New Feature</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 className="text-white font-black text-sm uppercase tracking-tight mb-1">Video Heritage</h4>
+                                <p className="text-gray-500 text-[10px] leading-relaxed mb-6">Leave a personal message, guidance, or final wishes for your heirs to see after you've passed.</p>
+                                
+                                <div className="flex items-center gap-3">
+                                    <button 
+                                        onClick={() => setShowSyncRecord(true)}
+                                        className="flex-1 py-3 bg-[#d4af37] text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-[#d4af37]/10 flex items-center justify-center gap-2"
+                                    >
+                                        <Smartphone size={14} /> Record on Phone
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Upload Card */}
                          <div
                             onClick={() => console.log('Upload clicked')}
@@ -2240,7 +1883,7 @@ const HeritageDashboard = ({
 
                         {/* Document Cards with Location Tracking */}
                         {docs.filter(d => showArchived ? d.status === 'archived' : d.status === 'active').map(doc => {
-                            const docLocation = locations.find(l => l.docType.includes(doc.label));
+                            const docLocation = locations?.find(l => l.docType.includes(doc.label));
                             const isExpanded = editingId && (editingId === `doc-${doc.id}` || editingId === `edit-${doc.id}`);
                             
                             return (
@@ -2652,13 +2295,13 @@ const HeritageDashboard = ({
 
                 {/* Title */}
                 <h3 className="text-2xl font-black uppercase tracking-tight text-white text-center mb-4">
-                    Important: {protocolPath === 'trust' ? 'Trust Execution Requirements' : 'Will Execution Requirements'}
+                    AEO Protocol Compliance & Execution
                 </h3>
 
                 {/* Warning Content */}
                 <div className="bg-black/40 border border-gray-800 rounded-xl p-6 mb-6 space-y-4">
                     <p className="text-gray-300 text-sm leading-relaxed">
-                        You are about to edit your {protocolPath === 'trust' ? 'Living Trust' : 'Will'} document using our protocol engine. Please be aware:
+                        You are about to establish an <strong>Outside of the Estate (AEO)</strong> LLC Ownership Transfer Protocol. Please review the following technical requirements:
                     </p>
                     
                     <div className="space-y-3">
@@ -2667,7 +2310,7 @@ const HeritageDashboard = ({
                                 <span className="text-[#d4af37] font-bold text-xs">1</span>
                             </div>
                             <p className="text-gray-400 text-xs leading-relaxed">
-                                <span className="text-white font-bold">This tool generates a standard {protocolPath === 'trust' ? 'Trust package' : 'Will form'}</span> based on your inputs. It does not provide legal advice.
+                                <span className="text-white font-bold">This is an LLC Operating Agreement Amendment.</span> It governs the internal transfer of membership interests and does not constitute a last will or testament.
                             </p>
                         </div>
                         
@@ -2676,42 +2319,23 @@ const HeritageDashboard = ({
                                 <span className="text-[#d4af37] font-bold text-xs">2</span>
                             </div>
                             <p className="text-gray-400 text-xs leading-relaxed">
-                                <span className="text-white font-bold">For your {protocolPath === 'trust' ? 'Trust' : 'Will'} to be legally valid</span>, it must be properly executed according to your state's laws. This typically requires:
+                                <span className="text-white font-bold">Execution & Validation.</span> To be recognized as a valid internal protocol, this document must be:
                             </p>
                         </div>
                         
                         <div className="ml-12 space-y-2 text-xs text-gray-500">
-                            {protocolPath === 'trust' ? (
-                                <>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></div>
-                                        <span>Signing in front of a <span className="text-white font-bold">Notary Public</span></span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></div>
-                                        <span>Witness signatures are highly recommended</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></div>
-                                        <span><span className="text-white font-bold">Funding:</span> You must retitle assets into the Trust's name.</span>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></div>
-                                        <span>Signing in front of <span className="text-white font-bold">2 witnesses</span></span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></div>
-                                        <span>Witnesses must also sign the document</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></div>
-                                        <span>Some states require notarization</span>
-                                    </div>
-                                </>
-                            )}
+                             <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></div>
+                                <span>Signed by the Member and <span className="text-white font-bold">Notarized</span></span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></div>
+                                <span>Filed within the Company's internal <span className="text-white font-bold">Minute Book</span></span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></div>
+                                <span>Uploaded to the Charter Legacy Vault for <span className="text-[#d4af37]">Audit Logging</span></span>
+                            </div>
                         </div>
 
                         <div className="flex items-start gap-3">
@@ -2719,7 +2343,7 @@ const HeritageDashboard = ({
                                 <span className="text-[#d4af37] font-bold text-xs">3</span>
                             </div>
                             <p className="text-gray-400 text-xs leading-relaxed">
-                                <span className="text-white font-bold">Consult an attorney</span> to ensure your {protocolPath === 'trust' ? 'Trust' : 'Will'} meets all legal requirements in your state.
+                                <span className="text-white font-bold">Non-Probate Asset.</span> This protocol ensures your LLC membership interest is treated as an automated transfer, keeping it out of the public probate court.
                             </p>
                         </div>
                     </div>
@@ -2838,6 +2462,17 @@ const HeritageDashboard = ({
                   </button>
               </div>
           </div>
+      )}
+
+      {/* SyncRecord Modal */}
+      {showSyncRecord && (
+          <SyncRecordModal 
+              onClose={() => setShowSyncRecord(false)} 
+              onComplete={(videoData) => {
+                  setShowSyncRecord(false);
+                  addAuditEntry('VIDEO_HERITAGE_ADDED', 'New Video Message Secured', 'Uploaded via Mobile Handoff');
+              }}
+          />
       )}
     </div>
   </>

@@ -46,7 +46,10 @@ const DashboardZenith = ({ user, initialData }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       
       try {
         // Fetch LLC Data if not provided
@@ -129,22 +132,6 @@ const DashboardZenith = ({ user, initialData }) => {
 
   return (
     <>
-      <FoundersBlueprint 
-        isOpen={isBlueprintOpen} 
-        onClose={() => setIsBlueprintOpen(false)} 
-        companyName={llcData?.llc_name || "Your Company"} 
-      />
-
-      <SuccessionSuite 
-        isOpen={isSuccessionOpen} 
-        onClose={() => setIsSuccessionOpen(false)} 
-        companyName={llcData?.llc_name || "Your Company"} 
-      />
-
-      {showDesignation && (
-          <DesignationProtocol user={user} onSuccess={handleDesignationSuccess} />
-      )}
-
       <div className="min-h-screen bg-[#F0F2F5] text-[#0A0A0B] font-sans antialiased flex items-center justify-center p-4 md:p-10 relative overflow-hidden">
         <style>{`
           :root {

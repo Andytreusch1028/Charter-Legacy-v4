@@ -5,7 +5,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 // Detect if we are using the placeholder project
-const isPlaceholder = !supabaseUrl || supabaseUrl.includes('smsqnqfgoheqmynkgpel');
+const isPlaceholder = !supabaseUrl || supabaseUrl.includes('smsqnqfgoheqmynkgpel') || supabaseUrl.includes('fybqboobpbcqoaemaiwu');
 
 if (isPlaceholder) {
     console.warn("⚠️  CHARTER LEGACY: BACKEND UNAVAILABLE - ACTIVATING PROTOCOL ALPHA MOCK SERVICE ⚠️");

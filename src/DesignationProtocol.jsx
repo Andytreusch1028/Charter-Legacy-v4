@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowRight, Loader2, Search, Building2, MapPin, Users, Check, X, Shield, Mail, PenTool, ChevronDown, ChevronUp, Calendar, FileText, Settings } from 'lucide-react';
+import { ArrowRight, Search, Shield, Check, Loader2, AlertCircle, Info, ExternalLink } from 'lucide-react';
+import { calculateAvailabilityScore } from './lib/sunbiz-validator';
 
 const DesignationProtocol = ({ user, onSuccess }) => {
     const [step, setStep] = useState(1);
@@ -10,6 +11,15 @@ const DesignationProtocol = ({ user, onSuccess }) => {
     // Form Data - Required by Sunbiz
     const [llcName, setLlcName] = useState('');
     const [designator, setDesignator] = useState('LLC'); 
+    const [availability, setAvailability] = useState(null);
+    const [existingConflicts, setExistingConflicts] = useState([]);
+    const [altName1, setAltName1] = useState('');
+
+
+
+
+    const [altName2, setAltName2] = useState('');
+
     
     const [principalAddress, setPrincipalAddress] = useState('');
     const [usePrivacyAddress, setUsePrivacyAddress] = useState(true);
@@ -38,11 +48,37 @@ const DesignationProtocol = ({ user, onSuccess }) => {
     }, [user]);
 
     const handleSearchName = async () => {
+        if (!llcName) return;
         setLoading(true);
-        setTimeout(() => {
+        setAvailability(null);
+        
+        try {
+            // 1. Initial Local Check (Statutory Rules)
+            const fullName = `${llcName} ${designator}`;
+            const result = calculateAvailabilityScore(fullName, existingConflicts);
+            
+            // 2. Simulated Sunbiz Connection (Wait for Crawler Node)
+            // In a real environment, this would be: 
+            // const res = await fetch(`/api/sunbiz/lookup?name=${encodeURIComponent(llcName)}`);
+            // const names = await res.json();
+            
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Statutory 2s pre-check simulation
+            
+            setAvailability(result);
+            
+            if (result.score >= 90) {
+                // Success path
+                setTimeout(() => {
+                    setLoading(false);
+                    setStep(2);
+                }, 1000);
+            } else {
+                setLoading(false);
+            }
+        } catch (err) {
+            console.error(err);
             setLoading(false);
-            setStep(2);
-        }, 1500);
+        }
     };
 
     const handleFinalSubmit = async () => {
@@ -243,20 +279,82 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                                 ))}
                             </div>
 
-                            <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 text-center">
+                            <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 text-center relative">
                                 <p className="text-blue-800 text-sm font-bold">
-                                    "{llcName} {designator}"
+                                    "{llcName || 'Your Business'} {designator}"
                                 </p>
-                                <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest mt-1">Preview</p>
+                                <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest mt-1">Institutional Preview</p>
+                                
+                                {availability && (
+                                    <div className={`mt-4 p-4 rounded-xl border-2 ${availability.score >= 90 ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className={`text-[10px] font-black uppercase tracking-widest ${availability.score >= 90 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {availability.status}
+                                            </span>
+                                            <span className={`text-lg font-black ${availability.score >= 90 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {availability.score}%
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                                            <div 
+                                                className={`h-full transition-all duration-1000 ${availability.score >= 90 ? 'bg-green-500' : 'bg-red-500'}`}
+                                                style={{ width: `${availability.score}%` }}
+                                            ></div>
+                                        </div>
+                                        <p className={`text-[11px] mt-2 font-medium ${availability.score >= 90 ? 'text-green-700' : 'text-red-700'}`}>
+                                            {availability.message}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {availability && availability.score > 0 && availability.score < 90 && (
+                                    <div className="mt-6 space-y-4 text-left animate-in fade-in slide-in-from-top-4 duration-500">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Info size={14} className="text-blue-500" />
+                                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Provide Alternative Options</p>
+                                        </div>
+                                        <p className="text-[11px] text-gray-500 leading-tight mb-4">
+                                            There is a chance the state won't accept your first choice. Provide two fallbacks to ensure your filing succeeds without delay.
+                                        </p>
+                                        <div className="space-y-3">
+                                            <div className="relative">
+                                                <input 
+                                                    type="text"
+                                                    value={altName1}
+                                                    onChange={(e) => setAltName1(e.target.value)}
+                                                    placeholder="Alternative Option #1"
+                                                    className="w-full bg-white border border-gray-200 p-4 rounded-xl text-sm font-bold focus:border-black outline-none transition-all"
+                                                />
+                                            </div>
+                                            <div className="relative">
+                                                <input 
+                                                    type="text"
+                                                    value={altName2}
+                                                    onChange={(e) => setAltName2(e.target.value)}
+                                                    placeholder="Alternative Option #2"
+                                                    className="w-full bg-white border border-gray-200 p-4 rounded-xl text-sm font-bold focus:border-black outline-none transition-all"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
+
+
                             <button 
-                                onClick={handleSearchName} 
+                                onClick={(availability && availability.score > 0 && availability.score < 90) ? () => setStep(2) : handleSearchName} 
                                 disabled={!llcName || loading}
                                 className="w-full bg-[#007AFF] text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 mt-auto"
                             >
-                                {loading ? <Loader2 className="animate-spin" /> : <>Check Availability <ArrowRight size={18} /></>}
+                                {loading ? <Loader2 className="animate-spin" /> : (
+                                    (availability && availability.score > 0 && availability.score < 90) ? 
+                                    <>Proceed with Alternatives <ArrowRight size={18} /></> :
+                                    <>Check Availability <ArrowRight size={18} /></>
+                                )}
                             </button>
+
+
                         </div>
                     )}
 

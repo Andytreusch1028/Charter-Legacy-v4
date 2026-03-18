@@ -68,6 +68,19 @@
       "review": {
         "submit": "input[name='aredit-finalreview']"
       }
+    },
+    "name_search": {
+      "url": "https://search.sunbiz.org/Inquiry/CorporationSearch/ByName",
+      "fields": {
+        "searchTerm": "#SearchTerm",
+        "submit": "input[type='submit'][value='Search Now']"
+      },
+      "results": {
+          "table": "table",
+          "rows": "tbody tr",
+          "noResults": "text='No records found'"
+      }
     }
   }
 }
+
