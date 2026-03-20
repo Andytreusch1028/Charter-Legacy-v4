@@ -130,6 +130,22 @@
           "pattern": "Separate daily maintenance (Address changes) from high-stakes corporate actions (Mergers, Dissolutions) using a 'Strategic Actions' zone with distinct visual elevation.",
           "impact": "Medium - UX Hierarchy and Risk Management",
           "reuse_guidance": "Use for any platform that manages both routine and high-risk permanent actions."
+        },
+        {
+          "id": "learning-017",
+          "date": "2024-03-19",
+          "success": "AI-to-AI Handoff Briefing Pattern",
+          "pattern": "Create a structured 'Master Context' brief (targeting specific agent strengths like 'Strategic Planning') when transitioning a codebase between different agentic platforms.",
+          "impact": "High - Ensures architectural continuity and design system adherence across different AI sessions.",
+          "reuse_guidance": "Use 'axonix_refactor_brief.md' as a template for future agent handoffs. Focus on defining the 'Persona' (e.g., 'Discrete Executive') and 'Mission' goals."
+        },
+        {
+          "id": "learning-018",
+          "date": "2024-03-19",
+          "success": "Proactive Revenue Onramp Discovery",
+          "pattern": "Instead of reactive refactoring, define a 'Strategic Partner' mandate for agents to actively scan for new service offerings (like LLC amendments for 2025 statute revisions).",
+          "impact": "High - Transforms 'code cleanup' into 'business growth' sessions.",
+          "reuse_guidance": "Always include a 'Partner Mandate' section in high-level briefs to encourage agent proactivity."
         }
       ]
     },
@@ -185,7 +201,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 17,
-    "last_updated": "2026-02-04T19:08:00Z"
+    "total_learnings": 19,
+    "last_updated": "2024-03-19T22:45:00Z"
   }
 }

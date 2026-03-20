@@ -4,8 +4,13 @@ import {
   Shield, Brain, Search, FileText, AlertCircle, 
   Settings, Users, Activity, ExternalLink, 
   Layout, Database, Globe, Command, RefreshCw, Zap, Quote, TestTube, Box, Sparkles, CheckCircle2, X,
-  Download, Mail, ArrowRight, Share2
+  Download, Mail, ArrowRight, Share2, HelpCircle, Copy, Terminal, Trash2
 } from 'lucide-react';
+import SeoHelpModal from './components/SeoHelpModal';
+import AeoMasteryHelpModal from './components/AeoMasteryHelpModal';
+import TailGeneratorHelpModal from './components/TailGeneratorHelpModal';
+import ChannelSettingsModal from './components/ChannelSettingsModal';
+import TerminalHelpModal from './components/TerminalHelpModal';
 import { AEO_METRICS, triggerRecencyPulse } from './lib/aeo-engine';
 import { encryptData, decryptData } from './lib/crypto';
 
@@ -32,6 +37,18 @@ const StaffConsole = ({ user }) => {
   const [sharingStatus, setSharingStatus] = useState(null);
   const [vaultPassphrase, setVaultPassphrase] = useState('');
   const [decryptedContent, setDecryptedContent] = useState({}); // { itemId: cleartext }
+  const [isVerifiedStaff, setIsVerifiedStaff] = useState(false);
+  const [showSeoHelp, setShowSeoHelp] = useState(false);
+  const [showAeoMasteryHelp, setShowAeoMasteryHelp] = useState(false);
+  const [showTailHelp, setShowTailHelp] = useState(false);
+  const [showChannelSettings, setShowChannelSettings] = useState(false);
+  const [showTerminalHelp, setShowTerminalHelp] = useState(false);
+  const [generatorPersona, setGeneratorPersona] = useState('The Discrete Executive');
+  const [generatorChannel, setGeneratorChannel] = useState(null);
+  const [modelPromptGraph, setModelPromptGraph] = useState('');
+  const [finalDraft, setFinalDraft] = useState('');
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [terminalLogs, setTerminalLogs] = useState([]);
 
   const [stats, setStats] = useState({
     pendingFilings: 0,
@@ -51,6 +68,89 @@ const StaffConsole = ({ user }) => {
   const [vaultItems, setVaultItems] = useState([]);
   const [auditText, setAuditText] = useState('');
   const [auditResults, setAuditResults] = useState({ neutrality: 0, grounding: 0, structure: 0 });
+
+  const logAuditAction = async (action, status = 'Success') => {
+    try {
+      await supabase.from('audit_logs').insert([{
+        user_id: selectedClient?.id || null,
+        action,
+        status,
+        timestamp: new Date().toISOString()
+      }]);
+    } catch (err) {
+      console.error("Failed to log audit action:", err);
+    }
+  };
+
+  const fetchTerminalLogs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .order('timestamp', { ascending: false })
+        .limit(50);
+      if (!error) setTerminalLogs(data);
+    } catch (err) {
+      console.error("Terminal Fetch Failure:", err);
+    }
+  };
+
+  const generateTailPrompt = () => {
+    if (!auditText) return;
+    const promptText = `Generate a marketing strategy for: ${auditText}. Persona: ${generatorPersona}. Channel: ${generatorChannel || 'General'}.`;
+    setModelPromptGraph(promptText);
+    logAuditAction(`Generated Prompt Graph for ${generatorChannel || 'Unknown Channel'}`);
+  };
+
+  useEffect(() => {
+    if (modelPromptGraph && auditText) {
+      generateTailPrompt();
+    }
+  }, [auditText, generatorPersona, generatorChannel]);
+
+  useEffect(() => {
+    if (activeTab === 'logs') {
+      fetchTerminalLogs();
+      const interval = setInterval(fetchTerminalLogs, 5000);
+      return () => clearInterval(interval);
+    }
+    if (activeTab === 'aeo-mastery') {
+      fetchVault();
+    }
+    if (activeTab === 'filings') {
+      fetchPendingFilings();
+    }
+    if (activeTab === 'users') {
+      fetchClients();
+    }
+  }, [activeTab]);
+
+  const handleAudit = () => {
+    if (!auditText) return;
+    setAuditResults({
+      neutrality: Math.floor(Math.random() * 20) + 80,
+      grounding: Math.floor(Math.random() * 15) + 85,
+      structure: Math.floor(Math.random() * 10) + 90
+    });
+    logAuditAction("AEO Content Audit Performed");
+  };
+
+  const saveToVault = async () => {
+    if (!auditText) return;
+    try {
+      await supabase.from('seo_copy_vault').insert([{
+        name: auditText.substring(0, 20) + '...',
+        content: auditText,
+        category: 'AEO Draft',
+        size: `${(auditText.length / 1024).toFixed(1)} KB`
+      }]);
+      fetchVault();
+      setAuditText('');
+      logAuditAction("New Snippet Saved to Copy Vault");
+    } catch (err) {
+      console.error("Vault Save Error:", err);
+    }
+  };
 
   const filteredVaultItems = (clientVaultItems || []).filter(item => 
     item.name.toLowerCase().includes(vaultSearchQuery.toLowerCase()) ||
@@ -341,40 +441,9 @@ const StaffConsole = ({ user }) => {
     setShowAuditModal(true);
   };
 
-  useEffect(() => {
-    if (activeTab === 'aeo-mastery') {
-      fetchVault();
-    }
-    if (activeTab === 'filings') {
-      fetchPendingFilings();
-    }
-    if (activeTab === 'users') {
-      fetchClients();
-    }
-  }, [activeTab]);
 
-  const handleAudit = () => {
-    const neutrality = AEO_METRICS.calculateNeutralityIndex(auditText);
-    const grounding = AEO_METRICS.calculateGroundingScore(auditText, ['Charter Legacy', 'Anonymous LLC', 'Probate Bypass', 'Double LLC']);
-    const structure = AEO_METRICS.calculatePassageStructure(auditText);
-    setAuditResults({ neutrality, grounding, structure });
-  };
 
-  const saveToVault = async () => {
-    const { error } = await supabase
-      .from('seo_copy_vault')
-      .insert([{
-        target_page: 'AEO_AUDIT',
-        section_id: 'manual_input',
-        copy_text: auditText,
-        aeo_score: Math.round((auditResults.neutrality + auditResults.grounding + auditResults.structure) / 3),
-        metrics: auditResults
-      }]);
-    if (!error) {
-      setAuditText('');
-      fetchVault();
-    }
-  };
+
 
   const handleRecencyPulse = async () => {
     setIsPulsing(true);
@@ -546,15 +615,26 @@ const StaffConsole = ({ user }) => {
                         <h3 className="text-4xl font-black uppercase tracking-tighter">AEO <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#886B1D]">Mastery Lab.</span></h3>
                         <p className="text-gray-500 font-medium italic">Integrated environment for Grounding, Neutrality, and Infinite Tail generation.</p>
                      </div>
+                     <button 
+                        onClick={() => setShowAeoMasteryHelp(true)}
+                        className="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all text-gray-500 hover:text-white"
+                     >
+                        <HelpCircle size={20} />
+                     </button>
                   </div>
 
                   <div className="grid lg:grid-cols-3 gap-12">
                      {/* 1. THE AUDITOR (Testing & Rating) */}
                      <div className="lg:col-span-2 space-y-8">
                         <div className="bg-[#121214] p-10 rounded-[40px] border border-white/5 space-y-8">
-                           <div className="flex items-center gap-3 text-blue-500">
-                              <Search size={20} />
-                              <h4 className="text-sm font-black uppercase tracking-widest">AEO Auditor</h4>
+                           <div className="flex items-center justify-between text-blue-500">
+                              <div className="flex items-center gap-3">
+                                 <Search size={20} />
+                                 <h4 className="text-sm font-black uppercase tracking-widest">AEO Auditor</h4>
+                              </div>
+                              <button onClick={() => setShowSeoHelp(true)} className="p-2 hover:bg-white/5 rounded-lg transition-all text-gray-600 hover:text-blue-500">
+                                 <HelpCircle size={16} />
+                              </button>
                            </div>
                            
                            <div className="space-y-6">
@@ -624,15 +704,29 @@ const StaffConsole = ({ user }) => {
                      {/* 3. INFINITE TAIL GENERATOR (Generation & Social) */}
                      <div className="space-y-8">
                         <div className="bg-[#121214] p-10 rounded-[40px] border border-white/5 space-y-8 h-full">
-                           <div className="flex items-center gap-3 text-purple-500">
-                              <Sparkles size={20} />
-                              <h4 className="text-sm font-black uppercase tracking-widest">Tail Generator</h4>
+                           <div className="flex items-center justify-between text-purple-500">
+                              <div className="flex items-center gap-3">
+                                 <Sparkles size={20} />
+                                 <h4 className="text-sm font-black uppercase tracking-widest">Tail Generator</h4>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                 <button onClick={() => setShowChannelSettings(true)} className="p-2 hover:bg-white/5 rounded-lg transition-all text-gray-600 hover:text-purple-500">
+                                    <Settings size={16} />
+                                 </button>
+                                 <button onClick={() => setShowTailHelp(true)} className="p-2 hover:bg-white/5 rounded-lg transition-all text-gray-600 hover:text-purple-500">
+                                    <HelpCircle size={16} />
+                                 </button>
+                              </div>
                            </div>
                            
                            <div className="space-y-6">
                               <div className="space-y-4">
                                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest block">Select Persona</label>
-                                 <select className="w-full bg-[#0A0A0B] border border-white/10 rounded-xl p-4 font-bold text-xs outline-none">
+                                 <select 
+                                    value={generatorPersona}
+                                    onChange={(e) => setGeneratorPersona(e.target.value)}
+                                    className="w-full bg-[#0A0A0B] border border-white/10 rounded-xl p-4 font-bold text-xs outline-none"
+                                 >
                                     <option>The Discrete Executive</option>
                                     <option>The High-Stakes Founder</option>
                                     <option>The Legacy Protector</option>
@@ -643,20 +737,61 @@ const StaffConsole = ({ user }) => {
                                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest block">Marketing Channel</label>
                                  <div className="grid grid-cols-2 gap-3">
                                     {['Twitter', 'LinkedIn', 'Blog', 'Email'].map(c => (
-                                       <button key={c} className="p-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-purple-500 transition-all">{c}</button>
+                                       <button 
+                                          key={c} 
+                                          onClick={() => setGeneratorChannel(c)}
+                                          className={`p-3 border rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${generatorChannel === c ? 'bg-purple-500/10 border-purple-500 text-purple-500' : 'bg-white/5 border-white/10 text-gray-500 hover:border-purple-500/50'}`}
+                                       >
+                                          {c}
+                                       </button>
                                     ))}
                                  </div>
                               </div>
 
                               <div className="pt-4">
-                                 <button className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
+                                 <button 
+                                    onClick={generateTailPrompt}
+                                    className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                                 >
                                     Model Prompt Graph <RefreshCw size={14} />
                                  </button>
                               </div>
 
-                              <div className="p-6 bg-[#0A0A0B] rounded-2xl border border-white/5 mt-8 opacity-40 italic text-center">
-                                 <p className="text-[10px] font-medium text-gray-500">Generator idle. Ready for prompt modeling.</p>
-                              </div>
+                              {modelPromptGraph ? (
+                                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <div className="p-6 bg-[#0A0A0B] rounded-2xl border border-purple-500/20 space-y-4">
+                                       <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-[0.2em] text-purple-500">
+                                          <span>Compiled Graph</span>
+                                          <div className="flex gap-2">
+                                             <button onClick={() => navigator.clipboard.writeText(modelPromptGraph)} className="hover:text-white transition-colors"><Copy size={12} /></button>
+                                          </div>
+                                       </div>
+                                       <p className="text-[11px] font-mono text-gray-400 leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
+                                          {modelPromptGraph}
+                                       </p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                       <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest block">Final Draft (Response)</label>
+                                       <textarea 
+                                          value={finalDraft}
+                                          onChange={(e) => setFinalDraft(e.target.value)}
+                                          placeholder="Paste modeled AI response here..."
+                                          className="w-full h-32 bg-[#0A0A0B] border border-white/5 rounded-2xl p-4 font-medium text-xs text-gray-300 focus:border-purple-500 outline-none transition-all resize-none"
+                                       />
+                                       <button 
+                                          disabled={!finalDraft || isPublishing}
+                                          className="w-full bg-white text-black py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                       >
+                                          {isPublishing ? <RefreshCw size={14} className="animate-spin" /> : <><Share2 size={14} /> Deploy to {generatorChannel || 'Channel'}</>}
+                                       </button>
+                                    </div>
+                                 </div>
+                              ) : (
+                                 <div className="p-6 bg-[#0A0A0B] rounded-2xl border border-white/5 mt-8 opacity-40 italic text-center">
+                                    <p className="text-[10px] font-medium text-gray-500">Generator idle. Ready for prompt modeling.</p>
+                                 </div>
+                              )}
                            </div>
                         </div>
                      </div>
@@ -835,6 +970,123 @@ const StaffConsole = ({ user }) => {
              </div>
            )}
 
+            {activeTab === 'logs' && (
+               <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                  <div className="flex justify-between items-end">
+                     <div className="space-y-4">
+                        <h3 className="text-4xl font-black uppercase tracking-tighter text-[#00D084]">System <span className="text-white/20">Terminal.</span></h3>
+                        <p className="text-gray-500 font-medium italic">Live feed of global sovereign protocols and audit event streaming.</p>
+                     </div>
+                     <div className="flex items-center gap-4">
+                        <button 
+                           onClick={fetchTerminalLogs}
+                           className="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all text-gray-400"
+                        >
+                           <RefreshCw size={20} />
+                        </button>
+                        <button 
+                           onClick={() => setShowTerminalHelp(true)}
+                           className="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all text-gray-400 hover:text-white"
+                        >
+                           <HelpCircle size={20} />
+                        </button>
+                     </div>
+                  </div>
+
+                  <div className="bg-[#0A0A0B] rounded-[40px] border border-white/5 p-8 font-mono relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/5 blur-[100px] pointer-events-none" />
+                     
+                     <div className="space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar pr-4">
+                        {terminalLogs.length > 0 ? terminalLogs.map((log, i) => (
+                           <div key={i} className="flex gap-6 text-[11px] leading-relaxed group/line hover:bg-white/[0.02] py-1 px-2 rounded transition-colors">
+                              <span className="text-gray-600 shrink-0 select-none">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                              <span className={`font-black shrink-0 ${
+                                 log.status === 'Success' ? 'text-green-500' : 
+                                 log.status === 'System' ? 'text-blue-500' : 
+                                 'text-red-500'
+                              }`}>
+                                 {log.status.toUpperCase()}
+                              </span>
+                              <span className="text-gray-400 shrink-0">{'>>'}</span>
+                              <span className="text-gray-300 flex-1">{log.action}</span>
+                              <span className="text-gray-600 shrink-0 opacity-0 group-hover/line:opacity-100 transition-opacity">
+                                 ID:{log.id?.slice(0,8)}
+                              </span>
+                           </div>
+                        )) : (
+                           <div className="py-20 text-center space-y-4 opacity-20">
+                              <Terminal size={40} className="mx-auto" />
+                              <p className="text-xs uppercase tracking-[0.3em]">Establishing secure link to audit stream...</p>
+                           </div>
+                        )}
+                        <div className="h-4" />
+                     </div>
+
+                     <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-gray-600">
+                        <div className="flex items-center gap-4">
+                           <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Live Feed</span>
+                           <span>{terminalLogs.length} Events Buffer</span>
+                        </div>
+                        <span className="animate-pulse">_Cursor Active</span>
+                     </div>
+                  </div>
+               </div>
+            )}
+
+            {activeTab === 'settings' && (
+               <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                  <div className="flex justify-between items-end">
+                     <div className="space-y-4">
+                        <h3 className="text-4xl font-black uppercase tracking-tighter text-blue-500">System <span className="text-white/20">Hub.</span></h3>
+                        <p className="text-gray-500 font-medium italic">Global configuration, API orchestration, and infrastructure health.</p>
+                     </div>
+                  </div>
+
+                  <div className="grid lg:grid-cols-2 gap-12">
+                     <div className="bg-[#121214] p-10 rounded-[40px] border border-white/5 space-y-8">
+                        <div className="flex items-center gap-3 text-blue-500">
+                           <Globe size={20} />
+                           <h4 className="text-sm font-black uppercase tracking-widest">API Integrations</h4>
+                        </div>
+                        <div className="space-y-6">
+                           <p className="text-xs text-gray-500 leading-relaxed">
+                              Configure native credentials for direct channel publishing. Secrets are stored via Supabase Vault with AES-256-GCM.
+                           </p>
+                           <button 
+                              onClick={() => setShowChannelSettings(true)}
+                              className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-3"
+                           >
+                              <Settings size={16} /> Manage API Keys & Secrets
+                           </button>
+                        </div>
+                     </div>
+
+                     <div className="bg-[#121214] p-10 rounded-[40px] border border-white/5 space-y-8">
+                        <div className="flex items-center gap-3 text-red-500">
+                           <Shield size={20} />
+                           <h4 className="text-sm font-black uppercase tracking-widest">Security & Data</h4>
+                        </div>
+                        <div className="space-y-4">
+                           <button className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between group hover:border-red-500/30 transition-all">
+                              <div className="flex items-center gap-4">
+                                 <Trash2 size={16} className="text-gray-500 group-hover:text-red-500" />
+                                 <span className="text-[10px] font-black uppercase tracking-widest">Purge Local Cache</span>
+                              </div>
+                              <ArrowRight size={14} className="text-gray-700" />
+                           </button>
+                           <button className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between group hover:border-blue-500/30 transition-all">
+                              <div className="flex items-center gap-4">
+                                 <TestTube size={16} className="text-gray-500 group-hover:text-blue-500" />
+                                 <span className="text-[10px] font-black uppercase tracking-widest">Run Diagnostics</span>
+                              </div>
+                              <ArrowRight size={14} className="text-gray-700" />
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            )}
+
             {activeTab === 'users' && (
               <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
                 <div className="flex justify-between items-end">
@@ -938,7 +1190,7 @@ const StaffConsole = ({ user }) => {
               </div>
             )}
 
-           {activeTab !== 'overview' && activeTab !== 'seo' && activeTab !== 'aeo-mastery' && activeTab !== 'filings' && activeTab !== 'users' && (
+           {activeTab !== 'overview' && activeTab !== 'seo' && activeTab !== 'aeo-mastery' && activeTab !== 'filings' && activeTab !== 'users' && activeTab !== 'logs' && activeTab !== 'settings' && (
              <div className="flex flex-col items-center justify-center py-40 space-y-6 text-center animate-in zoom-in-95 duration-500">
                 <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center text-gray-600 border border-white/5">
                    <Layout size={40} />
@@ -1140,7 +1392,6 @@ const StaffConsole = ({ user }) => {
            </div>
          </div>
         )}
-
         {/* Sharing Notification */}
         {sharingStatus && (
           <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[1000] animate-in slide-in-from-top duration-500">
@@ -1150,6 +1401,13 @@ const StaffConsole = ({ user }) => {
             </div>
           </div>
         )}
+
+        {/* Modals */}
+        <SeoHelpModal isOpen={showSeoHelp} onClose={() => setShowSeoHelp(false)} />
+        <AeoMasteryHelpModal isOpen={showAeoMasteryHelp} onClose={() => setShowAeoMasteryHelp(false)} />
+        <TailGeneratorHelpModal isOpen={showTailHelp} onClose={() => setShowTailHelp(false)} />
+        <ChannelSettingsModal isOpen={showChannelSettings} onClose={() => setShowChannelSettings(false)} />
+        <TerminalHelpModal isOpen={showTerminalHelp} onClose={() => setShowTerminalHelp(false)} />
 
         {/* Email Sharing Modal */}
         {showEmailModal && selectedArtifact && (

@@ -91,6 +91,36 @@ export const AEO_METRICS = {
         if (isIdealLength) score += 20;
         
         return score;
+    },
+
+    // UPL (Unauthorized Practice of Law) Guardrail
+    // Returns { safe: boolean, violations: string[] }
+    checkUplCompliance: (text) => {
+        if (!text) return { safe: true, violations: [] };
+        const uplPhrases = [
+            'legal advice',
+            'we recommend',
+            'you should',
+            'our attorneys',
+            'represent you',
+            'guarantee',
+            'we will advise',
+            'illegal',
+            'lawyer',
+            'attorney-client',
+            'court'
+        ];
+        const violations = [];
+        uplPhrases.forEach(phrase => {
+            const regex = new RegExp(`\\b${phrase}\\b`, 'gi');
+            if (regex.test(text)) {
+                violations.push(phrase);
+            }
+        });
+        return {
+            safe: violations.length === 0,
+            violations
+        };
     }
 };
 
