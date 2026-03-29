@@ -27,19 +27,20 @@ const seedDatabase = (db, setStorage) => {
     const raConfigs = [];
     const auditLogs = [];
     const vaultItems = [];
+    const complianceAlerts = [];
+    const privacyAliases = [];
 
     // Ensure we have profiles for most users
     for (let i = 1; i <= 50; i++) {
         const userId = i === 1 ? 'mock-seed-1' : `mock-customer-${i}`;
         const fName = i === 1 ? "Alex" : firstNames[Math.floor(Math.random() * firstNames.length)];
         const lName = i === 1 ? "Founder" : lastNames[Math.floor(Math.random() * lastNames.length)];
-        const email = i === 1 ? 'alex.founder@charterlegacy.com' : `${fName.toLowerCase()}.${lName.toLowerCase()}.${i}@example.com`;
 
-        // Profile (Ensure ALL users have profiles for searchable directory)
+        // Profile
         profiles.push({
             id: userId,
-            email: email,
-            full_name: `${fName} ${lName}`,
+            first_name: fName,
+            last_name: lName,
             avatar_url: null,
             created_at: new Date(Date.now() - Math.random() * 10000000000).toISOString()
         });
@@ -113,20 +114,46 @@ const seedDatabase = (db, setStorage) => {
                     // or just a static bundle that StaffConsole can handle.
                     // For "Real" decryption to work, we'll store a bundle that can be decrypted with 'charter-2026'
                     // This bundle was pre-generated:
-                    secret_payload: "vH7mE5pI9wL2uQ==:j6k8l9m0n1o2:aB3cD4eF5gH6iJ7kL8m9n0o1p2q3r4s5t6u7v8w9x0y1z2==",
+                    secret_payload: "gO+2ZBaQcSsC3ZBhtLw8ow==:UGBfCwT80qMD2dcs:I4ecRCurQdJ14w0DHmx+B5Dk9MYjphPKJu2UoZS4=9sqpnf8vBy7/LuGs48qVcEzIjqqttvVgQkEOEu3r/j+YiWL0ek+YZihOgxIiKGq4wV7iHfEr9U0TRS",
                     needs_initial_encryption: true,
                     created_at: new Date(Date.now() - Math.random() * 2000000000).toISOString()
                 });
             }
         }
+
+        // Compliance Alerts (Phase 1)
+        const alertTypes = ["Annual Report", "BOI Filing (Retired)", "Privacy Renewal", "Tax Franchise", "FinCEN BOI Sunset"];
+        const numAlerts = Math.floor(Math.random() * 2) + 1;
+        for (let a = 0; a < numAlerts; a++) {
+            // Force FinCEN alert for user 0 or index % 3 to ensure visibility
+            const type = (i === 0 || i % 3 === 0) && a === 0 ? "FinCEN BOI Sunset" : alertTypes[Math.floor(Math.random() * alertTypes.length)];
+            complianceAlerts.push({
+                id: `alert-${i}-${a}`,
+                user_id: userId,
+                type: type,
+                due_date: new Date(Date.now() + Math.random() * 5000000000).toISOString(),
+                status: type === 'FinCEN BOI Sunset' ? 'Reconciling' : (Math.random() > 0.3 ? 'Pending' : 'Filing Started'),
+                priority: type === 'FinCEN BOI Sunset' ? 'Urgent' : (Math.random() > 0.5 ? 'High' : 'Normal')
+            });
+        }
+
+        // Privacy Aliases (Phase 1)
+        privacyAliases.push({
+            id: `alias-${i}`,
+            user_id: userId,
+            alias_email: `${fName.toLowerCase()}${i}@chartermask.com`,
+            alias_phone: `(555) 010-${1000 + i}`,
+            is_active: true,
+            forwarding_status: 'Shielded'
+        });
     }
 
     // Edge Case: Extremely long name
     const longUserId = 'mock-edge-long';
     profiles.push({
         id: longUserId,
-        email: 'very.long.email.address.that.might.break.the.ui.layout.if.not.handled.properly@longdomain.com',
-        full_name: 'Sir Bartholomew Maximilian Alexander von Hohenzollern-Sigmaringen III',
+        first_name: 'Sir Bartholomew Maximilian Alexander von Hohenzollern-Sigmaringen',
+        last_name: 'III',
         created_at: new Date().toISOString()
     });
     llcs.push({
@@ -143,6 +170,8 @@ const seedDatabase = (db, setStorage) => {
     setStorage('mock_table_registered_agent_config', raConfigs);
     setStorage('mock_table_audit_logs', auditLogs);
     setStorage('mock_table_vault_items', vaultItems);
+    setStorage('mock_table_compliance_alerts', complianceAlerts);
+    setStorage('mock_table_privacy_aliases', privacyAliases);
     localStorage.setItem('mock_data_seeded', 'true');
     
     // Update local db object if provided
@@ -153,6 +182,8 @@ const seedDatabase = (db, setStorage) => {
         db.registered_agent_config = raConfigs;
         db.audit_logs = auditLogs;
         db.vault_items = vaultItems;
+        db.compliance_alerts = complianceAlerts;
+        db.privacy_aliases = privacyAliases;
     }
 };
 
@@ -166,7 +197,13 @@ export const createMockClient = () => {
         wills: getStorage('mock_table_wills'),
         registered_agent_config: getStorage('mock_table_registered_agent_config'),
         audit_logs: getStorage('mock_table_audit_logs'),
-        vault_items: getStorage('mock_table_vault_items')
+        vault_items: getStorage('mock_table_vault_items'),
+        compliance_alerts: getStorage('mock_table_compliance_alerts'),
+        privacy_aliases: getStorage('mock_table_privacy_aliases'),
+        ra_inquiry_threads: getStorage('mock_table_ra_inquiry_threads'),
+        ra_inquiry_messages: getStorage('mock_table_ra_inquiry_messages'),
+        ra_document_audit: getStorage('mock_table_ra_document_audit'),
+        registered_agent_documents: getStorage('mock_table_registered_agent_documents')
     };
 
     const saveTable = (table) => {
@@ -239,6 +276,10 @@ export const createMockClient = () => {
                 const session = getSession();
                 return { data: { session }, error: null };
             },
+            getUser: async () => {
+                const session = getSession();
+                return { data: { user: session?.user || null }, error: null };
+            },
             onAuthStateChange: (callback) => {
                 // Simplified mock for one-time check
                 const session = getSession();
@@ -276,8 +317,14 @@ export const createMockClient = () => {
                     return builder;
                 },
                 delete: () => {
-                    state.type = 'delete';
-                    return builder;
+                    state.type = 'delete'
+                    return builder
+                },
+                upsert: (data, { onConflict } = {}) => {
+                    state.type = 'upsert'
+                    state.data = data
+                    state.onConflict = onConflict
+                    return builder
                 },
                 eq: (column, value) => {
                     state.filters.push({ column, value, op: 'eq' });
@@ -343,6 +390,35 @@ export const createMockClient = () => {
                             });
                             // Limit
                             if (state.limit) resultData = resultData.slice(0, state.limit);
+                        } else if (state.type === 'upsert') {
+                            const dataArray = Array.isArray(state.data) ? state.data : [state.data];
+                            const onConflictCols = state.onConflict ? state.onConflict.split(',') : ['id'];
+                            
+                            const upsertedRows = dataArray.map(d => {
+                                // Find if collision exists
+                                const existingIndex = rows.findIndex(r => 
+                                    onConflictCols.every(col => r[col] === d[col])
+                                );
+
+                                if (existingIndex !== -1) {
+                                    // Update
+                                    rows[existingIndex] = { ...rows[existingIndex], ...d, updated_at: new Date().toISOString() };
+                                    return rows[existingIndex];
+                                } else {
+                                    // Insert
+                                    const newRow = { 
+                                        id: d.id || crypto.randomUUID(), 
+                                        created_at: new Date().toISOString(), 
+                                        ...d 
+                                    };
+                                    rows.push(newRow);
+                                    return newRow;
+                                }
+                            });
+                            
+                            resultData = upsertedRows;
+                            db[table] = rows;
+                            saveTable(table);
                         }
 
                         // 3. SHAPE RESULT

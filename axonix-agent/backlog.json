@@ -1,0 +1,80 @@
+[
+  {
+    "id": "heritage01",
+    "description": "Build Vento Handover Protocol — time-locked multi-sig vault release for succession planning",
+    "priority": "high",
+    "category": "Heritage Continuity",
+    "status": "pending",
+    "branch": null,
+    "filesChanged": [],
+    "createdAt": "2026-03-24T05:00:00.000Z",
+    "updatedAt": "2026-03-24T05:00:00.000Z",
+    "approvedAt": null,
+    "rejectedReason": null
+  },
+  {
+    "id": "glossary01",
+    "description": "Create FAQ Glossary page with AEO-optimized content chunks for AI answer engines",
+    "priority": "high",
+    "category": "GEO Strategy",
+    "status": "pending",
+    "branch": null,
+    "filesChanged": [],
+    "createdAt": "2026-03-24T05:00:00.000Z",
+    "updatedAt": "2026-03-24T05:00:00.000Z",
+    "approvedAt": null,
+    "rejectedReason": null
+  },
+  {
+    "id": "sovereignty01",
+    "description": "Implement Sovereignty Score — gamified compliance health index for client dashboard",
+    "priority": "medium",
+    "category": "Compliance Pulse",
+    "status": "pending",
+    "branch": null,
+    "filesChanged": [],
+    "createdAt": "2026-03-24T05:00:00.000Z",
+    "updatedAt": "2026-03-24T05:00:00.000Z",
+    "approvedAt": null,
+    "rejectedReason": null
+  },
+  {
+    "id": "privacy02",
+    "description": "Add masked phone number generation to Privacy Masking Layer",
+    "priority": "medium",
+    "category": "Privacy Masking",
+    "status": "pending",
+    "branch": null,
+    "filesChanged": [],
+    "createdAt": "2026-03-24T05:00:00.000Z",
+    "updatedAt": "2026-03-24T05:00:00.000Z",
+    "approvedAt": null,
+    "rejectedReason": null
+  },
+  {
+    "id": "review01",
+    "description": "Set up Trustpilot and G2 review collection widgets for GEO external consensus signals",
+    "priority": "low",
+    "category": "GEO Strategy",
+    "status": "pending",
+    "branch": null,
+    "filesChanged": [],
+    "createdAt": "2026-03-24T05:00:00.000Z",
+    "updatedAt": "2026-03-24T05:00:00.000Z",
+    "approvedAt": null,
+    "rejectedReason": null
+  },
+  {
+    "id": "lcpp01",
+    "description": "Build the Authorize Propagation workflow for admin approval of AI-suggested legal changes",
+    "priority": "high",
+    "category": "LCPP",
+    "status": "pending",
+    "branch": null,
+    "filesChanged": [],
+    "createdAt": "2026-03-24T05:00:00.000Z",
+    "updatedAt": "2026-03-24T05:00:00.000Z",
+    "approvedAt": null,
+    "rejectedReason": null
+  }
+]

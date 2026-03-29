@@ -1,20 +1,36 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Mail, Search, Paperclip, Send, Inbox, ShieldAlert, ArrowRight, User, Maximize2, Minimize2, FileBox, FileText, Briefcase } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Search, Filter, ShieldAlert, FileText, Send, CheckCircle2, MoreVertical, Archive, ArrowRight, User, Settings, Info, Briefcase, Plus, X, UploadCloud, Scan, Loader2, FileSearch, Trash2, Layout, Zap, Eye, Download, History, ShieldPlus, Mail, Paperclip, Inbox, Maximize2, Minimize2, FileBox, CheckCircle, AlertCircle, Clock, ChevronRight, ExternalLink, Printer, MoreHorizontal, Folder, RefreshCw, Lock, Unlock, Cpu } from 'lucide-react';
+import Tesseract from 'tesseract.js';
+import * as pdfjsLib from 'pdfjs-dist';
 import { useStaffRa } from '../../hooks/useStaffRa';
 import { useUplAgent } from '../../hooks/useUplAgent';
 import { PremiumToast } from '../../shared/design-system/UIPrimitives';
 
+// Set up pdf.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.5.207/build/pdf.worker.min.mjs`;
+
 /**
  * RaOperationsSector
- * The command center for Charter Legacy staff acting as Registered Agents.
+ * High-performance Global. staff workspace for Registered Agent duties.
  */
-const RaOperationsSector = () => {
-    const { 
-        loading, globalThreads, globalAuditLogs, globalDocuments, clientDirectory, llcDirectory,
-        raSettings, threadMessages, fetchStaffRaData, fetchThreadMessages, 
-        sendStaffMessage, uploadDocumentToClient, updateRaSettings
-    } = useStaffRa();
-
+const RaOperationsSector = ({ 
+    raSettings, 
+    scannerDirectoryHandle, 
+    globalDocuments, 
+    globalAuditLogs,
+    globalThreads, 
+    clientDirectory, 
+    llcDirectory, 
+    loading,
+    fetchStaffRaData,
+    fetchThreadMessages,
+    threadMessages,
+    sendStaffMessage,
+    uploadDocumentToClient,
+    updateRaSettings,
+    scannerPermissionStatus,
+    reconnectScanner
+}) => {
     const { checkUplCompliance, isChecking: uplChecking, UPL_DISCLAIMER } = useUplAgent();
 
     const [activeSubTab, setActiveSubTab] = useState('inbox');
@@ -26,8 +42,11 @@ const RaOperationsSector = () => {
     const messagesEndRef = useRef(null);
 
     // Upload state
-    const [scannerState, setScannerState] = useState('dropzone'); // dropzone, scanning, review
+    const [scannerState, setScannerState] = useState('dropzone'); // Default to dropzone for fresh view
     const [scannedFile, setScannedFile] = useState(null);
+    const [ocrProgress, setOcrProgress] = useState(0);
+    const [extractedText, setExtractedText] = useState('');
+    const [ocrConfidence, setOcrConfidence] = useState(0);
     const [viewerExpanded, setViewerExpanded] = useState(false);
     const fileInputRef = useRef(null);
     const [uploadClient, setUploadClient] = useState('');
@@ -36,6 +55,90 @@ const RaOperationsSector = () => {
     const [uploadType, setUploadType] = useState('Legal Notice');
     const [uploadUrl, setUploadUrl] = useState('');
     const [uploadUrgent, setUploadUrgent] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+
+    // Global Vault Search & Filter
+    const [vaultSearchQuery, setVaultSearchQuery] = useState('');
+    const [vaultFilter, setVaultFilter] = useState(raSettings?.vault_default_filter || 'llc'); 
+
+    // Global Ledger Search & Filter
+    const [ledgerSearchQuery, setLedgerSearchQuery] = useState('');
+    const [ledgerFilter, setLedgerFilter] = useState('all'); // 'all', 'user', 'system'
+
+    const clientMap = useMemo(() => clientDirectory.reduce((acc, client) => {
+        acc[client.user_id] = client;
+        return acc;
+    }, {}), [clientDirectory]);
+
+    const llcMap = useMemo(() => llcDirectory.reduce((acc, llc) => {
+        acc[llc.id] = llc;
+        return acc;
+    }, {}), [llcDirectory]);
+
+    const filteredLedgerLogs = useMemo(() => {
+        let logs = globalAuditLogs || [];
+        
+        // Filter by actor type
+        if (ledgerFilter === 'user') {
+            logs = logs.filter(l => l.actor_type === 'USER');
+        } else if (ledgerFilter === 'system') {
+            logs = logs.filter(l => l.actor_type !== 'USER');
+        }
+        
+        // Filter by query
+        if (ledgerSearchQuery) {
+            const q = ledgerSearchQuery.toLowerCase();
+            logs = logs.filter(l => {
+                const client = clientMap[l.user_id];
+                const llc = llcMap[l.llc_id];
+                return (
+                    (l.action || '').toLowerCase().includes(q) ||
+                    (l.actor_email || '').toLowerCase().includes(q) ||
+                    (l.outcome || '').toLowerCase().includes(q) ||
+                    (client?.name || '').toLowerCase().includes(q) ||
+                    (llc?.llc_name || '').toLowerCase().includes(q)
+                );
+            });
+        }
+        
+        return logs;
+    }, [globalAuditLogs, ledgerSearchQuery, ledgerFilter, clientMap, llcMap]);
+
+    const filteredVaultDocs = useMemo(() => {
+        let docs = globalDocuments || [];
+        
+        // Filter by type
+        if (vaultFilter === 'llc') {
+            docs = docs.filter(d => d.llc_id);
+        } else if (vaultFilter === 'individual') {
+            docs = docs.filter(d => !d.llc_id);
+        }
+        
+        // Filter by query
+        if (vaultSearchQuery) {
+            const q = vaultSearchQuery.toLowerCase();
+            docs = docs.filter(d => {
+                const client = clientMap[d.user_id];
+                const llc = llcDirectory?.find(l => l.id === d.llc_id);
+                return (
+                    (d.title || '').toLowerCase().includes(q) ||
+                    (client?.name || '').toLowerCase().includes(q) ||
+                    (llc?.llc_name || '').toLowerCase().includes(q) ||
+                    (d.type || '').toLowerCase().includes(q)
+                );
+            });
+        }
+        
+        return docs;
+    }, [globalDocuments, vaultSearchQuery, vaultFilter, clientMap, llcDirectory]);
+
+    // Sync filter with persistent settings from System Hub
+    useEffect(() => {
+        if (raSettings?.vault_default_filter) {
+            setVaultFilter(raSettings.vault_default_filter);
+        }
+    }, [raSettings?.vault_default_filter]);
+
 
     // Entity Combobox State
     const [entitySearchQuery, setEntitySearchQuery] = useState('');
@@ -184,94 +287,171 @@ const RaOperationsSector = () => {
         }
     };
 
+
     const handleFileSelect = (e) => {
         if (e.target.files && e.target.files[0]) {
             handleRealScan(e.target.files[0]);
         }
     };
 
-    const handleRealDrop = (e) => {
+    const handleDragOver = (e) => {
         e.preventDefault();
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleRealScan(e.dataTransfer.files[0]);
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleRealDrop = async (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        
+        const files = e.dataTransfer.files;
+        if (files && files[0]) {
+            handleRealScan(files[0]);
         }
     };
 
-    const handleRealScan = (file) => {
-        const generatedId = Math.floor(Math.random() * 90000) + 10000;
+    const handleRealScan = async (file) => {
         const previewUrl = URL.createObjectURL(file);
+        const isPdf = file.type === 'application/pdf';
+        
         setScannedFile({ 
             name: file.name, 
-            url: `https://secure-charter.docs/${file.name}`,
+            url: previewUrl,
             previewUrl: previewUrl,
             type: file.type,
             rawFile: file
         });
+        
+        // Fix: Set uploadUrl immediately to unblock the deploy button
+        setUploadUrl(`SECURE_HASH_${Math.random().toString(36).substring(7).toUpperCase()}`);
+        setUploadTitle(file.name.replace(/\.[^/.]+$/, ""));
+        
         setScannerState('scanning');
+        setOcrProgress(0);
 
-        // Simulate 2s OCR processing
-        setTimeout(() => {
-            if (clientDirectory.length > 0) {
-                // Pick a random client to simulate AI routing
+        let ocrPayload = file;
+
+        if (isPdf) {
+            try {
+                setExtractedText("Initializing PDF Engine...");
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const page = await pdf.getPage(1);
+                
+                const viewport = page.getViewport({ scale: 2.0 }); // Higher scale = better OCR
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                await page.render({ canvasContext: context, viewport }).promise;
+                
+                // Convert canvas to Blob for Tesseract
+                ocrPayload = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                setExtractedText("PDF Rendered. Running character recognition...");
+            } catch (pdfErr) {
+                console.error("PDF Render Error:", pdfErr);
+                setExtractedText("PDF Rendering failed. Visual Review Required.");
+                setScannerState('review');
+                return;
+            }
+        }
+
+        try {
+            // Real OCR Processing via Tesseract.js (Now supports PDF via Canvas conversion)
+            const result = await Tesseract.recognize(
+                ocrPayload,
+                'eng',
+                { 
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
+                            setOcrProgress(Math.floor(m.progress * 100));
+                        }
+                    }
+                }
+            );
+
+            const { data: { text, confidence } } = result;
+            setExtractedText(text);
+            setOcrConfidence(confidence);
+
+            // Prediction & Entity Matching
+            const lowerText = text.toLowerCase();
+            const lowerName = file.name.toLowerCase();
+            
+            // 1. Match LLC Entity
+            const matchedLlc = llcDirectory.find(llc => 
+                lowerText.includes(llc.llc_name.toLowerCase()) || 
+                lowerName.includes(llc.llc_name.toLowerCase().split(' ')[0])
+            );
+
+            if (matchedLlc) {
+                setUploadClient(matchedLlc.user_id);
+                setUploadLlc(matchedLlc.id);
+            } else if (clientDirectory.length > 0) {
+                // Fallback to random if no match found (for demo purposes)
                 const randomClient = clientDirectory[Math.floor(Math.random() * clientDirectory.length)];
                 setUploadClient(randomClient.user_id);
             }
-            
-            // Randomize extracted metadata based on actual filename if possible
-            const lowerName = file.name.toLowerCase();
+
+            // 2. Predict Type & Urgency
             let predictedType = 'State Requirement (FL)';
             let isUrgent = false;
             let predictedTitle = file.name.replace(/\.[^/.]+$/, "");
 
-            if (lowerName.includes('subpoena') || lowerName.includes('claim')) {
+            if (lowerText.includes('subpoena') || lowerText.includes('claim') || lowerText.includes('court') || lowerName.includes('subpoena')) {
                 predictedType = 'Legal Notice / Subpoena';
                 isUrgent = true;
-            } else if (lowerName.includes('irs') || lowerName.includes('tax')) {
+            } else if (lowerText.includes('irs') || lowerText.includes('tax') || lowerText.includes('treasury') || lowerName.includes('irs')) {
                 predictedType = 'Internal Revenue Service (IRS)';
                 isUrgent = true;
-            } else if (lowerName.includes('report') || lowerName.includes('annual')) {
+            } else if (lowerText.includes('report') || lowerText.includes('annual') || lowerName.includes('report')) {
                 predictedType = 'State Requirement (FL)';
                 isUrgent = false;
             } else {
                 predictedType = 'General Entity Mail';
-                isUrgent = Math.random() > 0.5;
+                isUrgent = confidence < 50; // High uncertainty flag
             }
 
             setUploadType(predictedType);
             setUploadTitle(predictedTitle);
             setUploadUrgent(isUrgent);
-
-            setUploadUrl(`https://secure-charter.docs/${file.name}`);
             setScannerState('review');
-        }, 2000);
+
+        } catch (err) {
+            console.error("OCR Error:", err);
+            // Fallback to basic simulation if OCR fails
+            setScannerState('review');
+            setUploadTitle(file.name.replace(/\.[^/.]+$/, ""));
+        }
     };
 
-    const clientMap = clientDirectory.reduce((acc, client) => {
-        acc[client.user_id] = client;
-        return acc;
-    }, {});
-
-    const llcMap = llcDirectory.reduce((acc, llc) => {
-        acc[llc.id] = llc;
-        return acc;
-    }, {});
 
     const renderInbox = () => {
         if (selectedThread) {
             const messages = threadMessages[selectedThread.id] || [];
+            const selectedThreadTitle = selectedThread.subject || selectedThread.title || 'Unknown Inquiry';
             const clientName = clientMap[selectedThread.user_id]?.name || 'Unknown Client';
             const llcName = selectedThread.llc_id ? llcMap[selectedThread.llc_id]?.llc_name : 'Individual/Direct';
-            
+            const recentDocs = globalDocuments.filter(d => d.user_id === selectedThread.user_id).slice(0, 3);
+
             return (
-                <div className="flex flex-col h-[500px]">
+                <div className="flex gap-6 h-full min-h-[600px] animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex-1 flex flex-col min-w-0">
                     <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-4">
                         <div>
-                            <button onClick={() => { setSelectedThread(null); setUplCheckState('idle'); }} className="text-[10px] font-bold uppercase tracking-widest text-luminous-blue mb-2 hover:text-white transition-colors">← Back to Inbox</button>
+                            <button onClick={() => { setSelectedThread(null); setUplCheckState('idle'); }} className="text-[10px] font-bold uppercase tracking-widest text-[#00f3ff] mb-2 hover:text-white transition-colors flex items-center gap-2">
+                                <ArrowRight size={12} className="rotate-180" /> Back to Inbox
+                            </button>
                             <h3 className="text-lg font-semibold text-white">{selectedThread.subject}</h3>
                             <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">
-                                <span className="text-luminous-blue">{llcName}</span>
+                                <span className="text-[#00f3ff]">{llcName}</span>
                                 <span className="mx-2 opacity-30">|</span>
-                                <span>Client: {clientName}</span>
+                                <span>Owner: {clientName}</span>
                             </p>
                         </div>
                         <span className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[9px] font-black uppercase tracking-widest">{selectedThread.status}</span>
@@ -370,6 +550,106 @@ const RaOperationsSector = () => {
                         </form>
                     )}
                 </div>
+
+                    {/* Right Context Sidebar: [NEW] Premium RA Intelligence */}
+                    <div className="w-80 border-l border-white/5 pl-6 hidden xl:block space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+                        {/* Column Identity Header */}
+                        <div className="pb-2 border-b border-white/10">
+                            <h3 className="text-xs font-black text-emerald-500 uppercase tracking-[0.2em]">Intelligence Sidebar</h3>
+                            <p className="text-[10px] text-gray-500 mt-1 uppercase">Entity health & contextual oversight</p>
+                        </div>
+
+                        {/* Entity Health Hub */}
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4">Entity Metadata</p>
+                            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-4">
+                                <div className="flex items-center justify-between">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">LLC State Standing</p>
+                                <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
+                                    (selectedThread.llc_id ? llcMap[selectedThread.llc_id]?.filing_status : 'Active') === 'Active' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
+                                }`}>
+                                    {selectedThread.llc_id ? llcMap[selectedThread.llc_id]?.filing_status : 'Individual'}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Annual Report 2026</p>
+                                <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
+                                    (selectedThreadTitle.toLowerCase().includes('annual') || selectedThreadTitle.toLowerCase().includes('report') || selectedThreadTitle.toLowerCase().includes('filing')) ? 'bg-amber-500/10 text-amber-500' : 'bg-white/5 text-gray-500'
+                                }`}>
+                                    {(selectedThreadTitle.toLowerCase().includes('annual') || selectedThreadTitle.toLowerCase().includes('report') || selectedThreadTitle.toLowerCase().includes('filing')) ? 'Pending Filing' : 'Not Started'}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Jurisdiction</p>
+                                <p className="text-[9px] text-white font-black uppercase tracking-widest">Florida (USA)</p>
+                            </div>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Primary Owner</p>
+                                    <p className="text-xs text-white font-medium truncate max-w-[120px]">{clientName}</p>
+                                </div>
+                                <div className="pt-2 border-t border-white/5">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Compliance Pulse</p>
+                                        <span className="text-[10px] text-emerald-500 font-black">94%</span>
+                                    </div>
+                                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                                        <div className="h-full bg-emerald-500 w-[94%] shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recent Documents Snippet */}
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Secure Vault Activity</p>
+                                <FileBox size={14} className="text-gray-600" />
+                            </div>
+                            <div className="space-y-2">
+                                {recentDocs.map(doc => (
+                                    <div key={doc.id} className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all cursor-default group">
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <FileText size={14} className="text-[#00f3ff]" />
+                                            <p className="text-xs text-white font-medium truncate">{doc.title}</p>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">{doc.type}</p>
+                                            <p className="text-[8px] text-gray-600 font-mono italic">{doc.date}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                                {recentDocs.length === 0 && (
+                                    <div className="p-8 text-center border border-dashed border-white/10 rounded-xl">
+                                        <p className="text-[9px] text-gray-600 uppercase font-bold italic opacity-30">No Recent Documents</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Approved Ministerial Snippets */}
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4">UPL-Safe Snippets</p>
+                            <div className="grid grid-cols-1 gap-2">
+                                <button 
+                                    onClick={() => setNewMessage("Our records indicate your Annual Report is due soon. We will monitor the filing status and inform you once the state has confirmation.")} 
+                                    className="text-left p-3 bg-white/5 hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/30 rounded-xl transition-all group"
+                                >
+                                    <p className="text-[10px] text-white font-bold uppercase tracking-widest group-hover:text-emerald-400">Annual Report Update</p>
+                                    <p className="text-[8px] text-gray-500 mt-1">Ministerial / Informational</p>
+                                </button>
+                                <button 
+                                    onClick={() => setNewMessage("A legal notice has been received at your Registered Agent address. A digital copy is now available in your Secure Vault for review.")} 
+                                    className="text-left p-3 bg-white/5 hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/30 rounded-xl transition-all group"
+                                >
+                                    <p className="text-[10px] text-white font-bold uppercase tracking-widest group-hover:text-emerald-400">Notice Received</p>
+                                    <p className="text-[8px] text-gray-500 mt-1">Standard Notification</p>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             );
         }
 
@@ -409,32 +689,89 @@ const RaOperationsSector = () => {
         if (scannerState === 'dropzone') {
             return (
                 <div className="max-w-3xl">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 bg-emerald-500/10 text-emerald-500 flex items-center justify-center rounded-xl border border-emerald-500/20">
-                            <Mail size={20} />
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-emerald-500/10 text-emerald-500 flex items-center justify-center rounded-xl border border-emerald-500/20">
+                                <Mail size={20} />
+                            </div>
+                            <div>
+                                <h3 className="text-white font-semibold">Scanner Room Dropzone</h3>
+                                <p className="text-xs text-gray-400 mt-1">Drag & drop incoming physical mail or process server documents here.</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="text-white font-semibold">Scanner Room Dropzone</h3>
-                            <p className="text-xs text-gray-400">Drag & drop incoming physical mail or process server documents here.</p>
+                        
+                        {/* Source Status Indicator */}
+                        <div className="flex flex-col items-end">
+                            <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Active Intake Source</p>
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg">
+                                {raSettings?.scanner_locked === 'true' && (
+                                    <Lock size={10} className="text-blue-500" />
+                                )}
+                                <span className={`w-1.5 h-1.5 rounded-full ${scannerPermissionStatus === 'granted' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                                <p className="text-[10px] text-gray-300 font-mono italic truncate max-w-[150px]">
+                                    {raSettings['scanner_source_path'] || 'Default Local Buffer'}
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    <label 
-                        className="relative w-full h-64 border-2 border-dashed border-white/20 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all group"
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={handleRealDrop}
-                    >
-                        <input 
-                            type="file" 
-                            onChange={handleFileSelect} 
-                            className="hidden" 
-                            accept=".pdf,.png,.jpg,.jpeg"
-                        />
-                        <Paperclip size={48} strokeWidth={1} className="text-gray-500 group-hover:text-emerald-400 mb-4 transition-colors" />
-                        <h4 className="text-lg font-medium text-white group-hover:text-emerald-400 transition-colors">Click or Drag Document to Scan</h4>
-                        <p className="text-sm text-gray-500 mt-2 max-w-sm">Charter's OCR engine will automatically extract the target client, document type, and urgency.</p>
-                        <p className="text-[10px] text-emerald-500/80 uppercase font-bold tracking-widest mt-6">Secure Zero-Knowledge Ingestion</p>
-                    </label>
+
+                        <div 
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleRealDrop}
+                            onClick={async () => {
+                                if (scannerPermissionStatus !== 'granted' && scannerDirectoryHandle) {
+                                    const success = await reconnectScanner();
+                                    if (!success) return;
+                                }
+
+                                if (scannerDirectoryHandle && window.showOpenFilePicker) {
+                                    try {
+                                        const [fileHandle] = await window.showOpenFilePicker({
+                                            startIn: scannerDirectoryHandle,
+                                            types: [{
+                                                description: 'OCR Targets (PDF, Images)',
+                                                accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.webp'], 'application/pdf': ['.pdf'] }
+                                            }]
+                                        });
+                                        const file = await fileHandle.getFile();
+                                        handleRealScan(file);
+                                    } catch (err) {
+                                        // User aborted or API failed - fallback to old input
+                                        if (err.name !== 'AbortError') document.getElementById('fileInput').click();
+                                    }
+                                } else {
+                                    document.getElementById('fileInput').click();
+                                }
+                            }}
+                            className={`relative border-2 border-dashed rounded-3xl p-12 flex flex-col items-center justify-center transition-all cursor-pointer group ${isDragging ? 'border-[#00f3ff] bg-[#00f3ff]/5 scale-[0.99]' : 'border-white/10 hover:border-white/20 bg-white/2 hover:bg-white/5'}`}
+                        >
+                            {scannerPermissionStatus !== 'granted' && scannerDirectoryHandle && raSettings?.scanner_locked === 'true' && (
+                                <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-3xl animate-in fade-in duration-500">
+                                    <div className="w-16 h-16 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mb-4 border border-amber-500/20">
+                                        <RefreshCw className="animate-spin-slow" size={32} />
+                                    </div>
+                                    <h3 className="text-xl font-black uppercase tracking-tighter text-white mb-2">Re-Authorization Required</h3>
+                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest text-center px-8">
+                                        The intake source is <span className="text-blue-400">Locked</span>. Click anywhere to re-link your local scan folder.
+                                    </p>
+                                </div>
+                            )}
+                            <input 
+                                id="fileInput"
+                                type="file" 
+                                onChange={handleFileSelect} 
+                                className="hidden" 
+                                accept=".pdf,.png,.jpg,.jpeg"
+                            />
+                            <Paperclip className={`w-12 h-12 mb-4 transition-all ${isDragging ? 'text-[#00f3ff] scale-110 rotate-12' : 'text-gray-600 group-hover:text-gray-400'}`} />
+                            <h4 className="text-lg font-bold text-white mb-2">Click or Drag Document to Scan</h4>
+                            <p className="text-xs text-gray-500 max-w-sm text-center px-4 leading-relaxed">
+                                Charter's OCR engine will automatically extract the target client, document type, and urgency.
+                            </p>
+                            
+                        </div>
                 </div>
             );
         }
@@ -446,15 +783,16 @@ const RaOperationsSector = () => {
                     <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-luminous-blue to-transparent shadow-[0_0_15px_rgba(45,212,191,0.8)] animate-scan-beam z-20" />
                     
                     <div className="relative mb-6">
-                        <Search size={40} className="text-luminous-blue animate-pulse absolute opacity-50 blur-sm" />
-                        <Search size={40} className="text-luminous-blue relative z-10" />
+                        <Loader2 size={40} className="text-luminous-blue animate-spin absolute opacity-50 blur-sm" />
+                        <Scan size={40} className="text-white relative z-10 animate-pulse" />
                     </div>
-                    <h4 className="text-lg font-medium text-white mb-2">Analyzing Document Payload...</h4>
-                    <p className="text-sm text-gray-400">Charter's OCR engine is extracting vital metadata.</p>
+                    <h4 className="text-lg font-medium text-white mb-2">Engaging OCR Engine... ({ocrProgress}%)</h4>
+                    <p className="text-sm text-gray-400">Extracting legal entity metadata and jurisdiction signatures.</p>
                     
-                    <div className="mt-8 w-64 h-1 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-luminous-blue animate-[scanning_2s_ease-in-out_infinite] w-1/3 rounded-full" />
+                    <div className="mt-8 w-64 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-luminous-blue transition-all duration-300 shadow-[0_0_10px_#00f3ff]" style={{ width: `${ocrProgress}%` }} />
                     </div>
+                    <p className="text-[10px] text-luminous-blue/60 uppercase font-black tracking-widest mt-4 animate-pulse">Neural Thread Processing Active</p>
                 </div>
             );
         }
@@ -513,9 +851,17 @@ const RaOperationsSector = () => {
 
                     {/* Right Panel: Data Onboarding */}
                     <form onSubmit={handleUpload} className="w-1/2 bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5">
-                        <div className="bg-luminous-blue/10 border border-luminous-blue/20 rounded-lg p-3 flex gap-3 text-luminous-blue text-sm">
-                            <Search className="shrink-0 mt-0.5" size={16} />
-                            <p><strong>OCR Data Extracted.</strong> Please review the target registry and typing. <span className="font-bold underline text-white">Do not</span> write custom messages to the client.</p>
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                    <Zap size={14} className="text-emerald-400" />
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">OCR AI Confidence: {ocrConfidence}%</p>
+                                </div>
+                                <span className="text-[10px] font-mono text-emerald-500/50">ENGINE: TESSERACT_V5</span>
+                            </div>
+                            <div className="max-h-24 overflow-y-auto bg-black/40 rounded border border-white/5 p-2 custom-scrollbar">
+                                <p className="text-[10px] text-gray-400 font-mono leading-relaxed whitespace-pre-wrap">{extractedText || 'Processing text payload...'}</p>
+                            </div>
                         </div>
 
                         <div className="relative" ref={comboBoxRef}>
@@ -702,69 +1048,219 @@ const RaOperationsSector = () => {
     };
 
     const renderLedger = () => (
-        <div className="bg-[#121214] border border-white/5 rounded-2xl overflow-hidden divide-y divide-white/5">
-            {globalAuditLogs.map(log => (
-                <div key={log.id} className="p-4 flex items-center justify-between hover:bg-white/[0.02]">
-                    <div className="flex items-center gap-4">
-                        <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest ${log.actor_type === 'USER' ? 'bg-blue-500/10 text-blue-400' : 'bg-green-500/10 text-green-400'}`}>{log.actor_type}</span>
-                        <div>
-                            <p className="text-sm text-white font-medium">{log.action}</p>
-                            <p className="text-[10px] text-gray-500 font-mono mt-0.5">{log.actor_email} • {log.outcome}</p>
-                        </div>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
+                <div>
+                    <h3 className="text-xl font-light text-white tracking-tight">System Ledger</h3>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Immutable audit trail of fleet operations ({filteredLedgerLogs.length})</p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                    {/* Search Component */}
+                    <div className="relative w-full sm:w-80">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
+                        <input 
+                            type="text"
+                            value={ledgerSearchQuery}
+                            onChange={(e) => setLedgerSearchQuery(e.target.value)}
+                            placeholder="Search action, email, LLC, or client..."
+                            className="w-full bg-white/5 border border-white/10 focus:border-purple-500/40 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-gray-600 outline-none transition-all shadow-inner shadow-black/20"
+                        />
+                        {ledgerSearchQuery && (
+                            <button 
+                                onClick={() => setLedgerSearchQuery('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
+                            >
+                                <X size={12} />
+                            </button>
+                        )}
                     </div>
-                    <div className="text-right">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{new Date(log.created_at).toLocaleString()}</p>
-                        <p className="text-[9px] text-gray-600 mt-1 uppercase tracking-widest">Client: {clientMap[log.user_id]?.name || log.user_id.split('-')[0]}</p>
+
+                    {/* Filter Segment */}
+                    <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 shrink-0 shadow-inner shadow-black/40">
+                        {[
+                            { id: 'all', label: 'All' },
+                            { id: 'user', label: 'Users' },
+                            { id: 'system', label: 'System' }
+                        ].map(f => (
+                            <button
+                                key={f.id}
+                                onClick={() => setLedgerFilter(f.id)}
+                                className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${ledgerFilter === f.id ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                            >
+                                {f.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
-            ))}
+            </div>
+
+            <div className="bg-[#121214]/80 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden divide-y divide-white/5 shadow-2xl">
+                {filteredLedgerLogs.map(log => (
+                    <div key={log.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-white/[0.02] gap-4 transition-colors group">
+                        <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all ${log.actor_type === 'USER' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-green-500/10 text-green-400 border-green-500/20'}`}>
+                                {log.actor_type === 'USER' ? <User size={16} /> : <Cpu size={16} />}
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm text-white font-medium group-hover:text-purple-400 transition-colors uppercase tracking-tight">{log.action}</p>
+                                    <span className={`px-1.5 py-0.5 rounded-[4px] text-[7px] font-black uppercase tracking-widest border ${log.outcome === 'success' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/10' : 'bg-red-500/10 text-red-500 border-red-500/10'}`}>
+                                        {log.outcome}
+                                    </span>
+                                </div>
+                                <p className="text-[10px] text-gray-500 font-mono mt-0.5">{log.actor_email} • {log.ip_address || 'Internal'}</p>
+                            </div>
+                        </div>
+                        <div className="text-right flex md:flex-col items-center md:items-end justify-between md:justify-center gap-2">
+                            <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest">{new Date(log.created_at).toLocaleString()}</p>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] text-gray-500 font-black uppercase tracking-widest">Target:</span>
+                                {log.llc_id && llcMap[log.llc_id] ? (
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[9px] text-purple-400 font-black uppercase tracking-widest">{llcMap[log.llc_id].llc_name}</span>
+                                        <span className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter">({clientMap[log.user_id]?.name || 'Direct'})</span>
+                                    </div>
+                                ) : (
+                                    <span className="text-[9px] text-purple-400 font-black uppercase tracking-widest">{clientMap[log.user_id]?.name || log.user_id.split('-')[0]}</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+                
+                {filteredLedgerLogs.length === 0 && (
+                    <div className="p-20 text-center flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 text-gray-600">
+                            <Search size={32} />
+                        </div>
+                        <h4 className="text-white font-medium">No Logs Found</h4>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 max-w-[200px]">Adjust your search or actor filters to locate audit records.</p>
+                        {(ledgerSearchQuery || ledgerFilter !== 'all') && (
+                            <button 
+                                onClick={() => { setLedgerSearchQuery(''); setLedgerFilter('all'); }} 
+                                className="mt-6 text-[10px] text-purple-500 font-black uppercase tracking-widest hover:text-white transition-colors border-b border-purple-500/30"
+                            >
+                                Reset Ledger Filters
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 
     const renderGlobalVault = () => (
-        <div className="space-y-4 animate-in fade-in duration-300">
-            <div className="flex items-center justify-between mb-4">
+        <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
                 <div>
                     <h3 className="text-xl font-light text-white tracking-tight">Global File Registry</h3>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Cross-entity secure documents ({globalDocuments?.length || 0})</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Cross-entity secure documents ({filteredVaultDocs.length})</p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                    {/* Search Component */}
+                    <div className="relative w-full sm:w-80">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
+                        <input 
+                            type="text"
+                            value={vaultSearchQuery}
+                            onChange={(e) => setVaultSearchQuery(e.target.value)}
+                            placeholder="Search title, LLC, or owner..."
+                            className="w-full bg-white/5 border border-white/10 focus:border-luminous-blue/40 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-gray-600 outline-none transition-all shadow-inner shadow-black/20"
+                        />
+                        {vaultSearchQuery && (
+                            <button 
+                                onClick={() => setVaultSearchQuery('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
+                            >
+                                <X size={12} />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Filter Segment */}
+                    <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 shrink-0 shadow-inner shadow-black/40">
+                        {[
+                            { id: 'all', label: 'All' },
+                            { id: 'llc', label: 'LLCs' },
+                            { id: 'individual', label: 'Direct' }
+                        ].map(f => (
+                            <button
+                                key={f.id}
+                                onClick={() => setVaultFilter(f.id)}
+                                className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${vaultFilter === f.id ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                            >
+                                {f.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
             
-            <div className="bg-[#121214] border border-white/5 rounded-2xl overflow-hidden divide-y divide-white/5">
-                {globalDocuments?.map(doc => {
+            <div className="bg-[#121214]/80 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden divide-y divide-white/5 shadow-2xl">
+                {filteredVaultDocs.map(doc => {
                     const client = clientMap[doc.user_id];
                     const llc = llcDirectory?.find(l => l.id === doc.llc_id);
                     return (
-                        <div key={doc.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-white/[0.02] gap-4">
+                        <div key={doc.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-white/[0.02] gap-4 transition-colors group">
                             <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${doc.urgent ? 'bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : 'bg-white/5 text-gray-400 border-white/10'}`}>
-                                    <FileText size={16} />
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border transition-all ${doc.urgent ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.15)] group-hover:scale-105' : 'bg-white/5 text-gray-500 border-white/10 group-hover:bg-white/10 group-hover:text-white'}`}>
+                                    <FileText size={20} />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-sm text-white font-medium truncate">{doc.title}</p>
-                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border ${doc.type === 'State Requirement (FL)' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-white/5 text-gray-400 border-white/10'}`}>{doc.type}</span>
-                                        <span className="text-[10px] text-gray-500 font-mono">{client?.name || 'Unknown Client'} {llc ? `— ${llc.llc_name}` : ''}</span>
+                                    <h4 className="text-sm text-white font-medium truncate group-hover:text-luminous-blue transition-colors">{doc.title}</h4>
+                                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                                        <span className={`px-2 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-[0.1em] border flex items-center gap-1.5 ${doc.type === 'State Requirement (FL)' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-white/5 text-gray-500 border-white/10'}`}>
+                                            <div className={`w-1 h-1 rounded-full ${doc.type === 'State Requirement (FL)' ? 'bg-amber-500' : 'bg-gray-500'}`} />
+                                            {doc.type}
+                                        </span>
+                                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider flex items-center gap-2">
+                                            <span className="text-white/40">{client?.name || 'Unknown Client'}</span>
+                                            {llc && (
+                                                <>
+                                                    <span className="opacity-20">|</span>
+                                                    <span className="text-luminous-blue/60">{llc.llc_name}</span>
+                                                </>
+                                            )}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 shrink-0">
-                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest text-right hidden md:block">{doc.date}<br/>{doc.status}</p>
+                            <div className="flex items-center gap-4 shrink-0 justify-between md:justify-end">
+                                <div className="text-right hidden md:block">
+                                    <p className="text-[10px] text-white/50 font-bold uppercase tracking-tighter">{doc.date}</p>
+                                    <p className={`text-[9px] font-black uppercase tracking-widest mt-0.5 ${doc.status === 'READY' ? 'text-emerald-500' : 'text-gray-600'}`}>{doc.status}</p>
+                                </div>
                                 <button 
                                     onClick={() => {
                                         if (doc.download_url) window.open(doc.download_url, '_blank');
                                         else setToast({ message: 'Document physically expired or pending Sync.', type: 'error' });
                                     }}
-                                    className="px-4 py-2 bg-luminous-blue/10 hover:bg-luminous-blue/20 text-luminous-blue border border-luminous-blue/20 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all"
+                                    className="px-5 py-2.5 bg-white/5 hover:bg-white text-gray-400 hover:text-black border border-white/10 hover:border-white rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] transition-all shadow-xl active:scale-95"
                                 >
-                                    <Search size={12} /> View
+                                    <Eye size={12} /> View
                                 </button>
                             </div>
                         </div>
                     );
                 })}
-                {(!globalDocuments || globalDocuments.length === 0) && (
-                    <div className="p-12 text-center text-gray-500 text-[10px] uppercase font-bold tracking-widest">No physical documents indexed in system</div>
+                {filteredVaultDocs.length === 0 && (
+                    <div className="p-20 text-center flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 text-gray-600">
+                            <FileSearch size={32} />
+                        </div>
+                        <h4 className="text-white font-medium">No Documents Found</h4>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 max-w-[200px]">Adjust your search or filters to locate entity records.</p>
+                        {(vaultSearchQuery || vaultFilter !== 'llc') && (
+                            <button 
+                                onClick={() => { setVaultSearchQuery(''); setVaultFilter('llc'); }} 
+                                className="mt-6 text-[10px] text-luminous-blue font-black uppercase tracking-widest hover:text-white transition-colors border-b border-luminous-blue/30"
+                            >
+                                Reset Filters
+                            </button>
+                        )}
+                    </div>
                 )}
             </div>
         </div>

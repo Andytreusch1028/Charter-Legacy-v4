@@ -15,6 +15,9 @@ import MobileRecorder from './MobileRecorder';
 // Modals
 import LoginModal from './LoginModal';
 
+// GEO: Schema Injection
+import AEOSchema from './components/AEOSchema';
+
 /**
  * App
  * The central orchestration layer for CharterLegacy.
@@ -76,6 +79,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0B]">
+      {/* GEO: Schema Injection for AI Answer Engines */}
+      <AEOSchema type="HowTo" />
+      <AEOSchema type="Service" />
+
       <LandingSector 
         onStartCheckout={handleStartCheckout}
         onEnterConsole={() => appUser ? setView('dashboard') : setIsLoginOpen(true)}

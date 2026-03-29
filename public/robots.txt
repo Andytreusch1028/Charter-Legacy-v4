@@ -1,0 +1,45 @@
+# CharterLegacy robots.txt
+# Updated: 2026-03-24
+# Policy: Allow AI crawlers for GEO visibility, block admin routes
+
+# Standard Search Engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# AI Answer Engines (GEO Strategy)
+User-agent: GPTBot
+Allow: /
+Disallow: /staff
+Disallow: /admin
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /staff
+Disallow: /admin
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /staff
+Disallow: /admin
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /staff
+Disallow: /admin
+
+User-agent: Anthropic-AI
+Allow: /
+Disallow: /staff
+Disallow: /admin
+
+# Default: Allow all, block admin
+User-agent: *
+Allow: /
+Disallow: /staff
+Disallow: /admin
+
+# Sitemap
+Sitemap: https://charterlegacy.com/sitemap.xml

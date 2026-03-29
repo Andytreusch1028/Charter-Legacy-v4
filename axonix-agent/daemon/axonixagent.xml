@@ -1,0 +1,32 @@
+<service>
+	<id>axonixagent.exe</id>
+	<name>Axonix Agent</name>
+	<description>CharterLegacy autonomous developer agent — Telegram task queue and approval workflow</description>
+	<executable>C:\Program Files\nodejs\node.exe</executable>
+	<argument>C:\Charter-Legacy v4\axonix-agent\node_modules\node-windows\lib\wrapper.js</argument>
+	<argument>--file</argument>
+	<argument>C:\Charter-Legacy v4\axonix-agent\index.js</argument>
+	<argument>--scriptoptions=</argument>
+	<argument>--log</argument>
+	<argument>Axonix Agent wrapper</argument>
+	<argument>--grow</argument>
+	<argument>0.5</argument>
+	<argument>--wait</argument>
+	<argument>2</argument>
+	<argument>--maxrestarts</argument>
+	<argument>10</argument>
+	<argument>--abortonerror</argument>
+	<argument>n</argument>
+	<argument>--stopparentfirst</argument>
+	<argument>undefined</argument>
+	<logmode>rotate</logmode>
+	<stoptimeout>30sec</stoptimeout>
+	<env name="NODE_ENV" value="production"/>
+	<env name="DOTENV_CONFIG_PATH" value="C:\Charter-Legacy v4\axonix-agent\.env"/>
+	<serviceaccount>
+		<domain>GT1_MEGA</domain>
+		<user>LocalSystem</user>
+		<password></password>
+	</serviceaccount>
+	<workingdirectory>C:\Charter-Legacy v4\axonix-agent</workingdirectory>
+</service>

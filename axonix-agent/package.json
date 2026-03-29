@@ -1,0 +1,28 @@
+{
+  "name": "axonix-agent",
+  "version": "1.0.0",
+  "description": "Autonomous developer agent for CharterLegacy — communicates via Telegram for task management and approval workflows",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "node-cron": "^3.0.3",
+    "node-telegram-bot-api": "^0.66.0",
+    "node-windows": "^1.0.0-beta.8",
+    "simple-git": "^3.22.0"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "autonomous",
+    "agent",
+    "charter-legacy"
+  ],
+  "author": "CharterLegacy",
+  "license": "UNLICENSED",
+  "private": true
+}

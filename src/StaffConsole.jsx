@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Shield, Activity, Globe, TestTube, Users, Command, Settings, Search, RefreshCw 
+  Shield, Activity, Globe, TestTube, Users, Command, Settings, Search, RefreshCw, FileText, EyeOff, Radar, Briefcase
 } from 'lucide-react';
 
 // Hooks
 import { useAudit } from './hooks/useAudit';
 import { useVault } from './hooks/useVault';
 import { useStaffData } from './hooks/useStaffData';
+import { useStaffRa } from './hooks/useStaffRa';
+import { loadScannerHandle, saveScannerHandle } from './lib/scanner-storage';
 
 // Sectors
 import OverviewSector from './sectors/staff/OverviewSector';
 import AeoLabSector from './sectors/staff/AeoLabSector';
 import ClientDirectorySector from './sectors/staff/ClientDirectorySector';
 import TerminalLogsSector from './sectors/staff/TerminalLogsSector';
+import CompliancePulseSector from './sectors/staff/CompliancePulseSector';
+import PrivacyMaskingSector from './sectors/staff/PrivacyMaskingSector';
+import GeoVisibilitySector from './sectors/staff/GeoVisibilitySector';
+import RaOperationsSector from './sectors/staff/RaOperationsSector';
+import SystemHubSector from './sectors/staff/SystemHubSector';
 
-// Modals (Will be sectorized in the next pass)
+// Modals
+import VaultModal from './components/VaultModal';
+import AuditModal from './components/AuditModal';
 import SeoHelpModal from './components/SeoHelpModal';
 import AeoMasteryHelpModal from './components/AeoMasteryHelpModal';
 import TailGeneratorHelpModal from './components/TailGeneratorHelpModal';
@@ -32,14 +41,62 @@ const StaffConsole = ({ user }) => {
   
   // Custom Hooks (Decoupled Logic)
   const { logAction } = useAudit(selectedClient);
-  const { vaultItems, fetchVault } = useVault();
-  const { 
+  const { vaultItems, fetchVault, decryptItem, sharingStatus } = useVault();
+  const {
     loading, 
     clients, 
-    stats, 
+    stats,
+    compliancePulse,
+    privacyAliases,
     fetchClients, 
-    fetchStats 
+    fetchStats,
+    fetchCompliancePulse,
+    fetchPrivacyMasks
   } = useStaffData();
+  
+  // RA Operations Shared State
+  const { 
+    raSettings, 
+    reconnectScanner,
+    fetchStaffRaData,
+    systemMetrics,
+    globalAuditLogs,
+    globalDocuments,
+    globalThreads,
+    clientDirectory,
+    llcDirectory,
+    threadMessages,
+    fetchThreadMessages,
+    sendStaffMessage,
+    uploadDocumentToClient,
+    updateRaSettings,
+    loading: raLoading 
+  } = useStaffRa();
+  
+  const [scannerDirectoryHandle, setScannerDirectoryHandle] = useState(null);
+  const [scannerPermissionStatus, setScannerPermissionStatus] = useState('prompt'); // 'granted', 'prompt', 'denied'
+
+  // Load scanner handle from IndexedDB on mount
+  useEffect(() => {
+    async function initScanner() {
+      const savedHandle = await loadScannerHandle();
+      if (savedHandle) {
+        setScannerDirectoryHandle(savedHandle);
+        const status = await savedHandle.queryPermission({ mode: 'readwrite' });
+        setScannerPermissionStatus(status);
+      }
+    }
+    initScanner();
+  }, []);
+
+  // Save scanner handle and update permission status when changed
+  useEffect(() => {
+    if (scannerDirectoryHandle) {
+        saveScannerHandle(scannerDirectoryHandle);
+        // Also check status if it's a new handle
+        scannerDirectoryHandle.queryPermission({ mode: 'readwrite' }).then(setScannerPermissionStatus);
+    }
+  }, [scannerDirectoryHandle]);
 
   // Modal States
   const [showVaultModal, setShowVaultModal] = useState(false);
@@ -55,14 +112,21 @@ const StaffConsole = ({ user }) => {
     fetchStats();
     if (activeTab === 'users') fetchClients();
     if (activeTab === 'aeo-mastery') fetchVault();
-  }, [activeTab, fetchStats, fetchClients, fetchVault]);
+    if (activeTab === 'compliance') fetchCompliancePulse();
+    if (activeTab === 'privacy') fetchPrivacyMasks();
+    if (activeTab === 'ra-ops' || activeTab === 'settings') fetchStaffRaData();
+  }, [activeTab, fetchStats, fetchClients, fetchVault, fetchCompliancePulse, fetchPrivacyMasks, fetchStaffRaData]);
 
   const menuItems = [
     { id: 'overview', label: 'Overview', icon: Activity },
+    { id: 'compliance', label: 'Compliance Pulse', icon: FileText, badge: compliancePulse.filter(a => a.priority === 'High').length > 0 ? 'Urgent' : null },
+    { id: 'privacy', label: 'Privacy Masking', icon: EyeOff },
     { id: 'filings', label: 'Manual Filings', icon: FileText, badge: stats.pendingFilings > 0 ? stats.pendingFilings.toString() : null },
+    { id: 'geo', label: 'GEO Visibility', icon: Radar },
     { id: 'seo', label: 'SEO Matrix', icon: Globe },
     { id: 'aeo-mastery', label: 'AEO Laboratory', icon: TestTube },
     { id: 'users', label: 'Client Directory', icon: Users },
+    { id: 'ra-ops', label: 'RA Operations', icon: Briefcase },
     { id: 'logs', label: 'Terminal Logs', icon: Command },
     { id: 'settings', label: 'System Hub', icon: Settings }
   ];
@@ -92,7 +156,7 @@ const StaffConsole = ({ user }) => {
             </div>
           </div>
 
-          <nav className="space-y-2">
+          <nav className="space-y-2 overflow-y-auto max-h-[calc(100vh-250px)] pr-2 scrollbar-hide">
             {menuItems.map(item => (
               <button
                 key={item.id}
@@ -168,10 +232,69 @@ const StaffConsole = ({ user }) => {
                     onOpenAudit={handleOpenAudit}
                 />
             )}
+            {activeTab === 'compliance' && (
+                <CompliancePulseSector 
+                    data={compliancePulse}
+                    loading={loading}
+                    onRefresh={fetchCompliancePulse}
+                />
+            )}
+            {activeTab === 'privacy' && (
+                <PrivacyMaskingSector 
+                    data={privacyAliases}
+                    loading={loading}
+                    onRefresh={fetchPrivacyMasks}
+                />
+            )}
+            {activeTab === 'ra-ops' && (
+                <RaOperationsSector 
+                    raSettings={raSettings}
+                    scannerDirectoryHandle={scannerDirectoryHandle}
+                    scannerPermissionStatus={scannerPermissionStatus}
+                    reconnectScanner={reconnectScanner}
+                    globalDocuments={globalDocuments}
+                    globalAuditLogs={globalAuditLogs}
+                    globalThreads={globalThreads}
+                    clientDirectory={clientDirectory}
+                    llcDirectory={llcDirectory}
+                    loading={raLoading}
+                    fetchStaffRaData={fetchStaffRaData}
+                    fetchThreadMessages={fetchThreadMessages}
+                    threadMessages={threadMessages}
+                    sendStaffMessage={sendStaffMessage}
+                    uploadDocumentToClient={uploadDocumentToClient}
+                    updateRaSettings={updateRaSettings}
+                />
+            )}
             {activeTab === 'logs' && <TerminalLogsSector />}
+            {activeTab === 'settings' && (
+              <SystemHubSector 
+                raSettings={raSettings}
+                updateRaSettings={updateRaSettings}
+                scannerDirectoryHandle={scannerDirectoryHandle}
+                scannerPermissionStatus={scannerPermissionStatus}
+                setScannerDirectoryHandle={setScannerDirectoryHandle}
+                reconnectScanner={reconnectScanner}
+                fetchStaffRaData={fetchStaffRaData}
+                systemMetrics={systemMetrics}
+              />
+            )}
         </div>
 
         {/* Modals */}
+        <VaultModal 
+            isOpen={showVaultModal} 
+            onClose={() => setShowVaultModal(false)}
+            client={selectedClient}
+            vaultItems={vaultItems}
+            onDecrypt={decryptItem}
+            sharingStatus={sharingStatus}
+        />
+        <AuditModal 
+            isOpen={showAuditModal} 
+            onClose={() => setShowAuditModal(false)}
+            client={selectedClient}
+        />
         {showAeoMasteryHelp && <AeoMasteryHelpModal onClose={() => setShowAeoMasteryHelp(false)} />}
         {showSeoHelp && <SeoHelpModal onClose={() => setShowSeoHelp(false)} />}
         {showTailHelp && <TailGeneratorHelpModal onClose={() => setShowTailHelp(false)} />}
@@ -181,8 +304,5 @@ const StaffConsole = ({ user }) => {
     </div>
   );
 };
-
-// Mocking FileText for the menu until imported
-const FileText = ({ size, strokeWidth }) => <Activity size={size} strokeWidth={strokeWidth} />;
 
 export default StaffConsole;

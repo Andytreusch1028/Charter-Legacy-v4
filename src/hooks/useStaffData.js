@@ -9,6 +9,8 @@ export const useStaffData = () => {
     const [loading, setLoading] = useState(false);
     const [clients, setClients] = useState([]);
     const [pendingFilings, setPendingFilings] = useState([]);
+    const [compliancePulse, setCompliancePulse] = useState([]);
+    const [privacyAliases, setPrivacyAliases] = useState([]);
     const [stats, setStats] = useState({
         pendingFilings: 0,
         activePrivacies: 0,
@@ -33,6 +35,46 @@ export const useStaffData = () => {
             }));
         } catch (err) {
             console.error("[StaffData Error] Stats fetch failure:", err);
+        }
+    }, []);
+
+    /**
+     * fetchCompliancePulse
+     * Retrieves all active entity monitors and upcoming ministerial filings.
+     */
+    const fetchCompliancePulse = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('compliance_alerts')
+                .select('*, profiles(full_name)')
+                .order('due_date', { ascending: true });
+            
+            if (!error) setCompliancePulse(data || []);
+        } catch (err) {
+            console.error("[StaffData Error] Compliance pulse failure:", err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    /**
+     * fetchPrivacyMasks
+     * Retrieves the data masking configuration nodes.
+     */
+    const fetchPrivacyMasks = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('privacy_aliases')
+                .select('*, profiles(full_name)')
+                .order('is_active', { ascending: false });
+            
+            if (!error) setPrivacyAliases(data || []);
+        } catch (err) {
+            console.error("[StaffData Error] Privacy mask fetch failure:", err);
+        } finally {
+            setLoading(false);
         }
     }, []);
 
@@ -105,8 +147,12 @@ export const useStaffData = () => {
         clients,
         pendingFilings,
         stats,
+        compliancePulse,
+        privacyAliases,
         fetchClients,
         fetchPendingFilings,
-        fetchStats
+        fetchStats,
+        fetchCompliancePulse,
+        fetchPrivacyMasks
     };
 };

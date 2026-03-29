@@ -2,431 +2,339 @@ import React, { useState, useEffect } from 'react';
 import { 
   Shield, Clock, FileText, CheckCircle2, AlertCircle, 
   ChevronRight, Lock, Activity, RefreshCw, LogOut, Settings,
-  Copy, Download, Eye, EyeOff
+  Copy, Download, Eye, EyeOff, LayoutGrid, List
 } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
 import FoundersBlueprint from './FoundersBlueprint';
 import SuccessionSuite from './SuccessionSuite';
-
 import DesignationProtocol from './DesignationProtocol';
 import StatusRing from './components/StatusRing';
+import ActionConsole from './components/ActionConsole';
+import EmpireGrid from './components/EmpireGrid';
+import SovereignCommandView from './components/SovereignCommandView';
+import ViewSwitcher from './components/ViewSwitcher';
 import { useCompliance } from './hooks/useCompliance';
+import { useViewIntelligence } from './hooks/useViewIntelligence';
 
 const DashboardZenith = ({ user, initialData }) => {
   const [loading, setLoading] = useState(true);
-  const [llcData, setLlcData] = useState(initialData || null);
+  const [activeLlc, setActiveLlc] = useState(initialData || null);
+  const [fleet, setFleet] = useState([]);
   const [activityLog, setActivityLog] = useState([]);
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [isSuccessionOpen, setIsSuccessionOpen] = useState(false);
-  
-  // New State for Designation
   const [showDesignation, setShowDesignation] = useState(false);
-  
-  // Steve Mode: Power Tools
-  const [privacyMode, setPrivacyMode] = useState(false);
 
   // Compliance & Statutory Monitoring
-  const compliance = useCompliance(user, llcData);
-
-  const handleExport = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(llcData, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `${llcData.llc_name.replace(/\s+/g, '_')}_data.json`);
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+  const compliance = useCompliance(user, activeLlc) || { 
+      healthScore: 100, pulseColor: '#00D084', alerts: [], daysToDeadline: null 
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(JSON.stringify(llcData, null, 2));
-    alert("LLC Data copied to clipboard (JSON)");
-  };
+  // View Intelligence Engine
+  const viewIntel = useViewIntelligence(
+      user?.id,
+      fleet?.length || 0,
+      compliance.healthScore < 100
+  );
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      if (!user) { setLoading(false); return; }
       
       try {
-        // Fetch LLC Data if not provided
-        if (!llcData) {
-            const { data, error } = await supabase
-                .from('llcs')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .single();
-            
-            if (data) {
-                setLlcData(data);
-                // Check if we need to show designation wizard
-                if (data.llc_name.includes('Pending Formation') || data.llc_status === 'Setting Up') {
+        const { data, error } = await supabase
+            .from('llcs').select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+            setFleet(data);
+            if (!activeLlc) {
+                setActiveLlc(data[0]);
+                if (data[0]?.llc_name?.includes('Pending') || data[0]?.llc_status === 'Setting Up') {
                     setShowDesignation(true);
                 }
             }
+        } else {
+            const mockFleet = [
+                { id: 1, llc_name: 'Charter Legacy Demo LLC', llc_status: 'Active', privacy_shield_active: true, created_at: new Date().toISOString() },
+                { id: 2, llc_name: 'Wyoming Holdings LLC', llc_status: 'Active', privacy_shield_active: true, created_at: new Date().toISOString() },
+                { id: 3, llc_name: 'Heritage Property LLC', llc_status: 'Action Required', privacy_shield_active: false, created_at: new Date().toISOString() }
+            ];
+            setFleet(mockFleet);
+            if (!activeLlc) setActiveLlc(mockFleet[0]);
         }
 
-        // Mock Activity Log (Replace with real RPC call later)
         setActivityLog([
-            { id: 1, message: "Secure Environment Initialized", time: "Just now", icon: Shield },
-            { id: 2, message: "Payment Verified (Stripe)", time: "1 min ago", icon: CheckCircle2 },
-            { id: 3, message: "Identity Verification Pending", time: "Action Required", icon: AlertCircle },
+            { id: 1, message: "Sovereign Environment Initialized", time: "Just now", icon: Shield },
+            { id: 2, message: "Fleet Status Synchronized", time: "1 min ago", icon: RefreshCw },
+            { id: 3, message: "View Intelligence Calibrated", time: "Auto", icon: Eye },
         ]);
-
-        // Simulate "Booting" sequence
-        setTimeout(() => setLoading(false), 2000);
-
       } catch (err) {
         console.error("Dashboard Load Error:", err);
+        const errFleet = [{ id: 'err', llc_name: 'Recovery Mode', llc_status: 'Active', created_at: new Date().toISOString() }];
+        setFleet(errFleet);
+        setActiveLlc(errFleet[0]);
       } finally {
-        // FALLBACK FOR AUDITOR TEST / OFFLINE MODE
-        if (!llcData && user?.email?.includes('auditor')) {
-            console.warn("Using Mock LLC Data for Auditor");
-            const mockLLC = {
-                llc_name: 'Pending Formation - LLC Name TBD',
-                llc_status: 'Setting Up',
-                privacy_shield_active: true
-            };
-            setLlcData(mockLLC);
-            setShowDesignation(true);
-        }
-        setLoading(false);
+        setTimeout(() => setLoading(false), 500);
       }
     };
-
     fetchData();
   }, [user]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.reload();
+  const handleAction = (actionId) => {
+      viewIntel.recordAction(actionId);
+      if (actionId === 'amend') setIsBlueprintOpen(true);
   };
 
-  const handleDesignationSuccess = async (fallbackData) => {
-      // Re-fetch data to update UI
-      setShowDesignation(false);
-      
-      if (fallbackData) {
-          setLlcData(fallbackData);
-          return;
-      }
-
-      const { data } = await supabase.from('llcs').select('*').eq('user_id', user.id).single();
-      if (data) setLlcData(data);
+  const selectEntity = (entity) => {
+      setActiveLlc(entity);
+      // When selecting from fleet, switch to situational to see that entity
+      viewIntel.setOverride('situational');
   };
 
-  const handleDemoAccess = () => {
-      setLlcData({
-          llc_name: "Charter Legacy Demo LLC",
-          llc_status: "Active",
-          privacy_shield_active: true,
-          created_at: new Date().toISOString()
-      });
-      setShowDesignation(false);
-  };
+  if (loading) {
+      return (
+          <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center">
+              <div className="text-center space-y-4">
+                  <div className="w-12 h-12 border-4 border-[#0A0A0B] border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Calibrating View Intelligence...</p>
+              </div>
+          </div>
+      );
+  }
+
+  const currentLlc = activeLlc || (fleet && fleet[0]) || null;
+  const currentView = viewIntel.activeView;
 
   return (
-    <>
-      <div className="min-h-screen bg-[#F0F2F5] text-[#0A0A0B] font-sans antialiased flex items-center justify-center p-4 md:p-10 relative overflow-hidden">
+    <div className="min-h-screen bg-[#F0F2F5] text-[#0A0A0B] font-sans antialiased flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
         <style>{`
-          :root {
-            --obsidian-ink: #0A0A0B;
-            --accent-green: #00D084;
-            --gold-leaf: #d4af37;
-        }
-        .bg-blob {
-            position: fixed;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(0, 102, 255, 0.05) 0%, rgba(0, 102, 255, 0) 70%);
-            border-radius: 50%;
-            z-index: 0;
-            filter: blur(100px);
-            animation: move 20s infinite alternate;
-        }
-        .blob-1 { top: -10%; left: -10%; }
-        .blob-2 { bottom: -10%; right: -10%; background: radial-gradient(circle, rgba(0, 208, 132, 0.04) 0%, rgba(0, 208, 132, 0) 70%); }
-        @keyframes move {
-            from { transform: translate(0, 0); }
-            to { transform: translate(100px, 50px); }
-        }
-        .zenith-slab-shadow {
-            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.1), 0 30px 60px -30px rgba(0, 0, 0, 0.1);
-        }
-      `}</style>
+          :root { --obsidian-ink: #0A0A0B; --accent-green: #00D084; --gold-leaf: #d4af37; }
+          .zenith-slab-shadow { box-shadow: 0 50px 100px -20px rgba(0,0,0,0.15), 0 30px 60px -30px rgba(0,0,0,0.15); }
+        `}</style>
       
-      {/* Background Blobs */}
-      <div className="bg-blob blob-1"></div>
-      <div className="bg-blob blob-2"></div>
-
-      {/* The Obsidian Slab */}
-      <div className="bg-white w-full max-w-6xl min-h-[600px] rounded-[48px] zenith-slab-shadow flex flex-col md:flex-row relative z-10 border border-white/70 animate-in fade-in zoom-in-95 duration-700">
+      <div className="bg-white w-full max-w-7xl min-h-[90vh] rounded-[48px] zenith-slab-shadow flex flex-col md:flex-row relative z-10 border border-white/70 animate-in fade-in zoom-in-95 duration-700 overflow-hidden">
         
-        {/* Main Control Area */}
-        <main className="flex-1 p-8 md:p-20">
-            <div className="text-[0.65rem] font-black uppercase tracking-[0.5em] text-[#0A0A0B] opacity-30 mb-8">
-                Corporate Command Center
+        <main className="flex-1 p-8 md:p-16 overflow-y-auto">
+            {/* Header with View Switcher */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-4">
+                <ViewSwitcher 
+                    activeView={currentView}
+                    recommended={viewIntel.recommended}
+                    isOverridden={viewIntel.isOverridden}
+                    onSelect={viewIntel.setOverride}
+                    onReset={viewIntel.clearOverride}
+                />
+                <div className="text-[0.55rem] font-black uppercase tracking-[0.5em] text-[#0A0A0B] opacity-20">
+                    {currentView === 'fleet' ? 'Sovereign Fleet' : currentView === 'command' ? 'Command Cockpit' : 'Adaptive Console'}
+                </div>
             </div>
 
-            {loading ? (
-                <div className="space-y-6 animate-pulse">
-                    <div className="h-16 bg-gray-100 rounded-2xl w-3/4"></div>
-                    <div className="flex gap-12 pt-8">
-                        <div className="h-4 bg-gray-100 rounded w-24"></div>
-                        <div className="h-4 bg-gray-100 rounded w-24"></div>
-                        <div className="h-4 bg-gray-100 rounded w-24"></div>
-                    </div>
+            {/* ═══════════════════════════════════════════ */}
+            {/* VIEW ROUTER                                */}
+            {/* ═══════════════════════════════════════════ */}
+
+            {currentView === 'fleet' && (
+                <div className="pt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-[#0A0A0B] mb-4">The Empire.</h1>
+                    <p className="text-gray-400 font-medium mb-16 max-w-xl">
+                        Managing {fleet?.length || 0} active entities. Global health indicators synchronized.
+                    </p>
+                    <EmpireGrid 
+                        entities={(fleet || []).map(e => ({
+                            id: e.id,
+                            name: e.llc_name || 'Unnamed LLC',
+                            status: e.llc_status || 'Active',
+                            health: e.privacy_shield_active === false ? 60 : 100
+                        }))}
+                        activeId={currentLlc?.id}
+                        onSelect={selectEntity}
+                        onAdd={() => setShowDesignation(true)}
+                    />
                 </div>
-            ) : (
-                <div className="animate-in slide-in-from-bottom-8 duration-700">
-                    
-                    {/* --- ZERO STATE (SETUP MODE) --- */}
-                    {!llcData || llcData?.llc_status === 'Setting Up' ? (
-                        <div className="max-w-2xl mx-auto text-center pt-10">
-                            <div className="w-20 h-20 bg-white rounded-3xl mx-auto mb-8 shadow-xl flex items-center justify-center text-[#0A0A0B]">
-                                <Shield size={40} strokeWidth={1.5} />
+            )}
+
+            {currentView === 'command' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <SovereignCommandView 
+                        llc={currentLlc}
+                        compliance={compliance}
+                        onAction={handleAction}
+                        onSuccession={() => setIsSuccessionOpen(true)}
+                    />
+                </div>
+            )}
+
+            {currentView === 'situational' && (
+                <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {/* Adaptive Hero */}
+                    {compliance.healthScore < 100 ? (
+                        // WARNING STATE
+                        <div className="p-8 bg-amber-50 border border-amber-200 rounded-[32px] space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-3 h-3 bg-amber-500 rounded-full animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">Action Required</span>
                             </div>
-                            
-                            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-[#0A0A0B] mb-6">
-                                Welcome, Founder.
+                            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-[#0A0A0B] leading-[0.9]">
+                                {currentLlc?.llc_name || "Your Entity"}
                             </h1>
-                            
-                            <p className="text-gray-500 font-medium text-lg mb-12 max-w-lg mx-auto leading-relaxed">
-                                Your secure vault is ready. We just need a few details to legally form your Florida entity.
+                            <p className="text-amber-700 font-medium">
+                                {compliance.daysToDeadline 
+                                    ? `Your annual report is due in ${compliance.daysToDeadline} days. File now to maintain good standing.`
+                                    : 'One or more compliance items need your attention.'}
                             </p>
-
-                            {/* The ONE Main Action */}
-                            <div 
-                               onClick={() => setShowDesignation(true)}
-                               className="bg-white p-2 rounded-[2rem] shadow-2xl border border-white/50 hover:scale-[1.02] transition-transform cursor-pointer group"
+                            <button 
+                                onClick={() => handleAction('annual_report')}
+                                className="bg-amber-500 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-amber-600 transition-all shadow-lg"
                             >
-                                <div className="bg-[#0A0A0B] text-white rounded-[1.5rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
-                                    <div className="text-left">
-                                        <div className="flex items-center gap-3 mb-2 text-[#00D084] font-bold uppercase tracking-widest text-xs">
-                                            <div className="w-2 h-2 bg-[#00D084] rounded-full animate-pulse"></div>
-                                            Action Required
-                                        </div>
-                                        <h3 className="text-3xl font-black uppercase tracking-tight mb-2">Initialize LLC</h3>
-                                        <p className="text-gray-400 font-medium">Step 1: Naming & Address Protocols</p>
-                                    </div>
-                                    
-                                    <button className="bg-white text-[#0A0A0B] px-10 py-5 rounded-2xl font-black uppercase tracking-wider hover:bg-[#00D084] hover:text-white transition-colors flex items-center gap-3 text-sm shadow-lg whitespace-nowrap">
-                                        Start Now <ChevronRight size={18} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <button onClick={handleDemoAccess} className="mt-8 bg-white border-2 border-[#0A0A0B] text-[#0A0A0B] px-6 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-[#0A0A0B] hover:text-white transition-all shadow-lg flex items-center gap-2 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-500">
-                                <Eye size={16} /> Skip Setup (Preview Dashboard)
+                                File Annual Report →
                             </button>
-
-                            <p className="mt-12 text-xs font-bold text-gray-400 uppercase tracking-widest opacity-60">
-                                Secure Initialization Sequence • 256-bit Encrypted
-                            </p>
                         </div>
-                    ) : ( 
-                        /* --- ACTIVE STATE (FULL DASHBOARD) --- */
-                        <>
-                            <div className="flex flex-col md:flex-row items-start justify-between gap-6 mb-12">
-                                <h1 className={`text-5xl md:text-6xl font-black uppercase tracking-tighter leading-[1.1] text-[#0A0A0B] break-words max-w-full transition-all duration-300`}>
-                                    {llcData?.llc_name}
-                                </h1>
+                    ) : (
+                        // SAFE STATE
+                        <div className="space-y-2">
+                            <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-[#0A0A0B] leading-[0.9]">
+                                {currentLlc?.llc_name || "Sovereign Entity"}
+                            </h1>
+                            <div className="flex items-center gap-3">
+                                <span className="text-xs font-bold text-[#00D084] uppercase tracking-widest flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-[#00D084] rounded-full animate-pulse" />
+                                    {currentLlc?.llc_status || "Operational"}
+                                </span>
+                                <span className="text-gray-200">/</span>
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                    Established {currentLlc?.created_at ? new Date(currentLlc.created_at).toLocaleDateString() : '--/--/----'}
+                                </span>
                             </div>
-
-                            {/* Stats Strip */}
-                            <div className="flex flex-col md:flex-row gap-8 md:gap-16 py-12 border-y border-gray-100 mb-16">
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Status</span>
-                                    <span className="text-base font-bold text-[#00D084] flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-[#00D084] rounded-full animate-pulse shadow-[0_0_10px_rgba(0,208,132,0.4)]"></div>
-                                        {llcData?.llc_status || "Active"}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Privacy Shield</span>
-                                    <span className="text-base font-bold text-[#0A0A0B] flex items-center gap-4">
-                                        <StatusRing 
-                                            percentage={llcData?.privacy_shield_active ? 100 : 0}
-                                            color={llcData?.privacy_shield_active ? "#00D084" : "#FF3B30"}
-                                            size={48}
-                                            strokeWidth={4}
-                                        >
-                                            <Shield size={16} className={llcData?.privacy_shield_active ? "text-[#00D084]" : "text-[#FF3B30]"} />
-                                        </StatusRing>
-                                        {llcData?.privacy_shield_active ? "Engaged" : "Inactive"}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Statutory Health</span>
-                                    <span className="text-base font-bold text-[#0A0A0B] flex items-center gap-4">
-                                        <StatusRing 
-                                            percentage={compliance.healthScore}
-                                            color={compliance.pulseColor}
-                                            size={48}
-                                            strokeWidth={4}
-                                            pulse={compliance.healthScore < 100}
-                                        >
-                                            <Activity size={16} style={{ color: compliance.pulseColor }} />
-                                        </StatusRing>
-                                        {compliance.healthScore}% Integrity
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Action Area */}
-                            <div className="space-y-8">
-                                <div 
-                                onClick={() => setIsBlueprintOpen(true)}
-                                className="p-8 bg-[#FAFAFA] rounded-3xl border border-gray-100 shadow-sm flex items-center justify-between transition-all hover:shadow-md hover:border-gray-200 cursor-pointer group"
-                                >
-                                    <div>
-                                        <h3 className="text-xl font-black uppercase tracking-tight text-[#0A0A0B] mb-1 group-hover:text-[#00D084] transition-colors">Company Profile</h3>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                            Manage Documents & Details
-                                        </p>
-                                    </div>
-                                    <button className="bg-[#0A0A0B] text-white px-8 py-4 rounded-2xl font-bold text-sm hover:scale-105 transition-transform shadow-lg flex items-center gap-2 group-hover:bg-[#00D084]">
-                                        Manage <ChevronRight size={16} />
-                                    </button>
-                                </div>
-
-                                <div className="grid md:grid-cols-2 gap-8">
-                                    <div 
-                                        onClick={() => setIsSuccessionOpen(true)}
-                                        className="p-8 bg-[#0A0A0B] text-white rounded-3xl shadow-xl flex flex-col justify-between relative overflow-hidden group cursor-pointer hover:scale-[1.02] transition-transform"
-                                    >
-                                        <div className="absolute top-0 right-0 p-32 bg-gradient-to-br from-[#d4af37]/20 to-transparent rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none group-hover:bg-[#d4af37]/30 transition-colors"></div>
-                                        <div>
-                                            <div className="flex items-center gap-2 text-[#d4af37] text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-                                                <Clock size={12} /> Beneficiary Protection
-                                            </div>
-                                            <h3 className="text-2xl font-black uppercase tracking-tight mb-2 group-hover:text-[#d4af37] transition-colors">Succession Plan</h3>
-                                            <p className="text-gray-400 text-xs font-medium leading-relaxed max-w-[80%]">
-                                                Your corporate will is active. Next verification check in:
-                                            </p>
-                                        </div>
-                                        <div className="mt-8 font-mono text-3xl font-bold tracking-widest text-[#d4af37] opacity-90">
-                                            364:23:59:59
-                                        </div>
-                                    </div>
-
-                                    <div className="p-8 bg-white rounded-3xl border border-gray-100 shadow-xl flex items-center gap-8 group hover:scale-[1.02] transition-transform cursor-pointer">
-                                        <StatusRing 
-                                            percentage={compliance.healthScore}
-                                            color={compliance.pulseColor}
-                                            size={100}
-                                            strokeWidth={8}
-                                            pulse={compliance.healthScore < 100}
-                                        >
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-xl font-black" style={{ color: compliance.pulseColor }}>{compliance.healthScore}%</span>
-                                                <span className="text-[8px] font-black uppercase text-gray-400">Health</span>
-                                            </div>
-                                        </StatusRing>
-                                        <div className="flex-1">
-                                            <h3 className="text-xl font-black uppercase tracking-tight text-[#0A0A0B] mb-1">Statutory Pulse</h3>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
-                                                {compliance.daysToDeadline ? `Deadline: ${compliance.daysToDeadline} Days` : "All filings active"}
-                                            </p>
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-2 h-2 rounded-full animate-pulse`} style={{ backgroundColor: compliance.pulseColor }}></div>
-                                                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Live Monitoring</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </>
+                        </div>
                     )}
+
+                    {/* Status Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="bg-[#FAFAFA] border border-gray-100 rounded-[32px] p-8 space-y-4 shadow-sm">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Statutory Health</span>
+                                <Activity size={16} className="text-gray-200" />
+                            </div>
+                            <div className="flex items-center gap-6">
+                                <StatusRing 
+                                    percentage={compliance.healthScore} color={compliance.pulseColor}
+                                    size={72} strokeWidth={6} pulse={compliance.healthScore < 100}
+                                >
+                                    <span className="text-xs font-black" style={{ color: compliance.pulseColor }}>{compliance.healthScore}%</span>
+                                </StatusRing>
+                                <div>
+                                    <p className="text-sm font-black uppercase tracking-tight text-[#0A0A0B]">
+                                        {compliance.healthScore === 100 ? 'In Good Standing' : 'Maintenance Required'}
+                                    </p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
+                                        {compliance.daysToDeadline ? `${compliance.daysToDeadline} days to report` : 'No upcoming filings'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div onClick={() => setIsSuccessionOpen(true)} className="p-8 bg-[#0A0A0B] text-white rounded-[32px] shadow-xl hover:scale-[1.02] transition-transform cursor-pointer overflow-hidden relative">
+                            <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-[#d4af37]/20 blur-[80px]"></div>
+                            <div className="flex items-center justify-between relative z-10">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#d4af37]">Continuity Plan</span>
+                                <Clock size={16} className="text-[#d4af37] opacity-40" />
+                            </div>
+                            <div className="space-y-1 relative z-10 pt-4">
+                                <p className="text-xl font-black uppercase tracking-tight text-[#d4af37]">Active Protection</p>
+                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2">364:23:59:59</p>
+                            </div>
+                        </div>
+
+                        <div className="p-8 bg-white border border-gray-100 rounded-[32px] shadow-sm flex flex-col justify-between">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Privacy Armor</span>
+                                <Shield size={16} className="text-[#00D084] opacity-20" />
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-[#00D084]/10 flex items-center justify-center text-[#00D084]">
+                                    <Shield size={20} />
+                                </div>
+                                <p className="text-sm font-black uppercase tracking-tight text-[#0A0A0B]">Registered Agent <br/><span className="text-[10px] text-[#00D084]">Masked • DeLand FL</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Action Console */}
+                    <div className="space-y-6 pt-4 border-t border-gray-50">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-300 text-center">Sovereign Action Console</h3>
+                        <ActionConsole 
+                            status={currentLlc?.llc_status}
+                            health={compliance.healthScore}
+                            onAction={handleAction} 
+                        />
+                    </div>
                 </div>
             )}
         </main>
 
-        {/* Sidebar Sentinel */}
-        <aside className="w-full md:w-[380px] bg-[#F8F9FB]/70 backdrop-blur-3xl border-l border-[#F0F2F5] p-10 flex flex-col">
-            <div className="flex items-center justify-between mb-10">
-                <div className="text-[0.55rem] font-black uppercase tracking-[0.6em] text-[#0A0A0B] opacity-20">
-                    Activity Log
-                </div>
-                <button onClick={handleLogout} className="text-gray-400 hover:text-red-500 transition-colors">
+        {/* Sidebar */}
+        <aside className="w-full md:w-[400px] bg-[#F8F9FB] border-l border-[#F0F2F5] p-12 flex flex-col">
+            <div className="flex items-center justify-between mb-12">
+                <div className="text-[0.6rem] font-black uppercase tracking-[0.6em] text-[#0A0A0B] opacity-20">Live Stream</div>
+                <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())} className="text-gray-300 hover:text-red-500 transition-colors">
                     <LogOut size={16} />
                 </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+            <div className="flex-1 overflow-y-auto space-y-8">
                 {activityLog.map((log) => (
-                    <div key={log.id} className="bg-white p-6 rounded-[20px] shadow-[0_8px_24px_rgba(0,0,0,0.02)] border border-gray-100 flex gap-4 items-start">
-                        <div className="w-8 h-8 bg-[#F5F5F7] rounded-lg flex items-center justify-center opacity-50 shrink-0">
-                            <log.icon size={16} className="text-[#0A0A0B]" />
-                        </div>
-                        <div>
-                            <p className="text-xs font-bold text-[#0A0A0B] leading-snug mb-1">{log.message}</p>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{log.time}</p>
-                        </div>
+                    <div key={log.id} className="relative pl-8 border-l border-gray-100">
+                        <div className="absolute left-[-4.5px] top-1.5 w-2 h-2 rounded-full border border-white shadow-sm" style={{ backgroundColor: log.message.includes('Required') ? '#FF3B30' : '#0A0A0B' }}></div>
+                        <p className="text-xs font-black text-[#0A0A0B] mb-1">{log.message}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{log.time}</p>
                     </div>
                 ))}
-
-                <div className="bg-white/50 p-6 rounded-[20px] border border-dashed border-gray-200 flex items-center justify-center gap-2 text-gray-300 text-xs font-bold uppercase tracking-widest">
-                    <Activity size={14} /> End of Stream
-                </div>
             </div>
 
-            <div className="pt-8 border-t border-gray-100 mt-auto">
-                <div className="flex items-center gap-4">
-                     <div className="w-10 h-10 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full"></div>
-                     <div>
-                         <p className={`text-xs font-black text-[#0A0A0B] transition-all duration-300 ${privacyMode ? 'blur-sm select-none' : ''}`}>
-                             {user?.email || "Founder"}
-                         </p>
-                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Administrator</p>
-                     </div>
-                     <div className="flex items-center gap-2 ml-auto">
-                        <button 
-                            onClick={() => {
-                                setLlcData(null);
-                                setShowDesignation(true);
-                            }}
-                            title="Reset to Setup (Dev)"
-                            className="text-gray-300 hover:text-red-500 cursor-pointer transition-colors"
-                        >
-                            <RefreshCw size={14} />
-                        </button>
-                        <Settings size={18} className="text-gray-300 hover:text-[#0A0A0B] cursor-pointer transition-colors" />
-                     </div>
+            {/* Intelligence Telemetry (subtle) */}
+            <div className="py-6 border-t border-gray-100 space-y-3">
+                <p className="text-[9px] font-black uppercase tracking-widest text-gray-300">View Intelligence</p>
+                <div className="flex gap-2 flex-wrap">
+                    {Object.entries(viewIntel.scores).map(([view, score]) => (
+                        <div key={view} className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${
+                            viewIntel.activeView === view 
+                                ? 'bg-[#0A0A0B] text-white border-transparent' 
+                                : 'bg-white text-gray-400 border-gray-100'
+                        }`}>
+                            {view}: {score}
+                        </div>
+                    ))}
+                </div>
+                <p className="text-[9px] text-gray-300">
+                    {viewIntel.isOverridden ? '⚡ Manual Override' : '🤖 Auto-Selected'} 
+                    {' '}• Logins: {viewIntel.signals.loginCount} • Actions: {viewIntel.signals.recentActions}
+                </p>
+            </div>
+
+            <div className="pt-6 border-t border-gray-100">
+                <div className="bg-[#0A0A0B] rounded-[32px] p-8 text-white">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center"><Settings size={18} /></div>
+                        <div>
+                            <p className="text-xs font-black uppercase tracking-widest">{user?.email ? user.email.split('@')[0] : "Founder"}</p>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Sovereign Admin</p>
+                        </div>
+                    </div>
+                    <button onClick={() => window.location.reload()} className="w-full py-3 bg-white/5 hover:bg-white hover:text-[#0A0A0B] border border-white/10 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all">Sync System</button>
                 </div>
             </div>
         </aside>
-
       </div>
+
+      <FoundersBlueprint isOpen={isBlueprintOpen} onClose={() => setIsBlueprintOpen(false)} llcData={currentLlc} />
+      <SuccessionSuite isOpen={isSuccessionOpen} onClose={() => setIsSuccessionOpen(false)} companyName={currentLlc?.llc_name} user={user} />
+      {showDesignation && <DesignationProtocol onComplete={(data) => { setActiveLlc(data); setShowDesignation(false); }} />}
     </div>
-      {/* MODALS */}
-      <FoundersBlueprint 
-          isOpen={isBlueprintOpen} 
-          onClose={() => setIsBlueprintOpen(false)} 
-          llcData={llcData} 
-      />
-
-      <SuccessionSuite 
-          isOpen={isSuccessionOpen} 
-          onClose={() => setIsSuccessionOpen(false)} 
-          companyName={llcData?.llc_name} 
-          user={user}
-      />
-
-      {showDesignation && (
-          <DesignationProtocol 
-              onComplete={(data) => {
-                  setLlcData(data);
-                  setShowDesignation(false);
-              }}
-          />
-      )}
-    </>
   );
 };
 

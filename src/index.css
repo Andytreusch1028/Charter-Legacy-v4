@@ -64,4 +64,14 @@
     background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
   }
+
+  @keyframes scan-beam {
+    0% { top: -10%; }
+    50% { top: 110%; }
+    100% { top: -10%; }
+  }
+
+  .animate-scan-beam {
+    animation: scan-beam 3s linear infinite;
+  }
 }

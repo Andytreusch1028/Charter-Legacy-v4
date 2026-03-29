@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 
 /**
@@ -80,7 +80,7 @@ export const useStaffRa = () => {
             if (auditData) setGlobalAuditLogs(auditData);
             if (docsData) setGlobalDocuments(docsData);
             if (clientsData) setClientDirectory(clientsData);
-            if (llcDirectory) setLlcDirectory(llcsData);
+            if (llcsData) setLlcDirectory(llcsData);
 
             if (settingsData) {
                 const settingsMap = settingsData.reduce((acc, s) => {
@@ -212,6 +212,7 @@ export const useStaffRa = () => {
             await supabase.from('ra_document_audit').insert({
                 user_id: clientUserId,
                 document_id: docData.id,
+                llc_id: llcId || null,
                 action: 'DOCUMENT_UPLOADED_BY_STAFF',
                 actor_type: 'CHARTER_ADMIN',
                 actor_email: user.email,
@@ -226,7 +227,7 @@ export const useStaffRa = () => {
              console.error("[Staff RA Data Error] Upload failure:", err);
              throw err;
          }
-    }, [supabase, fetchStaffRaData]);
+    }, [fetchStaffRaData]);
 
     const updateRaSettings = useCallback(async (key, value) => {
         try {
@@ -250,6 +251,26 @@ export const useStaffRa = () => {
         }
     }, []);
 
+    const systemMetrics = useMemo(() => {
+        const hasData = globalAuditLogs.length > 0 || globalDocuments.length > 0;
+        const recentSuccess = globalAuditLogs.slice(0, 5).filter(l => l.outcome === 'SUCCESS').length;
+        
+        const maxThreads = parseInt(raSettings.max_auth_threads) || 8;
+        return {
+            bridge: hasData ? 'Connected' : 'Disconnected',
+            compliance: recentSuccess >= 3 ? 'Online' : 'Degraded',
+            ocr: globalDocuments.some(d => d.status === 'Pending') ? 'Processing' : 'Standby',
+            capacity: Math.max(70, 100 - (globalDocuments.filter(d => d.status === 'Pending').length * 5)),
+            authThreads: Math.min(maxThreads, 
+                (new Set(globalAuditLogs
+                    .filter(log => new Date(log.created_at) > new Date(Date.now() - 30 * 60 * 1000))
+                    .map(log => log.user_id)
+                ).size + globalDocuments.filter(d => d.status === 'Pending').length) || 1
+            ),
+            maxThreads: maxThreads
+        };
+    }, [globalAuditLogs, globalDocuments, clientDirectory, raSettings]);
+
     return {
         loading,
         globalThreads,
@@ -259,6 +280,7 @@ export const useStaffRa = () => {
         llcDirectory,
         raSettings,
         threadMessages,
+        systemMetrics,
         fetchStaffRaData,
         fetchThreadMessages,
         sendStaffMessage,

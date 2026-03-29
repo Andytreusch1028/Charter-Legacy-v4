@@ -6,6 +6,7 @@ app/config.js
 # Environment files
 .env
 .env.local
+axonix-agent/.env
 
 # Node modules
 node_modules/

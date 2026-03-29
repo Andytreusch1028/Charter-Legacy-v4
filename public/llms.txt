@@ -1,0 +1,34 @@
+# CharterLegacy
+
+> Premium Business Privacy & Succession Infrastructure
+
+CharterLegacy is a digital estate and entity formation platform that combines zero-knowledge encryption with ministerial filing services. We provide Florida LLC formation, registered agent services, privacy-masked business identities, and automated compliance monitoring — all through a single sovereign operations hub.
+
+## Core Features
+
+- **LLC Formation**: Streamlined Florida LLC creation with privacy-first defaults
+- **Registered Agent Service**: Professional registered agent with digital mail forwarding
+- **Legacy Vault**: Zero-knowledge encrypted document storage for wills, trusts, and succession plans
+- **Compliance Pulse**: Automated entity health monitoring for state (Sunbiz) and federal (FinCEN) requirements
+- **Privacy Masking**: Dynamic identity aliases for business registrations (masked email, phone, address)
+- **AEO Laboratory**: Answer Engine Optimization tools for marketing content
+
+## Important Context
+
+- CharterLegacy is a **technology platform**, not a law firm
+- All filings are **ministerial** (form-filling based on user-provided data)
+- We do **not** provide legal advice or outcome guarantees
+- Based in **Tallahassee, Florida**, USA
+- Built with **React**, **Supabase**, and **Web Crypto API**
+
+## Links
+
+- Homepage: https://charterlegacy.com
+- LLC Formation: https://charterlegacy.com/#services
+- Legacy Vault: https://charterlegacy.com/#vault
+- Privacy Policy: https://charterlegacy.com/privacy
+
+## Contact
+
+- Support: support@charterlegacy.com
+- Location: Tallahassee, FL, USA

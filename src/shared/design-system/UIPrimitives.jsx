@@ -68,3 +68,54 @@ export const PremiumToast = ({ message, type, onDismiss }) => {
         </div>
     );
 };
+/**
+ * PrivateSovereignButton
+ * A high-fidelity, interactive button for critical corporate actions.
+ */
+export const SovereignButton = ({ onClick, label, icon: Icon, description, variant = 'primary' }) => (
+    <button 
+        onClick={onClick}
+        className={`group relative p-6 rounded-[28px] border transition-all duration-500 flex items-center gap-6 text-left overflow-hidden ${
+            variant === 'primary' 
+                ? 'bg-[#0A0A0B] border-white/10 hover:border-emerald-500/30' 
+                : 'bg-white/5 border-white/5 hover:border-white/20'
+        }`}
+    >
+        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${
+            variant === 'primary' 
+                ? 'bg-white/5 text-gray-400 group-hover:bg-emerald-500 group-hover:text-white' 
+                : 'bg-white/5 text-gray-400 group-hover:bg-white group-hover:text-black'
+        }`}>
+            {Icon && <Icon size={24} strokeWidth={1.5} />}
+        </div>
+        <div className="flex-1">
+            <h4 className="text-[13px] font-black uppercase tracking-widest text-white mb-0.5">{label}</h4>
+            <p className="text-[11px] text-gray-500 font-medium leading-tight">{description}</p>
+        </div>
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-4 group-hover:translate-x-0">
+            <ChevronRight size={18} className="text-gray-400" />
+        </div>
+    </button>
+);
+
+/**
+ * ActionBadge
+ * A context-aware status indicator for the Empire Grid.
+ */
+export const ActionBadge = ({ status }) => {
+    const configs = {
+        'Active': { color: 'emerald', text: 'Operational' },
+        'Pending': { color: 'amber', text: 'Processing' },
+        'Action Required': { color: 'red', text: 'Maintenance' },
+        'Dissolved': { color: 'gray', text: 'Inactive' }
+    };
+    const c = configs[status] || configs['Active'];
+    
+    return (
+        <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border bg-${c.color}-500/10 text-${c.color}-400 border-${c.color}-500/20 whitespace-nowrap`}>
+            {c.text}
+        </div>
+    );
+};
+
+import { ChevronRight } from 'lucide-react';

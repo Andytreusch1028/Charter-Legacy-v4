@@ -136,3 +136,70 @@ export const triggerRecencyPulse = async (entities) => {
         last_refreshed: new Date().toISOString()
     }));
 };
+
+/**
+ * GEO METRICS (Generative Engine Optimization)
+ * Composite scoring for AI Answer Engine visibility.
+ */
+export const GEO_METRICS = {
+    // Composite GEO Score: weighted blend of all metrics
+    calculateGEOScore: (pageData) => {
+        const citation = AEO_METRICS.calculateCitationProbability(pageData);
+        const recency = AEO_METRICS.calculateRecencyScore(pageData.lastModified || new Date().toISOString());
+        const consensus = AEO_METRICS.calculateConsensusHealth(pageData.externalMentions || []);
+        
+        // GEO Weights: Citation (40%), Recency (30%), Consensus (30%)
+        return Math.round(citation * 0.4 + recency * 0.3 + consensus * 0.3);
+    },
+
+    // Validates llms.txt structure
+    checkLlmsTxtHealth: (content) => {
+        if (!content) return { score: 0, issues: ['File not found'] };
+        const issues = [];
+        
+        if (!content.startsWith('#')) issues.push('Missing title heading');
+        if (!content.includes('## Core Features')) issues.push('Missing Core Features section');
+        if (!content.includes('## Links')) issues.push('Missing Links section');
+        if (content.length < 200) issues.push('Content too short (< 200 chars)');
+        if (content.length > 5000) issues.push('Content too long (> 5000 chars)');
+        
+        const score = Math.max(0, 100 - (issues.length * 20));
+        return { score, issues };
+    },
+
+    // Checks robots.txt for AI bot access
+    checkBotAccessScore: (content) => {
+        if (!content) return { score: 0, bots: {} };
+        
+        const bots = {
+            GPTBot: content.includes('GPTBot') && !content.includes('Disallow: /\n'),
+            'Claude-Web': content.includes('Claude-Web'),
+            PerplexityBot: content.includes('PerplexityBot'),
+            'Google-Extended': content.includes('Google-Extended'),
+            'Anthropic-AI': content.includes('Anthropic-AI')
+        };
+        
+        const allowed = Object.values(bots).filter(Boolean).length;
+        const score = Math.round((allowed / Object.keys(bots).length) * 100);
+        
+        return { score, bots };
+    },
+
+    // Schema coverage checker
+    checkSchemaCoverage: () => {
+        const schemas = document.querySelectorAll('script[type="application/ld+json"]');
+        const types = [];
+        schemas.forEach(s => {
+            try {
+                const data = JSON.parse(s.textContent);
+                types.push(data['@type']);
+            } catch (e) { /* skip invalid */ }
+        });
+        
+        const required = ['Organization', 'FAQPage', 'HowTo', 'Service'];
+        const covered = required.filter(r => types.includes(r));
+        const score = Math.round((covered.length / required.length) * 100);
+        
+        return { score, covered, missing: required.filter(r => !types.includes(r)), total: types.length };
+    }
+};

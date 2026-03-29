@@ -10,10 +10,11 @@ import { useRaData } from './hooks/useRaData';
 import RaDashboardSector from './sectors/ra/RaDashboardSector';
 import RaVaultSector from './sectors/ra/RaVaultSector';
 import RaConfigSector from './sectors/ra/RaConfigSector';
+import RaSupportSector from './sectors/ra/RaSupportSector';
+import RaAuditSector from './sectors/ra/RaAuditSector';
 
 // Modals
 import ComplianceStatusModal from './components/ComplianceStatusModal';
-import RADocumentAuditLog from './components/RADocumentAuditLog';
 import { PremiumToast } from './shared/design-system/UIPrimitives';
 
 /**
@@ -26,23 +27,40 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
     const [toast, setToast] = useState(null);
     const [isComplianceOpen, setIsComplianceOpen] = useState(false);
     
-    // Custom Hook (Decoupled Logic)
     const { 
         loading, 
         documents, 
         config, 
+        inquiries,
+        auditLogs,
+        threadMessages,
         fetchRaData, 
         updateConfig,
-        setDocuments
+        setDocuments,
+        fetchThreadMessages,
+        sendMessage,
+        createThread,
+        logRaEvent
     } = useRaData();
 
     // Initial Sync
     useEffect(() => {
         fetchRaData();
     }, [fetchRaData]);
-
     const handleAction = async (action, docIds) => {
-        // Implementation remains similar to original but could be hooked or sectorized
+        if (!docIds || docIds.length === 0) return;
+        
+        if (action === 'view' || action === 'download') {
+            const doc = documents.find(d => d.id === docIds[0]);
+            if (doc && doc.download_url) {
+                window.open(doc.download_url, '_blank');
+                return;
+            } else {
+                setToast({ message: 'Document preview URL not available.', type: 'error' });
+                return;
+            }
+        }
+
         console.log(`[RA Console] Executing action: ${action} on ${docIds.length} items`);
         setToast({ message: `${action.charAt(0).toUpperCase() + action.slice(1)} initiated successfully.`, type: 'success' });
     };
@@ -147,7 +165,27 @@ const RegisteredAgentConsole = ({ isModal = false, onClose, initialTab = 'dashbo
                                 triggerFireDrill={triggerFireDrill}
                             />
                         )}
-                        {/* Support, Shield, Audit would follow same pattern */}
+                        {activeTab === 'inquiries' && (
+                            <RaSupportSector
+                                inquiries={inquiries}
+                                threadMessages={threadMessages}
+                                fetchThreadMessages={fetchThreadMessages}
+                                sendMessage={sendMessage}
+                                createThread={createThread}
+                            />
+                        )}
+                        {activeTab === 'audit' && (
+                            <RaAuditSector
+                                auditLogs={auditLogs}
+                            />
+                        )}
+                        {activeTab === 'shield' && (
+                             <div className="p-12 border border-white/5 rounded-[24px] text-center bg-white/[0.02]">
+                                <Shield className="mx-auto text-emerald-500 mb-4" size={32} />
+                                <h3 className="text-white font-medium mb-1">Privacy Shield Active</h3>
+                                <p className="text-sm text-gray-500">Your home address is fully protected by the DeLand Hub Node.</p>
+                            </div>
+                        )}
                    </div>
                 </main>
             </div>

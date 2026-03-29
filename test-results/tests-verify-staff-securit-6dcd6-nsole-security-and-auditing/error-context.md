@@ -1,0 +1,1159 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e8]
+        - generic [ref=e10]:
+          - generic [ref=e11]: Charter Staff
+          - text: Control Tower v4.5
+      - navigation [ref=e12]:
+        - button "Overview" [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]:
+            - img [ref=e15]
+            - generic [ref=e17]: Overview
+        - button "Manual Filings 10" [ref=e18] [cursor=pointer]:
+          - generic [ref=e19]:
+            - img [ref=e20]
+            - generic [ref=e22]: Manual Filings
+          - generic [ref=e23]: "10"
+        - button "SEO Matrix" [ref=e24] [cursor=pointer]:
+          - generic [ref=e25]:
+            - img [ref=e26]
+            - generic [ref=e29]: SEO Matrix
+        - button "AEO Laboratory" [ref=e30] [cursor=pointer]:
+          - generic [ref=e31]:
+            - img [ref=e32]
+            - generic [ref=e34]: AEO Laboratory
+        - button "Client Directory" [ref=e35] [cursor=pointer]:
+          - generic [ref=e36]:
+            - img [ref=e37]
+            - generic [ref=e42]: Client Directory
+        - button "Terminal Logs" [ref=e43] [cursor=pointer]:
+          - generic [ref=e44]:
+            - img [ref=e45]
+            - generic [ref=e47]: Terminal Logs
+        - button "System Hub" [ref=e48] [cursor=pointer]:
+          - generic [ref=e49]:
+            - img [ref=e50]
+            - generic [ref=e53]: System Hub
+    - generic [ref=e55]:
+      - generic [ref=e56]: S
+      - generic [ref=e57]:
+        - paragraph [ref=e58]: Staff Member
+        - paragraph [ref=e59]: Executive Privileges
+  - main [ref=e60]:
+    - generic [ref=e61]:
+      - heading "users" [level=2] [ref=e63]
+      - generic [ref=e64]:
+        - generic [ref=e67]: System Online
+        - button [ref=e68] [cursor=pointer]:
+          - img [ref=e69]
+    - generic [ref=e73]:
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - heading "Client Directory" [level=3] [ref=e76]
+          - paragraph [ref=e77]: Authorized Access Only
+        - generic [ref=e78]:
+          - img [ref=e79]
+          - textbox "Search by name or email..." [ref=e82]: a
+      - generic [ref=e83]:
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]: A
+            - generic [ref=e87]: Active
+          - generic [ref=e89]:
+            - paragraph [ref=e90]: Alex Founder
+            - paragraph [ref=e91]: alex.founder@charterlegacy.com
+          - generic [ref=e92]:
+            - generic [ref=e93]:
+              - paragraph [ref=e94]: Active LLCs
+              - paragraph [ref=e95]: "10"
+            - generic [ref=e96]:
+              - paragraph [ref=e97]: Artifacts
+              - paragraph [ref=e98]: ACTIVE
+          - generic [ref=e99]:
+            - button "Vault" [ref=e100] [cursor=pointer]:
+              - img [ref=e101]
+              - text: Vault
+            - button "Audit" [ref=e103] [cursor=pointer]:
+              - img [ref=e104]
+              - text: Audit
+        - generic [ref=e107]:
+          - generic [ref=e108]:
+            - generic [ref=e109]: R
+            - generic [ref=e110]: Active
+          - generic [ref=e112]:
+            - paragraph [ref=e113]: Richard Rodriguez
+            - paragraph [ref=e114]: richard.rodriguez.2@example.com
+          - generic [ref=e115]:
+            - generic [ref=e116]:
+              - paragraph [ref=e117]: Active LLCs
+              - paragraph [ref=e118]: "2"
+            - generic [ref=e119]:
+              - paragraph [ref=e120]: Artifacts
+              - paragraph [ref=e121]: ACTIVE
+          - generic [ref=e122]:
+            - button "Vault" [ref=e123] [cursor=pointer]:
+              - img [ref=e124]
+              - text: Vault
+            - button "Audit" [ref=e126] [cursor=pointer]:
+              - img [ref=e127]
+              - text: Audit
+        - generic [ref=e130]:
+          - generic [ref=e131]:
+            - generic [ref=e132]: P
+            - generic [ref=e133]: Active
+          - generic [ref=e135]:
+            - paragraph [ref=e136]: Patricia Moore
+            - paragraph [ref=e137]: patricia.moore.3@example.com
+          - generic [ref=e138]:
+            - generic [ref=e139]:
+              - paragraph [ref=e140]: Active LLCs
+              - paragraph [ref=e141]: "2"
+            - generic [ref=e142]:
+              - paragraph [ref=e143]: Artifacts
+              - paragraph [ref=e144]: ACTIVE
+          - generic [ref=e145]:
+            - button "Vault" [ref=e146] [cursor=pointer]:
+              - img [ref=e147]
+              - text: Vault
+            - button "Audit" [ref=e149] [cursor=pointer]:
+              - img [ref=e150]
+              - text: Audit
+        - generic [ref=e153]:
+          - generic [ref=e154]:
+            - generic [ref=e155]: R
+            - generic [ref=e156]: Active
+          - generic [ref=e158]:
+            - paragraph [ref=e159]: Richard Taylor
+            - paragraph [ref=e160]: richard.taylor.4@example.com
+          - generic [ref=e161]:
+            - generic [ref=e162]:
+              - paragraph [ref=e163]: Active LLCs
+              - paragraph [ref=e164]: "1"
+            - generic [ref=e165]:
+              - paragraph [ref=e166]: Artifacts
+              - paragraph [ref=e167]: ACTIVE
+          - generic [ref=e168]:
+            - button "Vault" [ref=e169] [cursor=pointer]:
+              - img [ref=e170]
+              - text: Vault
+            - button "Audit" [ref=e172] [cursor=pointer]:
+              - img [ref=e173]
+              - text: Audit
+        - generic [ref=e176]:
+          - generic [ref=e177]:
+            - generic [ref=e178]: R
+            - generic [ref=e179]: Active
+          - generic [ref=e181]:
+            - paragraph [ref=e182]: Richard Jones
+            - paragraph [ref=e183]: richard.jones.5@example.com
+          - generic [ref=e184]:
+            - generic [ref=e185]:
+              - paragraph [ref=e186]: Active LLCs
+              - paragraph [ref=e187]: "2"
+            - generic [ref=e188]:
+              - paragraph [ref=e189]: Artifacts
+              - paragraph [ref=e190]: ACTIVE
+          - generic [ref=e191]:
+            - button "Vault" [ref=e192] [cursor=pointer]:
+              - img [ref=e193]
+              - text: Vault
+            - button "Audit" [ref=e195] [cursor=pointer]:
+              - img [ref=e196]
+              - text: Audit
+        - generic [ref=e199]:
+          - generic [ref=e200]:
+            - generic [ref=e201]: S
+            - generic [ref=e202]: Active
+          - generic [ref=e204]:
+            - paragraph [ref=e205]: Susan Miller
+            - paragraph [ref=e206]: susan.miller.6@example.com
+          - generic [ref=e207]:
+            - generic [ref=e208]:
+              - paragraph [ref=e209]: Active LLCs
+              - paragraph [ref=e210]: "1"
+            - generic [ref=e211]:
+              - paragraph [ref=e212]: Artifacts
+              - paragraph [ref=e213]: ACTIVE
+          - generic [ref=e214]:
+            - button "Vault" [ref=e215] [cursor=pointer]:
+              - img [ref=e216]
+              - text: Vault
+            - button "Audit" [ref=e218] [cursor=pointer]:
+              - img [ref=e219]
+              - text: Audit
+        - generic [ref=e222]:
+          - generic [ref=e223]:
+            - generic [ref=e224]: D
+            - generic [ref=e225]: Active
+          - generic [ref=e227]:
+            - paragraph [ref=e228]: David Rodriguez
+            - paragraph [ref=e229]: david.rodriguez.7@example.com
+          - generic [ref=e230]:
+            - generic [ref=e231]:
+              - paragraph [ref=e232]: Active LLCs
+              - paragraph [ref=e233]: "1"
+            - generic [ref=e234]:
+              - paragraph [ref=e235]: Artifacts
+              - paragraph [ref=e236]: ACTIVE
+          - generic [ref=e237]:
+            - button "Vault" [ref=e238] [cursor=pointer]:
+              - img [ref=e239]
+              - text: Vault
+            - button "Audit" [ref=e241] [cursor=pointer]:
+              - img [ref=e242]
+              - text: Audit
+        - generic [ref=e245]:
+          - generic [ref=e246]:
+            - generic [ref=e247]: J
+            - generic [ref=e248]: Active
+          - generic [ref=e250]:
+            - paragraph [ref=e251]: John Jones
+            - paragraph [ref=e252]: john.jones.8@example.com
+          - generic [ref=e253]:
+            - generic [ref=e254]:
+              - paragraph [ref=e255]: Active LLCs
+              - paragraph [ref=e256]: "2"
+            - generic [ref=e257]:
+              - paragraph [ref=e258]: Artifacts
+              - paragraph [ref=e259]: ACTIVE
+          - generic [ref=e260]:
+            - button "Vault" [ref=e261] [cursor=pointer]:
+              - img [ref=e262]
+              - text: Vault
+            - button "Audit" [ref=e264] [cursor=pointer]:
+              - img [ref=e265]
+              - text: Audit
+        - generic [ref=e268]:
+          - generic [ref=e269]:
+            - generic [ref=e270]: W
+            - generic [ref=e271]: Active
+          - generic [ref=e273]:
+            - paragraph [ref=e274]: William Miller
+            - paragraph [ref=e275]: william.miller.9@example.com
+          - generic [ref=e276]:
+            - generic [ref=e277]:
+              - paragraph [ref=e278]: Active LLCs
+              - paragraph [ref=e279]: "1"
+            - generic [ref=e280]:
+              - paragraph [ref=e281]: Artifacts
+              - paragraph [ref=e282]: ACTIVE
+          - generic [ref=e283]:
+            - button "Vault" [ref=e284] [cursor=pointer]:
+              - img [ref=e285]
+              - text: Vault
+            - button "Audit" [ref=e287] [cursor=pointer]:
+              - img [ref=e288]
+              - text: Audit
+        - generic [ref=e291]:
+          - generic [ref=e292]:
+            - generic [ref=e293]: J
+            - generic [ref=e294]: Active
+          - generic [ref=e296]:
+            - paragraph [ref=e297]: James Williams
+            - paragraph [ref=e298]: james.williams.10@example.com
+          - generic [ref=e299]:
+            - generic [ref=e300]:
+              - paragraph [ref=e301]: Active LLCs
+              - paragraph [ref=e302]: "1"
+            - generic [ref=e303]:
+              - paragraph [ref=e304]: Artifacts
+              - paragraph [ref=e305]: ACTIVE
+          - generic [ref=e306]:
+            - button "Vault" [ref=e307] [cursor=pointer]:
+              - img [ref=e308]
+              - text: Vault
+            - button "Audit" [ref=e310] [cursor=pointer]:
+              - img [ref=e311]
+              - text: Audit
+        - generic [ref=e314]:
+          - generic [ref=e315]:
+            - generic [ref=e316]: B
+            - generic [ref=e317]: Active
+          - generic [ref=e319]:
+            - paragraph [ref=e320]: Barbara Brown
+            - paragraph [ref=e321]: barbara.brown.11@example.com
+          - generic [ref=e322]:
+            - generic [ref=e323]:
+              - paragraph [ref=e324]: Active LLCs
+              - paragraph [ref=e325]: "1"
+            - generic [ref=e326]:
+              - paragraph [ref=e327]: Artifacts
+              - paragraph [ref=e328]: ACTIVE
+          - generic [ref=e329]:
+            - button "Vault" [ref=e330] [cursor=pointer]:
+              - img [ref=e331]
+              - text: Vault
+            - button "Audit" [ref=e333] [cursor=pointer]:
+              - img [ref=e334]
+              - text: Audit
+        - generic [ref=e337]:
+          - generic [ref=e338]:
+            - generic [ref=e339]: J
+            - generic [ref=e340]: Active
+          - generic [ref=e342]:
+            - paragraph [ref=e343]: John Brown
+            - paragraph [ref=e344]: john.brown.12@example.com
+          - generic [ref=e345]:
+            - generic [ref=e346]:
+              - paragraph [ref=e347]: Active LLCs
+              - paragraph [ref=e348]: "2"
+            - generic [ref=e349]:
+              - paragraph [ref=e350]: Artifacts
+              - paragraph [ref=e351]: ACTIVE
+          - generic [ref=e352]:
+            - button "Vault" [ref=e353] [cursor=pointer]:
+              - img [ref=e354]
+              - text: Vault
+            - button "Audit" [ref=e356] [cursor=pointer]:
+              - img [ref=e357]
+              - text: Audit
+        - generic [ref=e360]:
+          - generic [ref=e361]:
+            - generic [ref=e362]: T
+            - generic [ref=e363]: Active
+          - generic [ref=e365]:
+            - paragraph [ref=e366]: Thomas Hernandez
+            - paragraph [ref=e367]: thomas.hernandez.13@example.com
+          - generic [ref=e368]:
+            - generic [ref=e369]:
+              - paragraph [ref=e370]: Active LLCs
+              - paragraph [ref=e371]: "1"
+            - generic [ref=e372]:
+              - paragraph [ref=e373]: Artifacts
+              - paragraph [ref=e374]: ACTIVE
+          - generic [ref=e375]:
+            - button "Vault" [ref=e376] [cursor=pointer]:
+              - img [ref=e377]
+              - text: Vault
+            - button "Audit" [ref=e379] [cursor=pointer]:
+              - img [ref=e380]
+              - text: Audit
+        - generic [ref=e383]:
+          - generic [ref=e384]:
+            - generic [ref=e385]: D
+            - generic [ref=e386]: Active
+          - generic [ref=e388]:
+            - paragraph [ref=e389]: David Hernandez
+            - paragraph [ref=e390]: david.hernandez.14@example.com
+          - generic [ref=e391]:
+            - generic [ref=e392]:
+              - paragraph [ref=e393]: Active LLCs
+              - paragraph [ref=e394]: "1"
+            - generic [ref=e395]:
+              - paragraph [ref=e396]: Artifacts
+              - paragraph [ref=e397]: ACTIVE
+          - generic [ref=e398]:
+            - button "Vault" [ref=e399] [cursor=pointer]:
+              - img [ref=e400]
+              - text: Vault
+            - button "Audit" [ref=e402] [cursor=pointer]:
+              - img [ref=e403]
+              - text: Audit
+        - generic [ref=e406]:
+          - generic [ref=e407]:
+            - generic [ref=e408]: D
+            - generic [ref=e409]: Active
+          - generic [ref=e411]:
+            - paragraph [ref=e412]: David Rodriguez
+            - paragraph [ref=e413]: david.rodriguez.15@example.com
+          - generic [ref=e414]:
+            - generic [ref=e415]:
+              - paragraph [ref=e416]: Active LLCs
+              - paragraph [ref=e417]: "2"
+            - generic [ref=e418]:
+              - paragraph [ref=e419]: Artifacts
+              - paragraph [ref=e420]: ACTIVE
+          - generic [ref=e421]:
+            - button "Vault" [ref=e422] [cursor=pointer]:
+              - img [ref=e423]
+              - text: Vault
+            - button "Audit" [ref=e425] [cursor=pointer]:
+              - img [ref=e426]
+              - text: Audit
+        - generic [ref=e429]:
+          - generic [ref=e430]:
+            - generic [ref=e431]: R
+            - generic [ref=e432]: Active
+          - generic [ref=e434]:
+            - paragraph [ref=e435]: Robert Miller
+            - paragraph [ref=e436]: robert.miller.16@example.com
+          - generic [ref=e437]:
+            - generic [ref=e438]:
+              - paragraph [ref=e439]: Active LLCs
+              - paragraph [ref=e440]: "1"
+            - generic [ref=e441]:
+              - paragraph [ref=e442]: Artifacts
+              - paragraph [ref=e443]: NONE
+          - generic [ref=e444]:
+            - button "Vault" [ref=e445] [cursor=pointer]:
+              - img [ref=e446]
+              - text: Vault
+            - button "Audit" [ref=e448] [cursor=pointer]:
+              - img [ref=e449]
+              - text: Audit
+        - generic [ref=e452]:
+          - generic [ref=e453]:
+            - generic [ref=e454]: K
+            - generic [ref=e455]: Active
+          - generic [ref=e457]:
+            - paragraph [ref=e458]: Karen Wilson
+            - paragraph [ref=e459]: karen.wilson.17@example.com
+          - generic [ref=e460]:
+            - generic [ref=e461]:
+              - paragraph [ref=e462]: Active LLCs
+              - paragraph [ref=e463]: "1"
+            - generic [ref=e464]:
+              - paragraph [ref=e465]: Artifacts
+              - paragraph [ref=e466]: NONE
+          - generic [ref=e467]:
+            - button "Vault" [ref=e468] [cursor=pointer]:
+              - img [ref=e469]
+              - text: Vault
+            - button "Audit" [ref=e471] [cursor=pointer]:
+              - img [ref=e472]
+              - text: Audit
+        - generic [ref=e475]:
+          - generic [ref=e476]:
+            - generic [ref=e477]: J
+            - generic [ref=e478]: Active
+          - generic [ref=e480]:
+            - paragraph [ref=e481]: Jessica Rodriguez
+            - paragraph [ref=e482]: jessica.rodriguez.18@example.com
+          - generic [ref=e483]:
+            - generic [ref=e484]:
+              - paragraph [ref=e485]: Active LLCs
+              - paragraph [ref=e486]: "1"
+            - generic [ref=e487]:
+              - paragraph [ref=e488]: Artifacts
+              - paragraph [ref=e489]: ACTIVE
+          - generic [ref=e490]:
+            - button "Vault" [ref=e491] [cursor=pointer]:
+              - img [ref=e492]
+              - text: Vault
+            - button "Audit" [ref=e494] [cursor=pointer]:
+              - img [ref=e495]
+              - text: Audit
+        - generic [ref=e498]:
+          - generic [ref=e499]:
+            - generic [ref=e500]: J
+            - generic [ref=e501]: Active
+          - generic [ref=e503]:
+            - paragraph [ref=e504]: Jessica Jackson
+            - paragraph [ref=e505]: jessica.jackson.19@example.com
+          - generic [ref=e506]:
+            - generic [ref=e507]:
+              - paragraph [ref=e508]: Active LLCs
+              - paragraph [ref=e509]: "2"
+            - generic [ref=e510]:
+              - paragraph [ref=e511]: Artifacts
+              - paragraph [ref=e512]: NONE
+          - generic [ref=e513]:
+            - button "Vault" [ref=e514] [cursor=pointer]:
+              - img [ref=e515]
+              - text: Vault
+            - button "Audit" [ref=e517] [cursor=pointer]:
+              - img [ref=e518]
+              - text: Audit
+        - generic [ref=e521]:
+          - generic [ref=e522]:
+            - generic [ref=e523]: W
+            - generic [ref=e524]: Active
+          - generic [ref=e526]:
+            - paragraph [ref=e527]: William Miller
+            - paragraph [ref=e528]: william.miller.20@example.com
+          - generic [ref=e529]:
+            - generic [ref=e530]:
+              - paragraph [ref=e531]: Active LLCs
+              - paragraph [ref=e532]: "2"
+            - generic [ref=e533]:
+              - paragraph [ref=e534]: Artifacts
+              - paragraph [ref=e535]: NONE
+          - generic [ref=e536]:
+            - button "Vault" [ref=e537] [cursor=pointer]:
+              - img [ref=e538]
+              - text: Vault
+            - button "Audit" [ref=e540] [cursor=pointer]:
+              - img [ref=e541]
+              - text: Audit
+        - generic [ref=e544]:
+          - generic [ref=e545]:
+            - generic [ref=e546]: C
+            - generic [ref=e547]: Active
+          - generic [ref=e549]:
+            - paragraph [ref=e550]: Charles Martinez
+            - paragraph [ref=e551]: charles.martinez.21@example.com
+          - generic [ref=e552]:
+            - generic [ref=e553]:
+              - paragraph [ref=e554]: Active LLCs
+              - paragraph [ref=e555]: "1"
+            - generic [ref=e556]:
+              - paragraph [ref=e557]: Artifacts
+              - paragraph [ref=e558]: ACTIVE
+          - generic [ref=e559]:
+            - button "Vault" [ref=e560] [cursor=pointer]:
+              - img [ref=e561]
+              - text: Vault
+            - button "Audit" [ref=e563] [cursor=pointer]:
+              - img [ref=e564]
+              - text: Audit
+        - generic [ref=e567]:
+          - generic [ref=e568]:
+            - generic [ref=e569]: J
+            - generic [ref=e570]: Active
+          - generic [ref=e572]:
+            - paragraph [ref=e573]: John Smith
+            - paragraph [ref=e574]: john.smith.22@example.com
+          - generic [ref=e575]:
+            - generic [ref=e576]:
+              - paragraph [ref=e577]: Active LLCs
+              - paragraph [ref=e578]: "1"
+            - generic [ref=e579]:
+              - paragraph [ref=e580]: Artifacts
+              - paragraph [ref=e581]: NONE
+          - generic [ref=e582]:
+            - button "Vault" [ref=e583] [cursor=pointer]:
+              - img [ref=e584]
+              - text: Vault
+            - button "Audit" [ref=e586] [cursor=pointer]:
+              - img [ref=e587]
+              - text: Audit
+        - generic [ref=e590]:
+          - generic [ref=e591]:
+            - generic [ref=e592]: B
+            - generic [ref=e593]: Active
+          - generic [ref=e595]:
+            - paragraph [ref=e596]: Barbara Taylor
+            - paragraph [ref=e597]: barbara.taylor.23@example.com
+          - generic [ref=e598]:
+            - generic [ref=e599]:
+              - paragraph [ref=e600]: Active LLCs
+              - paragraph [ref=e601]: "1"
+            - generic [ref=e602]:
+              - paragraph [ref=e603]: Artifacts
+              - paragraph [ref=e604]: NONE
+          - generic [ref=e605]:
+            - button "Vault" [ref=e606] [cursor=pointer]:
+              - img [ref=e607]
+              - text: Vault
+            - button "Audit" [ref=e609] [cursor=pointer]:
+              - img [ref=e610]
+              - text: Audit
+        - generic [ref=e613]:
+          - generic [ref=e614]:
+            - generic [ref=e615]: R
+            - generic [ref=e616]: Active
+          - generic [ref=e618]:
+            - paragraph [ref=e619]: Robert Miller
+            - paragraph [ref=e620]: robert.miller.24@example.com
+          - generic [ref=e621]:
+            - generic [ref=e622]:
+              - paragraph [ref=e623]: Active LLCs
+              - paragraph [ref=e624]: "1"
+            - generic [ref=e625]:
+              - paragraph [ref=e626]: Artifacts
+              - paragraph [ref=e627]: ACTIVE
+          - generic [ref=e628]:
+            - button "Vault" [ref=e629] [cursor=pointer]:
+              - img [ref=e630]
+              - text: Vault
+            - button "Audit" [ref=e632] [cursor=pointer]:
+              - img [ref=e633]
+              - text: Audit
+        - generic [ref=e636]:
+          - generic [ref=e637]:
+            - generic [ref=e638]: J
+            - generic [ref=e639]: Active
+          - generic [ref=e641]:
+            - paragraph [ref=e642]: Jennifer Davis
+            - paragraph [ref=e643]: jennifer.davis.25@example.com
+          - generic [ref=e644]:
+            - generic [ref=e645]:
+              - paragraph [ref=e646]: Active LLCs
+              - paragraph [ref=e647]: "1"
+            - generic [ref=e648]:
+              - paragraph [ref=e649]: Artifacts
+              - paragraph [ref=e650]: NONE
+          - generic [ref=e651]:
+            - button "Vault" [ref=e652] [cursor=pointer]:
+              - img [ref=e653]
+              - text: Vault
+            - button "Audit" [ref=e655] [cursor=pointer]:
+              - img [ref=e656]
+              - text: Audit
+        - generic [ref=e659]:
+          - generic [ref=e660]:
+            - generic [ref=e661]: B
+            - generic [ref=e662]: Inactive
+          - generic [ref=e664]:
+            - paragraph [ref=e665]: Barbara Martin
+            - paragraph [ref=e666]: barbara.martin.26@example.com
+          - generic [ref=e667]:
+            - generic [ref=e668]:
+              - paragraph [ref=e669]: Active LLCs
+              - paragraph [ref=e670]: "0"
+            - generic [ref=e671]:
+              - paragraph [ref=e672]: Artifacts
+              - paragraph [ref=e673]: NONE
+          - generic [ref=e674]:
+            - button "Vault" [ref=e675] [cursor=pointer]:
+              - img [ref=e676]
+              - text: Vault
+            - button "Audit" [ref=e678] [cursor=pointer]:
+              - img [ref=e679]
+              - text: Audit
+        - generic [ref=e682]:
+          - generic [ref=e683]:
+            - generic [ref=e684]: D
+            - generic [ref=e685]: Inactive
+          - generic [ref=e687]:
+            - paragraph [ref=e688]: David Moore
+            - paragraph [ref=e689]: david.moore.27@example.com
+          - generic [ref=e690]:
+            - generic [ref=e691]:
+              - paragraph [ref=e692]: Active LLCs
+              - paragraph [ref=e693]: "0"
+            - generic [ref=e694]:
+              - paragraph [ref=e695]: Artifacts
+              - paragraph [ref=e696]: ACTIVE
+          - generic [ref=e697]:
+            - button "Vault" [ref=e698] [cursor=pointer]:
+              - img [ref=e699]
+              - text: Vault
+            - button "Audit" [ref=e701] [cursor=pointer]:
+              - img [ref=e702]
+              - text: Audit
+        - generic [ref=e705]:
+          - generic [ref=e706]:
+            - generic [ref=e707]: C
+            - generic [ref=e708]: Inactive
+          - generic [ref=e710]:
+            - paragraph [ref=e711]: Charles Taylor
+            - paragraph [ref=e712]: charles.taylor.28@example.com
+          - generic [ref=e713]:
+            - generic [ref=e714]:
+              - paragraph [ref=e715]: Active LLCs
+              - paragraph [ref=e716]: "0"
+            - generic [ref=e717]:
+              - paragraph [ref=e718]: Artifacts
+              - paragraph [ref=e719]: NONE
+          - generic [ref=e720]:
+            - button "Vault" [ref=e721] [cursor=pointer]:
+              - img [ref=e722]
+              - text: Vault
+            - button "Audit" [ref=e724] [cursor=pointer]:
+              - img [ref=e725]
+              - text: Audit
+        - generic [ref=e728]:
+          - generic [ref=e729]:
+            - generic [ref=e730]: J
+            - generic [ref=e731]: Inactive
+          - generic [ref=e733]:
+            - paragraph [ref=e734]: Jennifer Rodriguez
+            - paragraph [ref=e735]: jennifer.rodriguez.29@example.com
+          - generic [ref=e736]:
+            - generic [ref=e737]:
+              - paragraph [ref=e738]: Active LLCs
+              - paragraph [ref=e739]: "0"
+            - generic [ref=e740]:
+              - paragraph [ref=e741]: Artifacts
+              - paragraph [ref=e742]: NONE
+          - generic [ref=e743]:
+            - button "Vault" [ref=e744] [cursor=pointer]:
+              - img [ref=e745]
+              - text: Vault
+            - button "Audit" [ref=e747] [cursor=pointer]:
+              - img [ref=e748]
+              - text: Audit
+        - generic [ref=e751]:
+          - generic [ref=e752]:
+            - generic [ref=e753]: W
+            - generic [ref=e754]: Inactive
+          - generic [ref=e756]:
+            - paragraph [ref=e757]: William Hernandez
+            - paragraph [ref=e758]: william.hernandez.30@example.com
+          - generic [ref=e759]:
+            - generic [ref=e760]:
+              - paragraph [ref=e761]: Active LLCs
+              - paragraph [ref=e762]: "0"
+            - generic [ref=e763]:
+              - paragraph [ref=e764]: Artifacts
+              - paragraph [ref=e765]: ACTIVE
+          - generic [ref=e766]:
+            - button "Vault" [ref=e767] [cursor=pointer]:
+              - img [ref=e768]
+              - text: Vault
+            - button "Audit" [ref=e770] [cursor=pointer]:
+              - img [ref=e771]
+              - text: Audit
+        - generic [ref=e774]:
+          - generic [ref=e775]:
+            - generic [ref=e776]: J
+            - generic [ref=e777]: Inactive
+          - generic [ref=e779]:
+            - paragraph [ref=e780]: Jennifer Rodriguez
+            - paragraph [ref=e781]: jennifer.rodriguez.31@example.com
+          - generic [ref=e782]:
+            - generic [ref=e783]:
+              - paragraph [ref=e784]: Active LLCs
+              - paragraph [ref=e785]: "0"
+            - generic [ref=e786]:
+              - paragraph [ref=e787]: Artifacts
+              - paragraph [ref=e788]: NONE
+          - generic [ref=e789]:
+            - button "Vault" [ref=e790] [cursor=pointer]:
+              - img [ref=e791]
+              - text: Vault
+            - button "Audit" [ref=e793] [cursor=pointer]:
+              - img [ref=e794]
+              - text: Audit
+        - generic [ref=e797]:
+          - generic [ref=e798]:
+            - generic [ref=e799]: P
+            - generic [ref=e800]: Inactive
+          - generic [ref=e802]:
+            - paragraph [ref=e803]: Patricia Thomas
+            - paragraph [ref=e804]: patricia.thomas.32@example.com
+          - generic [ref=e805]:
+            - generic [ref=e806]:
+              - paragraph [ref=e807]: Active LLCs
+              - paragraph [ref=e808]: "0"
+            - generic [ref=e809]:
+              - paragraph [ref=e810]: Artifacts
+              - paragraph [ref=e811]: NONE
+          - generic [ref=e812]:
+            - button "Vault" [ref=e813] [cursor=pointer]:
+              - img [ref=e814]
+              - text: Vault
+            - button "Audit" [ref=e816] [cursor=pointer]:
+              - img [ref=e817]
+              - text: Audit
+        - generic [ref=e820]:
+          - generic [ref=e821]:
+            - generic [ref=e822]: J
+            - generic [ref=e823]: Inactive
+          - generic [ref=e825]:
+            - paragraph [ref=e826]: Jessica Wilson
+            - paragraph [ref=e827]: jessica.wilson.33@example.com
+          - generic [ref=e828]:
+            - generic [ref=e829]:
+              - paragraph [ref=e830]: Active LLCs
+              - paragraph [ref=e831]: "0"
+            - generic [ref=e832]:
+              - paragraph [ref=e833]: Artifacts
+              - paragraph [ref=e834]: ACTIVE
+          - generic [ref=e835]:
+            - button "Vault" [ref=e836] [cursor=pointer]:
+              - img [ref=e837]
+              - text: Vault
+            - button "Audit" [ref=e839] [cursor=pointer]:
+              - img [ref=e840]
+              - text: Audit
+        - generic [ref=e843]:
+          - generic [ref=e844]:
+            - generic [ref=e845]: J
+            - generic [ref=e846]: Inactive
+          - generic [ref=e848]:
+            - paragraph [ref=e849]: James Miller
+            - paragraph [ref=e850]: james.miller.34@example.com
+          - generic [ref=e851]:
+            - generic [ref=e852]:
+              - paragraph [ref=e853]: Active LLCs
+              - paragraph [ref=e854]: "0"
+            - generic [ref=e855]:
+              - paragraph [ref=e856]: Artifacts
+              - paragraph [ref=e857]: NONE
+          - generic [ref=e858]:
+            - button "Vault" [ref=e859] [cursor=pointer]:
+              - img [ref=e860]
+              - text: Vault
+            - button "Audit" [ref=e862] [cursor=pointer]:
+              - img [ref=e863]
+              - text: Audit
+        - generic [ref=e866]:
+          - generic [ref=e867]:
+            - generic [ref=e868]: K
+            - generic [ref=e869]: Inactive
+          - generic [ref=e871]:
+            - paragraph [ref=e872]: Karen Thomas
+            - paragraph [ref=e873]: karen.thomas.35@example.com
+          - generic [ref=e874]:
+            - generic [ref=e875]:
+              - paragraph [ref=e876]: Active LLCs
+              - paragraph [ref=e877]: "0"
+            - generic [ref=e878]:
+              - paragraph [ref=e879]: Artifacts
+              - paragraph [ref=e880]: NONE
+          - generic [ref=e881]:
+            - button "Vault" [ref=e882] [cursor=pointer]:
+              - img [ref=e883]
+              - text: Vault
+            - button "Audit" [ref=e885] [cursor=pointer]:
+              - img [ref=e886]
+              - text: Audit
+        - generic [ref=e889]:
+          - generic [ref=e890]:
+            - generic [ref=e891]: J
+            - generic [ref=e892]: Inactive
+          - generic [ref=e894]:
+            - paragraph [ref=e895]: James Davis
+            - paragraph [ref=e896]: james.davis.36@example.com
+          - generic [ref=e897]:
+            - generic [ref=e898]:
+              - paragraph [ref=e899]: Active LLCs
+              - paragraph [ref=e900]: "0"
+            - generic [ref=e901]:
+              - paragraph [ref=e902]: Artifacts
+              - paragraph [ref=e903]: ACTIVE
+          - generic [ref=e904]:
+            - button "Vault" [ref=e905] [cursor=pointer]:
+              - img [ref=e906]
+              - text: Vault
+            - button "Audit" [ref=e908] [cursor=pointer]:
+              - img [ref=e909]
+              - text: Audit
+        - generic [ref=e912]:
+          - generic [ref=e913]:
+            - generic [ref=e914]: R
+            - generic [ref=e915]: Inactive
+          - generic [ref=e917]:
+            - paragraph [ref=e918]: Richard Wilson
+            - paragraph [ref=e919]: richard.wilson.37@example.com
+          - generic [ref=e920]:
+            - generic [ref=e921]:
+              - paragraph [ref=e922]: Active LLCs
+              - paragraph [ref=e923]: "0"
+            - generic [ref=e924]:
+              - paragraph [ref=e925]: Artifacts
+              - paragraph [ref=e926]: NONE
+          - generic [ref=e927]:
+            - button "Vault" [ref=e928] [cursor=pointer]:
+              - img [ref=e929]
+              - text: Vault
+            - button "Audit" [ref=e931] [cursor=pointer]:
+              - img [ref=e932]
+              - text: Audit
+        - generic [ref=e935]:
+          - generic [ref=e936]:
+            - generic [ref=e937]: J
+            - generic [ref=e938]: Inactive
+          - generic [ref=e940]:
+            - paragraph [ref=e941]: Jessica Martinez
+            - paragraph [ref=e942]: jessica.martinez.38@example.com
+          - generic [ref=e943]:
+            - generic [ref=e944]:
+              - paragraph [ref=e945]: Active LLCs
+              - paragraph [ref=e946]: "0"
+            - generic [ref=e947]:
+              - paragraph [ref=e948]: Artifacts
+              - paragraph [ref=e949]: NONE
+          - generic [ref=e950]:
+            - button "Vault" [ref=e951] [cursor=pointer]:
+              - img [ref=e952]
+              - text: Vault
+            - button "Audit" [ref=e954] [cursor=pointer]:
+              - img [ref=e955]
+              - text: Audit
+        - generic [ref=e958]:
+          - generic [ref=e959]:
+            - generic [ref=e960]: S
+            - generic [ref=e961]: Inactive
+          - generic [ref=e963]:
+            - paragraph [ref=e964]: Sarah Williams
+            - paragraph [ref=e965]: sarah.williams.39@example.com
+          - generic [ref=e966]:
+            - generic [ref=e967]:
+              - paragraph [ref=e968]: Active LLCs
+              - paragraph [ref=e969]: "0"
+            - generic [ref=e970]:
+              - paragraph [ref=e971]: Artifacts
+              - paragraph [ref=e972]: ACTIVE
+          - generic [ref=e973]:
+            - button "Vault" [ref=e974] [cursor=pointer]:
+              - img [ref=e975]
+              - text: Vault
+            - button "Audit" [ref=e977] [cursor=pointer]:
+              - img [ref=e978]
+              - text: Audit
+        - generic [ref=e981]:
+          - generic [ref=e982]:
+            - generic [ref=e983]: K
+            - generic [ref=e984]: Inactive
+          - generic [ref=e986]:
+            - paragraph [ref=e987]: Karen Hernandez
+            - paragraph [ref=e988]: karen.hernandez.40@example.com
+          - generic [ref=e989]:
+            - generic [ref=e990]:
+              - paragraph [ref=e991]: Active LLCs
+              - paragraph [ref=e992]: "0"
+            - generic [ref=e993]:
+              - paragraph [ref=e994]: Artifacts
+              - paragraph [ref=e995]: NONE
+          - generic [ref=e996]:
+            - button "Vault" [ref=e997] [cursor=pointer]:
+              - img [ref=e998]
+              - text: Vault
+            - button "Audit" [ref=e1000] [cursor=pointer]:
+              - img [ref=e1001]
+              - text: Audit
+        - generic [ref=e1004]:
+          - generic [ref=e1005]:
+            - generic [ref=e1006]: R
+            - generic [ref=e1007]: Inactive
+          - generic [ref=e1009]:
+            - paragraph [ref=e1010]: Robert Williams
+            - paragraph [ref=e1011]: robert.williams.41@example.com
+          - generic [ref=e1012]:
+            - generic [ref=e1013]:
+              - paragraph [ref=e1014]: Active LLCs
+              - paragraph [ref=e1015]: "0"
+            - generic [ref=e1016]:
+              - paragraph [ref=e1017]: Artifacts
+              - paragraph [ref=e1018]: NONE
+          - generic [ref=e1019]:
+            - button "Vault" [ref=e1020] [cursor=pointer]:
+              - img [ref=e1021]
+              - text: Vault
+            - button "Audit" [ref=e1023] [cursor=pointer]:
+              - img [ref=e1024]
+              - text: Audit
+        - generic [ref=e1027]:
+          - generic [ref=e1028]:
+            - generic [ref=e1029]: D
+            - generic [ref=e1030]: Inactive
+          - generic [ref=e1032]:
+            - paragraph [ref=e1033]: David Garcia
+            - paragraph [ref=e1034]: david.garcia.42@example.com
+          - generic [ref=e1035]:
+            - generic [ref=e1036]:
+              - paragraph [ref=e1037]: Active LLCs
+              - paragraph [ref=e1038]: "0"
+            - generic [ref=e1039]:
+              - paragraph [ref=e1040]: Artifacts
+              - paragraph [ref=e1041]: ACTIVE
+          - generic [ref=e1042]:
+            - button "Vault" [ref=e1043] [cursor=pointer]:
+              - img [ref=e1044]
+              - text: Vault
+            - button "Audit" [ref=e1046] [cursor=pointer]:
+              - img [ref=e1047]
+              - text: Audit
+        - generic [ref=e1050]:
+          - generic [ref=e1051]:
+            - generic [ref=e1052]: K
+            - generic [ref=e1053]: Inactive
+          - generic [ref=e1055]:
+            - paragraph [ref=e1056]: Karen Johnson
+            - paragraph [ref=e1057]: karen.johnson.43@example.com
+          - generic [ref=e1058]:
+            - generic [ref=e1059]:
+              - paragraph [ref=e1060]: Active LLCs
+              - paragraph [ref=e1061]: "0"
+            - generic [ref=e1062]:
+              - paragraph [ref=e1063]: Artifacts
+              - paragraph [ref=e1064]: NONE
+          - generic [ref=e1065]:
+            - button "Vault" [ref=e1066] [cursor=pointer]:
+              - img [ref=e1067]
+              - text: Vault
+            - button "Audit" [ref=e1069] [cursor=pointer]:
+              - img [ref=e1070]
+              - text: Audit
+        - generic [ref=e1073]:
+          - generic [ref=e1074]:
+            - generic [ref=e1075]: B
+            - generic [ref=e1076]: Inactive
+          - generic [ref=e1078]:
+            - paragraph [ref=e1079]: Barbara Jones
+            - paragraph [ref=e1080]: barbara.jones.44@example.com
+          - generic [ref=e1081]:
+            - generic [ref=e1082]:
+              - paragraph [ref=e1083]: Active LLCs
+              - paragraph [ref=e1084]: "0"
+            - generic [ref=e1085]:
+              - paragraph [ref=e1086]: Artifacts
+              - paragraph [ref=e1087]: NONE
+          - generic [ref=e1088]:
+            - button "Vault" [ref=e1089] [cursor=pointer]:
+              - img [ref=e1090]
+              - text: Vault
+            - button "Audit" [ref=e1092] [cursor=pointer]:
+              - img [ref=e1093]
+              - text: Audit
+        - generic [ref=e1096]:
+          - generic [ref=e1097]:
+            - generic [ref=e1098]: L
+            - generic [ref=e1099]: Inactive
+          - generic [ref=e1101]:
+            - paragraph [ref=e1102]: Linda Davis
+            - paragraph [ref=e1103]: linda.davis.45@example.com
+          - generic [ref=e1104]:
+            - generic [ref=e1105]:
+              - paragraph [ref=e1106]: Active LLCs
+              - paragraph [ref=e1107]: "0"
+            - generic [ref=e1108]:
+              - paragraph [ref=e1109]: Artifacts
+              - paragraph [ref=e1110]: ACTIVE
+          - generic [ref=e1111]:
+            - button "Vault" [ref=e1112] [cursor=pointer]:
+              - img [ref=e1113]
+              - text: Vault
+            - button "Audit" [ref=e1115] [cursor=pointer]:
+              - img [ref=e1116]
+              - text: Audit
+        - generic [ref=e1119]:
+          - generic [ref=e1120]:
+            - generic [ref=e1121]: J
+            - generic [ref=e1122]: Inactive
+          - generic [ref=e1124]:
+            - paragraph [ref=e1125]: Joseph Martinez
+            - paragraph [ref=e1126]: joseph.martinez.46@example.com
+          - generic [ref=e1127]:
+            - generic [ref=e1128]:
+              - paragraph [ref=e1129]: Active LLCs
+              - paragraph [ref=e1130]: "0"
+            - generic [ref=e1131]:
+              - paragraph [ref=e1132]: Artifacts
+              - paragraph [ref=e1133]: NONE
+          - generic [ref=e1134]:
+            - button "Vault" [ref=e1135] [cursor=pointer]:
+              - img [ref=e1136]
+              - text: Vault
+            - button "Audit" [ref=e1138] [cursor=pointer]:
+              - img [ref=e1139]
+              - text: Audit
+        - generic [ref=e1142]:
+          - generic [ref=e1143]:
+            - generic [ref=e1144]: B
+            - generic [ref=e1145]: Inactive
+          - generic [ref=e1147]:
+            - paragraph [ref=e1148]: Barbara Jackson
+            - paragraph [ref=e1149]: barbara.jackson.47@example.com
+          - generic [ref=e1150]:
+            - generic [ref=e1151]:
+              - paragraph [ref=e1152]: Active LLCs
+              - paragraph [ref=e1153]: "0"
+            - generic [ref=e1154]:
+              - paragraph [ref=e1155]: Artifacts
+              - paragraph [ref=e1156]: NONE
+          - generic [ref=e1157]:
+            - button "Vault" [ref=e1158] [cursor=pointer]:
+              - img [ref=e1159]
+              - text: Vault
+            - button "Audit" [ref=e1161] [cursor=pointer]:
+              - img [ref=e1162]
+              - text: Audit
+        - generic [ref=e1165]:
+          - generic [ref=e1166]:
+            - generic [ref=e1167]: J
+            - generic [ref=e1168]: Inactive
+          - generic [ref=e1170]:
+            - paragraph [ref=e1171]: John Gonzalez
+            - paragraph [ref=e1172]: john.gonzalez.48@example.com
+          - generic [ref=e1173]:
+            - generic [ref=e1174]:
+              - paragraph [ref=e1175]: Active LLCs
+              - paragraph [ref=e1176]: "0"
+            - generic [ref=e1177]:
+              - paragraph [ref=e1178]: Artifacts
+              - paragraph [ref=e1179]: ACTIVE
+          - generic [ref=e1180]:
+            - button "Vault" [ref=e1181] [cursor=pointer]:
+              - img [ref=e1182]
+              - text: Vault
+            - button "Audit" [ref=e1184] [cursor=pointer]:
+              - img [ref=e1185]
+              - text: Audit
+        - generic [ref=e1188]:
+          - generic [ref=e1189]:
+            - generic [ref=e1190]: J
+            - generic [ref=e1191]: Inactive
+          - generic [ref=e1193]:
+            - paragraph [ref=e1194]: James Brown
+            - paragraph [ref=e1195]: james.brown.49@example.com
+          - generic [ref=e1196]:
+            - generic [ref=e1197]:
+              - paragraph [ref=e1198]: Active LLCs
+              - paragraph [ref=e1199]: "0"
+            - generic [ref=e1200]:
+              - paragraph [ref=e1201]: Artifacts
+              - paragraph [ref=e1202]: NONE
+          - generic [ref=e1203]:
+            - button "Vault" [ref=e1204] [cursor=pointer]:
+              - img [ref=e1205]
+              - text: Vault
+            - button "Audit" [ref=e1207] [cursor=pointer]:
+              - img [ref=e1208]
+              - text: Audit
+        - generic [ref=e1211]:
+          - generic [ref=e1212]:
+            - generic [ref=e1213]: D
+            - generic [ref=e1214]: Inactive
+          - generic [ref=e1216]:
+            - paragraph [ref=e1217]: David Thomas
+            - paragraph [ref=e1218]: david.thomas.50@example.com
+          - generic [ref=e1219]:
+            - generic [ref=e1220]:
+              - paragraph [ref=e1221]: Active LLCs
+              - paragraph [ref=e1222]: "0"
+            - generic [ref=e1223]:
+              - paragraph [ref=e1224]: Artifacts
+              - paragraph [ref=e1225]: NONE
+          - generic [ref=e1226]:
+            - button "Vault" [ref=e1227] [cursor=pointer]:
+              - img [ref=e1228]
+              - text: Vault
+            - button "Audit" [ref=e1230] [cursor=pointer]:
+              - img [ref=e1231]
+              - text: Audit
+        - generic [ref=e1234]:
+          - generic [ref=e1235]:
+            - generic [ref=e1236]: V
+            - generic [ref=e1237]: Active
+          - generic [ref=e1239]:
+            - paragraph [ref=e1240]: Sir Bartholomew Maximilian Alexander von Hohenzollern-Sigmaringen III
+            - paragraph [ref=e1241]: very.long.email.address.that.might.break.the.ui.layout.if.not.handled.properly@longdomain.com
+          - generic [ref=e1242]:
+            - generic [ref=e1243]:
+              - paragraph [ref=e1244]: Active LLCs
+              - paragraph [ref=e1245]: "1"
+            - generic [ref=e1246]:
+              - paragraph [ref=e1247]: Artifacts
+              - paragraph [ref=e1248]: NONE
+          - generic [ref=e1249]:
+            - button "Vault" [ref=e1250] [cursor=pointer]:
+              - img [ref=e1251]
+              - text: Vault
+            - button "Audit" [ref=e1253] [cursor=pointer]:
+              - img [ref=e1254]
+              - text: Audit
+    - generic [ref=e1259]:
+      - generic [ref=e1260]:
+        - generic [ref=e1261]:
+          - img [ref=e1263]
+          - generic [ref=e1265]:
+            - heading "Alex Founder Vault" [level=3] [ref=e1266]
+            - paragraph [ref=e1267]: Zero-Knowledge Retrieval Protocol
+        - button [ref=e1268] [cursor=pointer]:
+          - img [ref=e1269]
+      - generic [ref=e1273]:
+        - generic [ref=e1274]:
+          - img [ref=e1275]
+          - paragraph [ref=e1278]: Staff Identity Confirmed via Protocol Alpha
+        - generic [ref=e1279]:
+          - paragraph [ref=e1280]: Access Key
+          - generic [ref=e1281]:
+            - textbox "Vault Access Key..." [ref=e1282]: charter-2026
+            - button [ref=e1283] [cursor=pointer]:
+              - img [ref=e1284]
+        - button "Decrypt Artifacts" [active] [ref=e1287] [cursor=pointer]:
+          - img [ref=e1288]
+          - text: Decrypt Artifacts
+      - generic [ref=e1292]:
+        - img [ref=e1293]
+        - generic [ref=e1295]: End-to-End Encrypted Tunnel
+```
