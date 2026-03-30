@@ -201,7 +201,7 @@ export const useStaffRa = () => {
                     download_url: finalDownloadUrl || null,
                     date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                     urgent: urgent,
-                    status: 'Forwarded',
+                    status: 'FORWARDED',
                     received_at: new Date(),
                     forwarded_at: new Date()
                 }).select().single();
@@ -271,6 +271,19 @@ export const useStaffRa = () => {
         };
     }, [globalAuditLogs, globalDocuments, clientDirectory, raSettings]);
 
+    const operationsSummary = useMemo(() => {
+        const today = new Date().toLocaleDateString();
+        return {
+            urgentDocCount: globalDocuments.filter(d => d.urgent).length,
+            openThreadCount: globalThreads.filter(t => t.status === 'OPEN' || t.status === 'NEW').length,
+            processedTodayCount: globalAuditLogs.filter(log => {
+                const isToday = new Date(log.created_at).toLocaleDateString() === today;
+                return isToday && log.action === 'DOCUMENT_UPLOADED_BY_STAFF';
+            }).length,
+            totalVaultCount: globalDocuments.length
+        };
+    }, [globalDocuments, globalThreads, globalAuditLogs]);
+
     return {
         loading,
         globalThreads,
@@ -281,6 +294,7 @@ export const useStaffRa = () => {
         raSettings,
         threadMessages,
         systemMetrics,
+        operationsSummary,
         fetchStaffRaData,
         fetchThreadMessages,
         sendStaffMessage,

@@ -60,6 +60,7 @@ const StaffConsole = ({ user }) => {
     reconnectScanner,
     fetchStaffRaData,
     systemMetrics,
+    operationsSummary,
     globalAuditLogs,
     globalDocuments,
     globalThreads,
@@ -248,6 +249,8 @@ const StaffConsole = ({ user }) => {
             )}
             {activeTab === 'ra-ops' && (
                 <RaOperationsSector 
+                    user={user}
+                    operationsSummary={operationsSummary}
                     raSettings={raSettings}
                     scannerDirectoryHandle={scannerDirectoryHandle}
                     scannerPermissionStatus={scannerPermissionStatus}

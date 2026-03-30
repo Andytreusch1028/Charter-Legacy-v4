@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Search, Filter, ShieldAlert, FileText, Send, CheckCircle2, MoreVertical, Archive, ArrowRight, User, Settings, Info, Briefcase, Plus, X, UploadCloud, Scan, Loader2, FileSearch, Trash2, Layout, Zap, Eye, Download, History, ShieldPlus, Mail, Paperclip, Inbox, Maximize2, Minimize2, FileBox, CheckCircle, AlertCircle, Clock, ChevronRight, ExternalLink, Printer, MoreHorizontal, Folder, RefreshCw, Lock, Unlock, Cpu } from 'lucide-react';
+import { Search, Filter, ShieldAlert, FileText, Send, CheckCircle2, MoreVertical, Archive, ArrowRight, User, Settings, Info, Briefcase, Plus, X, UploadCloud, Scan, Loader2, FileSearch, Trash2, Layout, Zap, Eye, Download, History, ShieldPlus, Mail, Paperclip, Inbox, Maximize2, Minimize2, FileBox, CheckCircle, AlertCircle, Clock, ChevronRight, ExternalLink, Printer, MoreHorizontal, Folder, RefreshCw, Lock, Unlock, Cpu, CircleDot } from 'lucide-react';
 import Tesseract from 'tesseract.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import { useStaffRa } from '../../hooks/useStaffRa';
 import { useUplAgent } from '../../hooks/useUplAgent';
 import { PremiumToast } from '../../shared/design-system/UIPrimitives';
+import { supabase } from '../../lib/supabase';
 
 // Set up pdf.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.5.207/build/pdf.worker.min.mjs`;
@@ -14,7 +15,9 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.5.207/b
  * High-performance Global. staff workspace for Registered Agent duties.
  */
 const RaOperationsSector = ({ 
+    user,
     raSettings, 
+    operationsSummary,
     scannerDirectoryHandle, 
     globalDocuments, 
     globalAuditLogs,
@@ -33,7 +36,9 @@ const RaOperationsSector = ({
 }) => {
     const { checkUplCompliance, isChecking: uplChecking, UPL_DISCLAIMER } = useUplAgent();
 
+    // Navigation & State
     const [activeSubTab, setActiveSubTab] = useState('inbox');
+    const [inboxFilter, setInboxFilter] = useState('all'); // 'all', 'needs_action'
     const [selectedThread, setSelectedThread] = useState(null);
     const [newMessage, setNewMessage] = useState('');
     const [uplCheckState, setUplCheckState] = useState('idle'); // idle, scanning, review
@@ -96,7 +101,9 @@ const RaOperationsSector = ({
                     (l.actor_email || '').toLowerCase().includes(q) ||
                     (l.outcome || '').toLowerCase().includes(q) ||
                     (client?.name || '').toLowerCase().includes(q) ||
-                    (llc?.llc_name || '').toLowerCase().includes(q)
+                    (llc?.llc_name || '').toLowerCase().includes(q) ||
+                    (l.document_id || '').toLowerCase() === q ||
+                    (l.document_id || '').toLowerCase().includes(q)
                 );
             });
         }
@@ -105,32 +112,46 @@ const RaOperationsSector = ({
     }, [globalAuditLogs, ledgerSearchQuery, ledgerFilter, clientMap, llcMap]);
 
     const filteredVaultDocs = useMemo(() => {
-        let docs = globalDocuments || [];
-        
-        // Filter by type
-        if (vaultFilter === 'llc') {
-            docs = docs.filter(d => d.llc_id);
-        } else if (vaultFilter === 'individual') {
-            docs = docs.filter(d => !d.llc_id);
+        const docs = globalDocuments || [];
+        const q = (vaultSearchQuery || '').toLowerCase().trim();
+
+        // 1. ISOLATION CHECK: If searching by a full Document ID, return ONLY that document.
+        if (q.length === 36) {
+            const exactMatch = docs.find(d => (d.id || '').toLowerCase() === q);
+            if (exactMatch) return [exactMatch];
         }
-        
-        // Filter by query
-        if (vaultSearchQuery) {
-            const q = vaultSearchQuery.toLowerCase();
-            docs = docs.filter(d => {
-                const client = clientMap[d.user_id];
-                const llc = llcDirectory?.find(l => l.id === d.llc_id);
-                return (
-                    (d.title || '').toLowerCase().includes(q) ||
-                    (client?.name || '').toLowerCase().includes(q) ||
-                    (llc?.llc_name || '').toLowerCase().includes(q) ||
-                    (d.type || '').toLowerCase().includes(q)
-                );
-            });
-        }
-        
-        return docs;
-    }, [globalDocuments, vaultSearchQuery, vaultFilter, clientMap, llcDirectory]);
+
+        // 2. Normal Filter Flow
+        return docs.filter(d => {
+            const client = clientMap[d.user_id];
+            const llc = llcMap[d.llc_id];
+            
+            // Special Prefix Filters
+            if (q === 'is:urgent') return !!d.urgent;
+            if (q === 'is:archived') return d.status?.toUpperCase() === 'ARCHIVED';
+
+            // 1. Check for Query Match (Matches Title, Client, LLC, ID, or Type)
+            const isQueryMatch = !q || (
+                (d.title || '').toLowerCase().includes(q) ||
+                (client?.name || '').toLowerCase().includes(q) ||
+                (llc?.llc_name || '').toLowerCase().includes(q) ||
+                (d.type || '').toLowerCase().includes(q) ||
+                (d.id || '').toLowerCase() === q || // Exact ID match for "Jump to Context"
+                (d.id || '').toLowerCase().includes(q)
+            );
+            
+            if (!isQueryMatch) return false;
+
+            // 2. Filter by toggle (LLC vs Individual)
+            if (vaultFilter === 'llc') {
+                return !!d.llc_id;
+            } else if (vaultFilter === 'individual') {
+                return !d.llc_id;
+            }
+
+            return true;
+        });
+    }, [globalDocuments, vaultSearchQuery, vaultFilter, clientMap, llcMap]);
 
     // Sync filter with persistent settings from System Hub
     useEffect(() => {
@@ -392,15 +413,18 @@ const RaOperationsSector = ({
             if (matchedLlc) {
                 setUploadClient(matchedLlc.user_id);
                 setUploadLlc(matchedLlc.id);
-            } else if (clientDirectory.length > 0) {
-                // Fallback to random if no match found (for demo purposes)
-                const randomClient = clientDirectory[Math.floor(Math.random() * clientDirectory.length)];
-                setUploadClient(randomClient.user_id);
+            } else {
+                // Predictive fuzzy match for owners if no LLC match
+                const matchedOwner = clientDirectory.find(c => 
+                    lowerText.includes(c.name.toLowerCase()) || 
+                    lowerName.includes(c.name.toLowerCase().split(' ')[0])
+                );
+                if (matchedOwner) setUploadClient(matchedOwner.user_id);
             }
 
             // 2. Predict Type & Urgency
             let predictedType = 'State Requirement (FL)';
-            let isUrgent = false;
+            let isUrgent = confidence < 70; // High uncertainty flag as default urgency
             let predictedTitle = file.name.replace(/\.[^/.]+$/, "");
 
             if (lowerText.includes('subpoena') || lowerText.includes('claim') || lowerText.includes('court') || lowerName.includes('subpoena')) {
@@ -412,9 +436,9 @@ const RaOperationsSector = ({
             } else if (lowerText.includes('report') || lowerText.includes('annual') || lowerName.includes('report')) {
                 predictedType = 'State Requirement (FL)';
                 isUrgent = false;
-            } else {
+            } else if (confidence > 85) {
                 predictedType = 'General Entity Mail';
-                isUrgent = confidence < 50; // High uncertainty flag
+                isUrgent = false;
             }
 
             setUploadType(predictedType);
@@ -427,6 +451,7 @@ const RaOperationsSector = ({
             // Fallback to basic simulation if OCR fails
             setScannerState('review');
             setUploadTitle(file.name.replace(/\.[^/.]+$/, ""));
+            setOcrConfidence(0);
         }
     };
 
@@ -653,10 +678,39 @@ const RaOperationsSector = ({
             );
         }
 
-        const filteredThreads = globalThreads.filter(t => t.status !== 'CLOSED');
+        const filteredThreads = globalThreads.filter(t => {
+            if (t.status === 'CLOSED') return false;
+            if (inboxFilter === 'needs_action') return t.status === 'OPEN' || t.status === 'NEW';
+            return true;
+        });
+
+        const openCount = globalThreads.filter(t => t.status === 'OPEN' || t.status === 'NEW').length;
 
         return (
             <div className="space-y-4">
+                {/* Inbox Filter Header */}
+                <div className="flex items-center justify-between mb-4 bg-white/5 border border-white/10 rounded-xl p-2">
+                    <div className="flex items-center gap-1">
+                        <button 
+                            onClick={() => setInboxFilter('needs_action')}
+                            className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${inboxFilter === 'needs_action' ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'text-gray-500 hover:text-white'}`}
+                        >
+                            <CircleDot size={12} className={inboxFilter === 'needs_action' ? 'animate-pulse' : ''} />
+                            Needs Action ({openCount})
+                        </button>
+                        <button 
+                            onClick={() => setInboxFilter('all')}
+                            className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${inboxFilter === 'all' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-white'}`}
+                        >
+                            <Inbox size={12} />
+                            All Active ({globalThreads.filter(t => t.status !== 'CLOSED').length})
+                        </button>
+                    </div>
+                    <div className="px-3">
+                        <p className="text-[8px] text-gray-600 font-bold uppercase tracking-widest italic">{inboxFilter === 'needs_action' ? 'Viewing threads requiring reply' : 'Viewing all synchronized threads'}</p>
+                    </div>
+                </div>
+
                 {filteredThreads.map(thread => (
                     <div key={thread.id} onClick={() => setSelectedThread(thread)} className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-between cursor-pointer transition-colors">
                         <div>
@@ -849,16 +903,22 @@ const RaOperationsSector = ({
                         </div>
                     </div>
 
-                    {/* Right Panel: Data Onboarding */}
-                    <form onSubmit={handleUpload} className="w-1/2 bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5">
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
+                    <form onSubmit={handleUpload} className={`w-1/2 bg-white/5 border rounded-2xl p-6 space-y-5 transition-all duration-500 ${ocrConfidence < 70 ? 'border-rose-500/30 bg-rose-500/5' : 'border-white/10'}`}>
+                        <div className={`border rounded-xl p-4 transition-colors ${ocrConfidence < 70 ? 'bg-rose-500/10 border-rose-500/20' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                    <Zap size={14} className="text-emerald-400" />
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">OCR AI Confidence: {ocrConfidence}%</p>
+                                    {ocrConfidence < 70 ? <AlertCircle size={14} className="text-rose-400" /> : <Zap size={14} className="text-emerald-400" />}
+                                    <p className={`text-[10px] font-black uppercase tracking-widest ${ocrConfidence < 70 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                        OCR {ocrConfidence < 70 ? 'QUALITY ALERT' : 'CONFIDENCE'}: {ocrConfidence}%
+                                    </p>
                                 </div>
-                                <span className="text-[10px] font-mono text-emerald-500/50">ENGINE: TESSERACT_V5</span>
+                                <span className={`text-[10px] font-mono ${ocrConfidence < 70 ? 'text-rose-500/50' : 'text-emerald-500/50'}`}>ENGINE: TESSERACT_V5</span>
                             </div>
+                            {ocrConfidence < 70 && (
+                                <p className="text-[9px] text-rose-500/70 font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                    <ShieldPlus size={10} /> MANUAL DATA VERIFICATION RECOMMENDED
+                                </p>
+                            )}
                             <div className="max-h-24 overflow-y-auto bg-black/40 rounded border border-white/5 p-2 custom-scrollbar">
                                 <p className="text-[10px] text-gray-400 font-mono leading-relaxed whitespace-pre-wrap">{extractedText || 'Processing text payload...'}</p>
                             </div>
@@ -1047,6 +1107,212 @@ const RaOperationsSector = ({
         );
     };
 
+    const RAActionControl = ({ doc }) => {
+        return (
+            <select 
+                value="" 
+                onChange={async (e) => {
+                    const action = e.target.value;
+                    if (!action) return;
+                    
+                    try {
+                        if (action === 'ARCHIVE' || action === 'UNARCHIVE' || action === 'MARK_HANDLED') {
+                            const updates = {};
+                            if (action === 'ARCHIVE') updates.status = 'ARCHIVED';
+                            if (action === 'UNARCHIVE') updates.status = 'FORWARDED';
+                            if (action === 'MARK_HANDLED' || action === 'ARCHIVE' || action === 'RESEND') {
+                                updates.urgent = false;
+                            }
+                            
+                            const { error } = await supabase
+                                .from('registered_agent_documents')
+                                .update(updates)
+                                .eq('id', doc.id);
+                            if (error) throw error;
+                        } else if (action === 'RESEND') {
+                            // Automatically clear urgency on Resend as it indicates the task has been handled
+                            const { error } = await supabase
+                                .from('registered_agent_documents')
+                                .update({ urgent: false })
+                                .eq('id', doc.id);
+                            if (error) throw error;
+                        }
+
+                        // Log to Audit Ledger
+                        const { error: logErr } = await supabase.from('ra_document_audit').insert({
+                            user_id: doc.user_id,
+                            llc_id: doc.llc_id,
+                            document_id: doc.id,
+                            action: action === 'ARCHIVE' ? 'DOCUMENT_ARCHIVED' : 
+                                    action === 'UNARCHIVE' ? 'DOCUMENT_UNARCHIVED' : 
+                                    action === 'MARK_HANDLED' ? 'URGENCY_RESOLVED' : 'DOCUMENT_RESENT',
+                            actor_type: 'CHARTER_ADMIN',
+                            actor_email: user?.email || 'system@charter.legal',
+                            metadata: { 
+                                original_status: doc.status,
+                                target_status: action === 'ARCHIVE' ? 'ARCHIVED' : action === 'UNARCHIVE' ? 'FORWARDED' : doc.status,
+                                filename: doc.title || doc.name,
+                                resolution_type: action
+                            },
+                            outcome: 'SUCCESS'
+                        });
+
+                        if (logErr) console.error("Ledger Logging Failed:", logErr);
+                        
+                        fetchStaffRaData();
+                        setToast({ 
+                            message: action === 'ARCHIVE' ? 'Document Archived & Urgency Resolved' : 
+                                     action === 'UNARCHIVE' ? 'Document Restored to Registry' : 
+                                     action === 'MARK_HANDLED' ? 'Urgency Flag Cleared' : 'Re-send Logged & Urgency Resolved', 
+                            type: 'success' 
+                        });
+                    } catch (err) {
+                        setToast({ message: `Action failed: ${err.message}`, type: 'error' });
+                    }
+                }}
+                className="bg-[#1a1a2e] border border-white/10 rounded px-2 py-1 text-[8px] font-black uppercase text-purple-400 hover:text-white transition-colors outline-none cursor-pointer"
+            >
+                <option value="" disabled>Select Action</option>
+                <option value="RESEND">Re-send to Client</option>
+                {doc.urgent && <option value="MARK_HANDLED">Mark as Handled</option>}
+                {doc.status?.toUpperCase() === 'ARCHIVED' ? (
+                    <option value="UNARCHIVE">Un-archive Document</option>
+                ) : (
+                    <option value="ARCHIVE">Archive Document</option>
+                )}
+            </select>
+        );
+    };
+
+    const IntelligenceTray = () => (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            {/* Urgent SOPs Card */}
+            <button 
+                onClick={() => {
+                    setActiveSubTab('vault');
+                    setVaultSearchQuery('is:urgent');
+                    setVaultFilter('all');
+                }}
+                className="relative bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 group hover:bg-white/[0.08] hover:border-white/20 hover:scale-[1.02] transition-all text-left outline-none w-full"
+            >
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 p-2 bg-[#0a0a0c] border border-white/10 rounded-xl text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 pointer-events-none transition-all duration-200 z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+                    <div className="flex items-center gap-2 mb-1.5 border-b border-white/5 pb-1.5">
+                        <ShieldAlert size={10} className="text-red-500" />
+                        <p className="text-white font-black uppercase tracking-widest text-[8px]">SOP Protocol</p>
+                    </div>
+                    Critical procedural protocols for handling high-priority legal documents and state compliance.
+                </div>
+
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${operationsSummary?.urgentDocCount > 0 ? 'bg-red-500/10 text-red-500 animate-pulse' : 'bg-white/5 text-gray-500'}`}>
+                    <ShieldAlert size={24} />
+                </div>
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-red-400 transition-colors">Urgent SOPs</p>
+                        <ArrowRight size={10} className="text-gray-600 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                    </div>
+                    <p className="text-xl font-light text-white my-0.5">{operationsSummary?.urgentDocCount || 0}</p>
+                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter leading-tight group-hover:text-gray-400">Critical legal tasks. View in Global Vault.</p>
+                </div>
+            </button>
+
+            {/* Open Inquiries Card */}
+            <button 
+                onClick={() => {
+                    setActiveSubTab('inbox');
+                    setInboxFilter('needs_action');
+                    setSelectedThread(null);
+                }}
+                className="relative bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 group hover:bg-white/[0.08] hover:border-white/20 hover:scale-[1.02] transition-all text-left outline-none w-full"
+            >
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 p-2 bg-[#0a0a0c] border border-white/10 rounded-xl text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 pointer-events-none transition-all duration-200 z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+                    <div className="flex items-center gap-2 mb-1.5 border-b border-white/5 pb-1.5">
+                        <Inbox size={10} className="text-luminous-blue" />
+                        <p className="text-luminous-blue font-black uppercase tracking-widest text-[8px]">Active Traffic</p>
+                    </div>
+                    Pending client communications requiring Registered Agent attention or official response.
+                </div>
+                
+
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${operationsSummary?.openThreadCount > 0 ? 'bg-luminous-blue/10 text-luminous-blue' : 'bg-white/5 text-gray-500'}`}>
+                    <Inbox size={24} />
+                </div>
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-luminous-blue transition-colors">Open Inquiries</p>
+                        <ArrowRight size={10} className="text-gray-600 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                    </div>
+                    <p className="text-xl font-light text-white my-0.5">{operationsSummary?.openThreadCount || 0}</p>
+                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter leading-tight group-hover:text-gray-400">Active client threads. View in Global Inbox.</p>
+                </div>
+            </button>
+
+            {/* Processed Today Card */}
+            <button 
+                onClick={() => {
+                    setActiveSubTab('ledger');
+                    setLedgerSearchQuery(new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+                    setLedgerFilter('all');
+                }}
+                className="relative bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 group hover:bg-white/[0.08] hover:border-white/20 hover:scale-[1.02] transition-all text-left outline-none w-full"
+            >
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 p-2 bg-[#0a0a0c] border border-white/10 rounded-xl text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 pointer-events-none transition-all duration-200 z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+                    <div className="flex items-center gap-2 mb-1.5 border-b border-white/5 pb-1.5">
+                        <CheckCircle2 size={10} className="text-emerald-400" />
+                        <p className="text-emerald-400 font-black uppercase tracking-widest text-[8px]">Daily Audit</p>
+                    </div>
+                    Real-time log of all secure operations performed within the current 24-hour cycle.
+                </div>
+
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 transition-transform group-hover:scale-110">
+                    <CheckCircle2 size={24} />
+                </div>
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-emerald-400 transition-colors">Processed Today</p>
+                        <ArrowRight size={10} className="text-gray-600 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                    </div>
+                    <p className="text-xl font-light text-white my-0.5">{operationsSummary?.processedTodayCount || 0}</p>
+                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter leading-tight group-hover:text-gray-400">Completed operations. View in System Ledger.</p>
+                </div>
+            </button>
+
+            {/* Total Vault Card */}
+            <button 
+                onClick={() => {
+                    setActiveSubTab('vault');
+                    setVaultSearchQuery('');
+                    setVaultFilter('all');
+                }}
+                className="relative bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 group hover:bg-white/[0.08] hover:border-white/20 hover:scale-[1.02] transition-all text-left outline-none w-full"
+            >
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 p-2 bg-[#0a0a0c] border border-white/10 rounded-xl text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 pointer-events-none transition-all duration-200 z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+                    <div className="flex items-center gap-2 mb-1.5 border-b border-white/5 pb-1.5">
+                        <FileBox size={10} className="text-white" />
+                        <p className="text-white font-black uppercase tracking-widest text-[8px]">Fleet Registry</p>
+                    </div>
+                    Complete encrypted repository containing all historical documents and high-value legal filings.
+                </div>
+
+                <div className="w-12 h-12 rounded-xl bg-white/5 text-gray-500 flex items-center justify-center shrink-0 transition-transform group-hover:scale-110">
+                    <FileBox size={24} />
+                </div>
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors">Total Vault</p>
+                        <ArrowRight size={10} className="text-gray-600 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                    </div>
+                    <p className="text-xl font-light text-white my-0.5">{operationsSummary?.totalVaultCount || 0}</p>
+                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter leading-tight group-hover:text-gray-400">All entity documents. View in Global Vault.</p>
+                </div>
+            </button>
+        </div>
+    );
+
     const renderLedger = () => (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
@@ -1104,8 +1370,40 @@ const RaOperationsSector = ({
                             </div>
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <p className="text-sm text-white font-medium group-hover:text-purple-400 transition-colors uppercase tracking-tight">{log.action}</p>
-                                    <span className={`px-1.5 py-0.5 rounded-[4px] text-[7px] font-black uppercase tracking-widest border ${log.outcome === 'success' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/10' : 'bg-red-500/10 text-red-500 border-red-500/10'}`}>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        {log.document_id ? (
+                                            <button 
+                                                onClick={() => { 
+                                                    setActiveSubTab('vault'); 
+                                                    setVaultSearchQuery(log.document_id); 
+                                                }}
+                                                className="text-sm text-white font-medium hover:text-purple-400 group-hover:text-purple-400 transition-colors uppercase tracking-tight shrink-0 underline decoration-purple-500/0 hover:decoration-purple-500/30"
+                                            >
+                                                {log.action}
+                                            </button>
+                                        ) : (
+                                            <p className="text-sm text-white font-medium group-hover:text-purple-400 transition-colors uppercase tracking-tight shrink-0">{log.action}</p>
+                                        )}
+                                        {log.document_id && (
+                                            <>
+                                                <span className="text-white/20 text-[10px]">•</span>
+                                                {(() => {
+                                                    const doc = globalDocuments?.find(d => d.id === log.document_id);
+                                                    const filename = log.metadata?.filename || doc?.title || 'Unknown Document';
+                                                    return (
+                                                        <button 
+                                                            onClick={() => doc?.download_url && window.open(doc.download_url, '_blank')}
+                                                            className={`text-[11px] font-bold tracking-tight transition-all truncate max-w-[200px] ${doc?.download_url ? 'text-luminous-blue hover:text-white hover:underline decoration-luminous-blue/30' : 'text-gray-500 cursor-not-allowed'}`}
+                                                            title={filename}
+                                                        >
+                                                            {filename}
+                                                        </button>
+                                                    );
+                                                })()}
+                                            </>
+                                        )}
+                                    </div>
+                                    <span className={`px-1.5 py-0.5 rounded-[4px] text-[7px] font-black uppercase tracking-widest border shrink-0 ${log.outcome === 'success' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/10' : 'bg-red-500/10 text-red-500 border-red-500/10'}`}>
                                         {log.outcome}
                                     </span>
                                 </div>
@@ -1118,13 +1416,58 @@ const RaOperationsSector = ({
                                 <span className="text-[9px] text-gray-500 font-black uppercase tracking-widest">Target:</span>
                                 {log.llc_id && llcMap[log.llc_id] ? (
                                     <div className="flex flex-col items-end">
-                                        <span className="text-[9px] text-purple-400 font-black uppercase tracking-widest">{llcMap[log.llc_id].llc_name}</span>
+                                        <button 
+                                            onClick={() => { 
+                                                setActiveSubTab('vault'); 
+                                                setVaultSearchQuery(llcMap[log.llc_id].llc_name); 
+                                                setVaultFilter('llc');
+                                            }}
+                                            className="text-[9px] text-purple-400 font-black uppercase tracking-widest hover:text-white transition-colors"
+                                        >
+                                            {llcMap[log.llc_id].llc_name}
+                                        </button>
                                         <span className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter">({clientMap[log.user_id]?.name || 'Direct'})</span>
                                     </div>
                                 ) : (
-                                    <span className="text-[9px] text-purple-400 font-black uppercase tracking-widest">{clientMap[log.user_id]?.name || log.user_id.split('-')[0]}</span>
+                                    <button 
+                                        onClick={() => { 
+                                            setActiveSubTab('vault'); 
+                                            setVaultSearchQuery(clientMap[log.user_id]?.name || ''); 
+                                            setVaultFilter('individual');
+                                        }}
+                                        className="text-[9px] text-purple-400 font-black uppercase tracking-widest hover:text-white transition-colors"
+                                    >
+                                        {clientMap[log.user_id]?.name || log.user_id.split('-')[0]}
+                                    </button>
                                 )}
                             </div>
+                            {log.document_id && (
+                                <div className="flex items-center gap-2">
+                                    {(() => {
+                                        const doc = globalDocuments?.find(d => d.id === log.document_id);
+                                        if (doc?.download_url) {
+                                            return (
+                                                <button 
+                                                    onClick={() => window.open(doc.download_url, '_blank')}
+                                                    className="px-2 py-1 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded text-[8px] font-black uppercase text-purple-400 hover:text-white transition-all flex items-center gap-1"
+                                                >
+                                                    <Eye size={10} /> View Source
+                                                </button>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
+                                    <button 
+                                        onClick={() => { 
+                                            setActiveSubTab('vault'); 
+                                            setVaultSearchQuery(log.document_id); 
+                                        }}
+                                        className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-[8px] font-black uppercase text-gray-400 hover:text-white transition-all"
+                                    >
+                                        Jump to Context
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -1202,6 +1545,14 @@ const RaOperationsSector = ({
                 {filteredVaultDocs.map(doc => {
                     const client = clientMap[doc.user_id];
                     const llc = llcDirectory?.find(l => l.id === doc.llc_id);
+                    
+                    // Derive RESENT status from audit ledger
+                    const isResent = globalAuditLogs?.some(log => 
+                        log.document_id === doc.id && 
+                        log.action === 'DOCUMENT_RESENT' && 
+                        log.outcome === 'SUCCESS'
+                    );
+
                     return (
                         <div key={doc.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-white/[0.02] gap-4 transition-colors group">
                             <div className="flex items-center gap-4">
@@ -1227,20 +1578,47 @@ const RaOperationsSector = ({
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4 shrink-0 justify-between md:justify-end">
-                                <div className="text-right hidden md:block">
-                                    <p className="text-[10px] text-white/50 font-bold uppercase tracking-tighter">{doc.date}</p>
-                                    <p className={`text-[9px] font-black uppercase tracking-widest mt-0.5 ${doc.status === 'READY' ? 'text-emerald-500' : 'text-gray-600'}`}>{doc.status}</p>
+                             <div className="flex items-center gap-4 shrink-0 justify-between md:justify-end">
+                                 <div className="text-right hidden md:block">
+                                     <div className="flex flex-col items-end gap-1">
+                                         <div className="flex items-center gap-2">
+                                             {doc.status?.toUpperCase() === 'FORWARDED' && <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Forwarded</span>}
+                                             {doc.status?.toUpperCase() === 'FAILED' && <span className="text-[9px] font-black uppercase tracking-widest text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">Failed</span>}
+                                              {(doc.status?.toUpperCase() === 'READY' || doc.status?.toUpperCase() === 'FILED') && <span className="text-[9px] font-black uppercase tracking-widest text-luminous-blue bg-luminous-blue/10 px-2 py-0.5 rounded border border-luminous-blue/20">Filed</span>}
+                                             {doc.status?.toUpperCase() === 'ARCHIVED' && <span className="text-[9px] font-black uppercase tracking-widest text-gray-500 bg-white/5 px-2 py-0.5 rounded border border-white/10">Archived</span>}
+                                             
+                                             {isResent && (
+                                                 <span className="text-[9px] font-black uppercase tracking-widest text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 flex items-center gap-1">
+                                                     <RefreshCw size={8} className="animate-spin-slow" /> Resent
+                                                 </span>
+                                             )}
+                                             
+                                             <RAActionControl doc={doc} />
+                                         </div>
+                                         <p className="text-[8px] text-white/30 font-bold uppercase tracking-tighter mt-1">{doc.date}</p>
+                                     </div>
+                                 </div>
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        onClick={() => {
+                                            if (doc.download_url) window.open(doc.download_url, '_blank');
+                                            else setToast({ message: 'Document physically expired or pending Sync.', type: 'error' });
+                                        }}
+                                        className="px-5 py-2.5 bg-white/5 hover:bg-white text-gray-400 hover:text-black border border-white/10 hover:border-white rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] transition-all shadow-xl active:scale-95"
+                                    >
+                                        <Eye size={12} /> View
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            setActiveSubTab('ledger');
+                                            setLedgerSearchQuery(doc.id);
+                                        }}
+                                        className="w-10 h-10 bg-white/5 hover:bg-white/10 text-gray-500 hover:text-purple-400 border border-white/10 rounded-xl flex items-center justify-center transition-all shadow-xl active:scale-95"
+                                        title="View Audit History"
+                                    >
+                                        <Clock size={16} />
+                                    </button>
                                 </div>
-                                <button 
-                                    onClick={() => {
-                                        if (doc.download_url) window.open(doc.download_url, '_blank');
-                                        else setToast({ message: 'Document physically expired or pending Sync.', type: 'error' });
-                                    }}
-                                    className="px-5 py-2.5 bg-white/5 hover:bg-white text-gray-400 hover:text-black border border-white/10 hover:border-white rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] transition-all shadow-xl active:scale-95"
-                                >
-                                    <Eye size={12} /> View
-                                </button>
                             </div>
                         </div>
                     );
@@ -1295,6 +1673,7 @@ const RaOperationsSector = ({
             </div>
 
             <div>
+                <IntelligenceTray />
                 {activeSubTab === 'inbox' && renderInbox()}
                 {activeSubTab === 'mail' && renderMailRoom()}
                 {activeSubTab === 'vault' && renderGlobalVault()}

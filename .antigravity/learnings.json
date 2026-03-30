@@ -170,6 +170,14 @@
           "pattern": "Integrate `pdfjs-dist` to render PDF pages into high-res PNG blobs/canvases, then pass the resulting image to `tesseract.js`. This enables client-side OCR for PDFs without server-side dependencies or complex Python/POppler wrappers.",
           "impact": "High - Zero-knowledge PDF text extraction in the browser.",
           "reuse_guidance": "Use this pattern for any 'Secure Mail' or 'Scanner Room' features where data privacy is paramount and server-side processing should be avoided."
+        },
+        {
+          "id": "learning-025",
+          "date": "2026-03-29",
+          "success": "Atomic Document Audit Linkage",
+          "pattern": "Implement 'View History' buttons in document registries that switch tabs and populate the target sub-tab's search query with the document's UUID. This creates a vertical slice of all actions taken on a specific entity or file.",
+          "impact": "High - Seamless traceability between inventory and audit logs.",
+          "reuse_guidance": "Always provide a 'History' jump from any high-value record (Document, LLC, User) to the System Ledger using UUID isolation."
         }
       ]
     },
@@ -212,6 +220,14 @@
           "correction": "Synchronized `uploadUrl` generation to trigger immediately upon PDF rendering and selection, ensuring a stable 'Internal Hash' is available for the vault link.",
           "impact": "High - Enabled end-to-end PDF processing and archival.",
           "prevention_rule": "For multi-stage intake flows (Capture -> Verify -> Deploy), generate the final persistence ID (Internal Hash) at the moment of FIRST capture, not at the moment of verification."
+        },
+        {
+          "id": "learning-026",
+          "date": "2026-03-29",
+          "mistake": "Urgent SOP count stayed high because staff actions (Resend) didn't mutate the document's urgency state.",
+          "correction": "Synchronized the urgency lifecycle: 'RESEND', 'ARCHIVE', and 'MARK_HANDLED' actions now explicitly clear the `urgent` flag in the registered_agent_documents table.",
+          "impact": "High - Ensures the Intelligence Tray accurately represents pending work.",
+          "prevention_rule": "When implementing 'Urgency' flags, always define the 'Resolution Event' that clears the flag (e.g., Resending or Archiving) to prevent task list stagnation."
         }
       ]
     }
@@ -250,7 +266,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 24,
-    "last_updated": "2026-03-27T22:35:00Z"
+    "total_learnings": 26,
+    "last_updated": "2026-03-29T13:00:00Z"
   }
 }
