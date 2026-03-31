@@ -71,6 +71,8 @@ const StaffConsole = ({ user }) => {
     sendStaffMessage,
     uploadDocumentToClient,
     updateRaSettings,
+    updateDocumentStatus,
+    deleteDocument,
     loading: raLoading 
   } = useStaffRa();
   
@@ -205,10 +207,6 @@ const StaffConsole = ({ user }) => {
             </div>
             
             <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-500 rounded-full border border-green-500/20">
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">System Online</span>
-                </div>
                 <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-all">
                     <Search size={18} />
                 </button>
@@ -267,6 +265,8 @@ const StaffConsole = ({ user }) => {
                     sendStaffMessage={sendStaffMessage}
                     uploadDocumentToClient={uploadDocumentToClient}
                     updateRaSettings={updateRaSettings}
+                    updateDocumentStatus={updateDocumentStatus}
+                    deleteDocument={deleteDocument}
                 />
             )}
             {activeTab === 'logs' && <TerminalLogsSector />}

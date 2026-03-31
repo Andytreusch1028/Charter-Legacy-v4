@@ -14,10 +14,12 @@ const ClientDirectorySector = ({
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
-    const filteredClients = clients.filter(c => 
-        c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredClients = clients.filter(c => {
+        const query = searchTerm.toLowerCase();
+        const emailMatch = c.email?.toLowerCase().includes(query);
+        const nameMatch = c.full_name?.toLowerCase().includes(query);
+        return emailMatch || nameMatch;
+    });
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">

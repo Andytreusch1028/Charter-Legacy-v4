@@ -94,7 +94,10 @@ export const useStaffData = () => {
 
             const clientsMap = {};
             profilesRes.data?.forEach(p => {
-                clientsMap[p.id] = { ...p, llcs: [], hasVault: false, hasRA: false };
+                const fullName = (p.first_name || p.last_name) 
+                    ? `${p.first_name || ''} ${p.last_name || ''}`.trim() 
+                    : 'Anonymous Client';
+                clientsMap[p.id] = { ...p, full_name: fullName, llcs: [], hasVault: false, hasRA: false };
             });
 
             llcsRes.data?.forEach(llc => {

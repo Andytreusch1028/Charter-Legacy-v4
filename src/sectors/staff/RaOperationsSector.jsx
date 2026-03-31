@@ -31,6 +31,8 @@ const RaOperationsSector = ({
     sendStaffMessage,
     uploadDocumentToClient,
     updateRaSettings,
+    updateDocumentStatus,
+    deleteDocument,
     scannerPermissionStatus,
     reconnectScanner
 }) => {
@@ -61,6 +63,7 @@ const RaOperationsSector = ({
     const [uploadUrl, setUploadUrl] = useState('');
     const [uploadUrgent, setUploadUrgent] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [activeViewerDoc, setActiveViewerDoc] = useState(null); // For global premium viewer (id, title, url, type)
 
     // Global Vault Search & Filter
     const [vaultSearchQuery, setVaultSearchQuery] = useState('');
@@ -69,6 +72,50 @@ const RaOperationsSector = ({
     // Global Ledger Search & Filter
     const [ledgerSearchQuery, setLedgerSearchQuery] = useState('');
     const [ledgerFilter, setLedgerFilter] = useState('all'); // 'all', 'user', 'system'
+
+    // Selection Nexus (Steve's Velocity)
+    const [selectedVaultIds, setSelectedVaultIds] = useState([]);
+    const [selectedLedgerIds, setSelectedLedgerIds] = useState([]);
+
+    // Tab Refs for Sliding Indicator (Jony's Materiality)
+    const tabRefs = {
+        inbox: useRef(null),
+        mail: useRef(null),
+        vault: useRef(null),
+        ledger: useRef(null)
+    };
+    const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0, opacity: 0 });
+
+    // Keyboard Flight Controls (Hotkey Engine)
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            if ((e.ctrlKey || e.metaKey) && !isNaN(e.key)) {
+                const num = parseInt(e.key);
+                const tabMap = { 1: 'inbox', 2: 'mail', 3: 'vault', 4: 'ledger' };
+                if (tabMap[num]) {
+                    e.preventDefault();
+                    setActiveSubTab(tabMap[num]);
+                    setSelectedThread(null);
+                    setToast({ message: `Navigating to ${tabMap[num].toUpperCase()}`, type: 'system' });
+                }
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    // Update Sliding Indicator Position
+    useEffect(() => {
+        const activeTab = tabRefs[activeSubTab]?.current;
+        if (activeTab) {
+            setIndicatorStyle({
+                width: activeTab.offsetWidth,
+                left: activeTab.offsetLeft,
+                opacity: 1
+            });
+        }
+    }, [activeSubTab]);
 
     const clientMap = useMemo(() => clientDirectory.reduce((acc, client) => {
         acc[client.user_id] = client;
@@ -720,7 +767,7 @@ const RaOperationsSector = ({
                             </div>
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-4">
                                 <span><User size={10} className="inline mr-1" /> {clientMap[thread.user_id]?.name || 'Unknown'}</span>
-                                {thread.llc_id && <span><Briefcase size={10} className="inline mr-1" /> {llcMap[thread.llc_id]?.llc_name || 'Individual'}</span>}
+                                {thread.llc_id && <span><Briefcase size={10} className="inline mr-1" /> {thread.llcs?.llc_name || 'Individual'}</span>}
                                 <span>Updated: {new Date(thread.updated_at).toLocaleDateString()}</span>
                             </p>
                         </div>
@@ -1107,234 +1154,284 @@ const RaOperationsSector = ({
         );
     };
 
-    const RAActionControl = ({ doc }) => {
-        return (
-            <select 
-                value="" 
-                onChange={async (e) => {
-                    const action = e.target.value;
-                    if (!action) return;
-                    
-                    try {
-                        if (action === 'ARCHIVE' || action === 'UNARCHIVE' || action === 'MARK_HANDLED') {
-                            const updates = {};
-                            if (action === 'ARCHIVE') updates.status = 'ARCHIVED';
-                            if (action === 'UNARCHIVE') updates.status = 'FORWARDED';
-                            if (action === 'MARK_HANDLED' || action === 'ARCHIVE' || action === 'RESEND') {
-                                updates.urgent = false;
-                            }
-                            
-                            const { error } = await supabase
-                                .from('registered_agent_documents')
-                                .update(updates)
-                                .eq('id', doc.id);
-                            if (error) throw error;
-                        } else if (action === 'RESEND') {
-                            // Automatically clear urgency on Resend as it indicates the task has been handled
-                            const { error } = await supabase
-                                .from('registered_agent_documents')
-                                .update({ urgent: false })
-                                .eq('id', doc.id);
-                            if (error) throw error;
-                        }
+    const AcrylicActionControl = ({ doc }) => {
+        const [isDeleting, setIsDeleting] = useState(false);
+        const [isOpen, setIsOpen] = useState(false);
+        const menuRef = useRef(null);
 
-                        // Log to Audit Ledger
-                        const { error: logErr } = await supabase.from('ra_document_audit').insert({
-                            user_id: doc.user_id,
-                            llc_id: doc.llc_id,
-                            document_id: doc.id,
-                            action: action === 'ARCHIVE' ? 'DOCUMENT_ARCHIVED' : 
-                                    action === 'UNARCHIVE' ? 'DOCUMENT_UNARCHIVED' : 
-                                    action === 'MARK_HANDLED' ? 'URGENCY_RESOLVED' : 'DOCUMENT_RESENT',
-                            actor_type: 'CHARTER_ADMIN',
-                            actor_email: user?.email || 'system@charter.legal',
-                            metadata: { 
-                                original_status: doc.status,
-                                target_status: action === 'ARCHIVE' ? 'ARCHIVED' : action === 'UNARCHIVE' ? 'FORWARDED' : doc.status,
-                                filename: doc.title || doc.name,
-                                resolution_type: action
-                            },
-                            outcome: 'SUCCESS'
-                        });
+        useEffect(() => {
+            const handleClickOutside = (e) => {
+                if (menuRef.current && !menuRef.current.contains(e.target)) setIsOpen(false);
+            };
+            if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }, [isOpen]);
 
-                        if (logErr) console.error("Ledger Logging Failed:", logErr);
-                        
-                        fetchStaffRaData();
-                        setToast({ 
-                            message: action === 'ARCHIVE' ? 'Document Archived & Urgency Resolved' : 
-                                     action === 'UNARCHIVE' ? 'Document Restored to Registry' : 
-                                     action === 'MARK_HANDLED' ? 'Urgency Flag Cleared' : 'Re-send Logged & Urgency Resolved', 
-                            type: 'success' 
-                        });
-                    } catch (err) {
-                        setToast({ message: `Action failed: ${err.message}`, type: 'error' });
+        const handleAction = async (action) => {
+            setIsOpen(false);
+            if (!action) return;
+            
+            try {
+                if (action === 'DELETE') {
+                    if (window.confirm("Are you sure you want to PERMANENTLY delete this document? This action CANNOT be undone and will be logged in the audit stream.")) {
+                        setIsDeleting(true);
+                        await deleteDocument(doc.id);
+                        setToast({ message: 'Document permanently purged from registry.', type: 'success' });
                     }
-                }}
-                className="bg-[#1a1a2e] border border-white/10 rounded px-2 py-1 text-[8px] font-black uppercase text-purple-400 hover:text-white transition-colors outline-none cursor-pointer"
-            >
-                <option value="" disabled>Select Action</option>
-                <option value="RESEND">Re-send to Client</option>
-                {doc.urgent && <option value="MARK_HANDLED">Mark as Handled</option>}
-                {doc.status?.toUpperCase() === 'ARCHIVED' ? (
-                    <option value="UNARCHIVE">Un-archive Document</option>
-                ) : (
-                    <option value="ARCHIVE">Archive Document</option>
+                    return;
+                }
+
+                let newStatus = doc.status;
+                let actionType = 'DOCUMENT_STATUS_CHANGE';
+
+                if (action === 'ARCHIVE') {
+                    newStatus = 'ARCHIVED';
+                    actionType = 'DOCUMENT_ARCHIVED';
+                } else if (action === 'UNARCHIVE' || action === 'RESEND') {
+                    newStatus = 'FORWARDED';
+                    actionType = action === 'RESEND' ? 'DOCUMENT_RESENT' : 'DOCUMENT_UNARCHIVED';
+                } else if (action === 'MARK_HANDLED') {
+                    actionType = 'URGENCY_RESOLVED';
+                }
+
+                await updateDocumentStatus(doc.id, newStatus, actionType);
+                
+                setToast({ 
+                    message: action === 'ARCHIVE' ? 'Document Archived & Audit Logged' : 
+                             action === 'RESEND' ? 'Re-send protocol initiated & recorded.' : 
+                             action === 'UNARCHIVE' ? 'Document Restored to Active Registry' : 'Urgency Flag Cleared', 
+                    type: 'success' 
+                });
+            } catch (err) {
+                setToast({ message: `Administrative action failed: ${err.message}`, type: 'error' });
+            } finally {
+                setIsDeleting(false);
+            }
+        };
+
+        const handleTrace = () => {
+            setIsOpen(false);
+            setActiveSubTab('ledger');
+            setLedgerSearchQuery(doc.id);
+            setToast({ message: `Filtering system ledger for document context: ${doc.title}`, type: 'system' });
+        };
+
+        return (
+            <div className="relative flex items-center gap-1" ref={menuRef}>
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    disabled={isDeleting}
+                    className="h-8 px-3 flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest text-[#00f3ff] hover:bg-[#00f3ff]/10 hover:border-[#00f3ff]/30 transition-all shadow-lg shadow-black/20"
+                >
+                    {isDeleting ? <Loader2 size={12} className="animate-spin" /> : <Settings size={12} />}
+                    Actions
+                </button>
+
+                {isOpen && (
+                    <div className="absolute right-0 bottom-full mb-2 w-48 bg-[#0a0a0c]/90 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <div className="p-2 space-y-1">
+                            <button 
+                                onClick={() => handleAction('RESEND')}
+                                className="w-full text-left px-3 py-2 rounded-xl text-[10px] font-bold text-white hover:bg-white/10 flex items-center gap-3 transition-colors uppercase tracking-widest"
+                            >
+                                <Send size={12} className="text-emerald-500" /> Forward / Resend
+                            </button>
+                            <button 
+                                onClick={handleTrace}
+                                className="w-full text-left px-3 py-2 rounded-xl text-[10px] font-bold text-white hover:bg-white/10 flex items-center gap-3 transition-colors uppercase tracking-widest"
+                            >
+                                <History size={12} className="text-[#00f3ff]" /> View History
+                            </button>
+                            
+                            <div className="h-px bg-white/5 mx-2 my-1" />
+
+                            {doc.status?.toUpperCase() === 'ARCHIVED' ? (
+                                <button 
+                                    onClick={() => handleAction('UNARCHIVE')}
+                                    className="w-full text-left px-3 py-2 rounded-xl text-[10px] font-bold text-white hover:bg-white/10 flex items-center gap-3 transition-colors uppercase tracking-widest"
+                                >
+                                    <RefreshCw size={12} className="text-amber-500" /> Un-archive
+                                </button>
+                            ) : (
+                                <button 
+                                    onClick={() => handleAction('ARCHIVE')}
+                                    className="w-full text-left px-3 py-2 rounded-xl text-[10px] font-bold text-white hover:bg-white/10 flex items-center gap-3 transition-colors uppercase tracking-widest"
+                                >
+                                    <Archive size={12} className="text-amber-500" /> Archive Log
+                                </button>
+                            )}
+
+                            {doc.urgent && (
+                                <button 
+                                    onClick={() => handleAction('MARK_HANDLED')}
+                                    className="w-full text-left px-3 py-2 rounded-xl text-[10px] font-bold text-rose-500 hover:bg-rose-500/10 flex items-center gap-3 transition-colors uppercase tracking-widest"
+                                >
+                                    <ShieldPlus size={12} /> Clear Urgency
+                                </button>
+                            )}
+
+                            <button 
+                                onClick={() => handleAction('DELETE')}
+                                className="w-full text-left px-3 py-2 rounded-xl text-[10px] font-bold text-red-500 hover:bg-red-500/10 flex items-center gap-3 transition-colors uppercase tracking-widest"
+                            >
+                                <Trash2 size={12} /> Purge Record
+                            </button>
+                        </div>
+                    </div>
                 )}
-            </select>
+            </div>
+        );
+    };
+
+
+    const IntelligenceCard = ({ icon: Icon, label, value, description, onClick, tooltipTitle, tooltipDesc, colorClass, highlightActive }) => {
+        const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+        const [isHovered, setIsHovered] = useState(false);
+        const cardRef = useRef(null);
+
+        const handleMouseMove = (e) => {
+            if (!cardRef.current) return;
+            const rect = cardRef.current.getBoundingClientRect();
+            setMousePos({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            });
+        };
+
+        return (
+            <button 
+                ref={cardRef}
+                onMouseMove={handleMouseMove}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                onClick={onClick}
+                className="relative bg-[#121214]/40 backdrop-blur-md border border-white/5 rounded-[24px] p-5 flex items-center gap-5 group hover:border-white/20 transition-all duration-500 text-left outline-none w-full overflow-hidden shadow-2xl"
+                style={{
+                    transform: isHovered ? 'translateY(-2px)' : 'none',
+                }}
+            >
+                {/* Magnetic Shimmer (Jony's Materiality) */}
+                <div 
+                    className="absolute inset-0 pointer-events-none transition-opacity duration-500"
+                    style={{
+                        opacity: isHovered ? 1 : 0,
+                        background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,255,255,0.06), transparent 40%)`
+                    }}
+                />
+
+                {/* Tooltip (Disappearing UI) */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-60 p-3 bg-[#0a0a0c]/90 border border-white/10 rounded-2xl text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 pointer-events-none transition-all duration-300 z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+                    <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-2">
+                        <Icon size={12} className={colorClass} />
+                        <p className={`${colorClass} font-black uppercase tracking-widest text-[9px]`}>{tooltipTitle}</p>
+                    </div>
+                    {tooltipDesc}
+                </div>
+
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border transition-all duration-500 group-hover:scale-110 ${highlightActive ? `bg-${colorClass.split('-')[1]}-500/10 ${colorClass} border-${colorClass.split('-')[1]}-500/20` : 'bg-white/5 text-gray-500 border-white/10'}`}>
+                    <Icon size={28} strokeWidth={1.5} />
+                </div>
+                <div className="min-w-0 flex-1 relative z-10">
+                    <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 group-hover:text-white transition-colors duration-500">{label}</p>
+                        <ArrowRight size={12} className="text-gray-600 opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-500" />
+                    </div>
+                    <p className="text-2xl font-light text-white my-1 tracking-tight">{value}</p>
+                    <p className="text-[9px] text-gray-600 font-bold uppercase tracking-tighter leading-tight group-hover:text-gray-400 transition-colors duration-500">{description}</p>
+                </div>
+            </button>
         );
     };
 
     const IntelligenceTray = () => (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            {/* Urgent SOPs Card */}
-            <button 
+            <IntelligenceCard 
+                icon={ShieldAlert}
+                label="Urgent SOPs"
+                value={operationsSummary?.urgentDocCount || 0}
+                description="Critical legal tasks. View in Global Vault."
+                tooltipTitle="SOP Protocol"
+                tooltipDesc="Critical procedural protocols for handling high-priority legal documents and state compliance."
+                colorClass="text-rose-500"
+                highlightActive={operationsSummary?.urgentDocCount > 0}
                 onClick={() => {
                     setActiveSubTab('vault');
                     setVaultSearchQuery('is:urgent');
                     setVaultFilter('all');
                 }}
-                className="relative bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 group hover:bg-white/[0.08] hover:border-white/20 hover:scale-[1.02] transition-all text-left outline-none w-full"
-            >
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 p-2 bg-[#0a0a0c] border border-white/10 rounded-xl text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 pointer-events-none transition-all duration-200 z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-                    <div className="flex items-center gap-2 mb-1.5 border-b border-white/5 pb-1.5">
-                        <ShieldAlert size={10} className="text-red-500" />
-                        <p className="text-white font-black uppercase tracking-widest text-[8px]">SOP Protocol</p>
-                    </div>
-                    Critical procedural protocols for handling high-priority legal documents and state compliance.
-                </div>
-
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${operationsSummary?.urgentDocCount > 0 ? 'bg-red-500/10 text-red-500 animate-pulse' : 'bg-white/5 text-gray-500'}`}>
-                    <ShieldAlert size={24} />
-                </div>
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-red-400 transition-colors">Urgent SOPs</p>
-                        <ArrowRight size={10} className="text-gray-600 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
-                    </div>
-                    <p className="text-xl font-light text-white my-0.5">{operationsSummary?.urgentDocCount || 0}</p>
-                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter leading-tight group-hover:text-gray-400">Critical legal tasks. View in Global Vault.</p>
-                </div>
-            </button>
-
-            {/* Open Inquiries Card */}
-            <button 
+            />
+            <IntelligenceCard 
+                icon={Inbox}
+                label="Open Inquiries"
+                value={operationsSummary?.openThreadCount || 0}
+                description="Active client threads. View in Global Inbox."
+                tooltipTitle="Active Traffic"
+                tooltipDesc="Pending client communications requiring Registered Agent attention or official response."
+                colorClass="text-luminous-blue"
+                highlightActive={operationsSummary?.openThreadCount > 0}
                 onClick={() => {
                     setActiveSubTab('inbox');
                     setInboxFilter('needs_action');
                     setSelectedThread(null);
                 }}
-                className="relative bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 group hover:bg-white/[0.08] hover:border-white/20 hover:scale-[1.02] transition-all text-left outline-none w-full"
-            >
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 p-2 bg-[#0a0a0c] border border-white/10 rounded-xl text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 pointer-events-none transition-all duration-200 z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-                    <div className="flex items-center gap-2 mb-1.5 border-b border-white/5 pb-1.5">
-                        <Inbox size={10} className="text-luminous-blue" />
-                        <p className="text-luminous-blue font-black uppercase tracking-widest text-[8px]">Active Traffic</p>
-                    </div>
-                    Pending client communications requiring Registered Agent attention or official response.
-                </div>
-                
-
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${operationsSummary?.openThreadCount > 0 ? 'bg-luminous-blue/10 text-luminous-blue' : 'bg-white/5 text-gray-500'}`}>
-                    <Inbox size={24} />
-                </div>
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-luminous-blue transition-colors">Open Inquiries</p>
-                        <ArrowRight size={10} className="text-gray-600 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
-                    </div>
-                    <p className="text-xl font-light text-white my-0.5">{operationsSummary?.openThreadCount || 0}</p>
-                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter leading-tight group-hover:text-gray-400">Active client threads. View in Global Inbox.</p>
-                </div>
-            </button>
-
-            {/* Processed Today Card */}
-            <button 
+            />
+            <IntelligenceCard 
+                icon={CheckCircle2}
+                label="Processed Today"
+                value={operationsSummary?.processedTodayCount || 0}
+                description="Completed operations. View in System Ledger."
+                tooltipTitle="Daily Audit"
+                tooltipDesc="Real-time log of all secure operations performed within the current 24-hour cycle."
+                colorClass="text-emerald-400"
+                highlightActive={true}
                 onClick={() => {
                     setActiveSubTab('ledger');
                     setLedgerSearchQuery(new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
                     setLedgerFilter('all');
                 }}
-                className="relative bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 group hover:bg-white/[0.08] hover:border-white/20 hover:scale-[1.02] transition-all text-left outline-none w-full"
-            >
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 p-2 bg-[#0a0a0c] border border-white/10 rounded-xl text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 pointer-events-none transition-all duration-200 z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-                    <div className="flex items-center gap-2 mb-1.5 border-b border-white/5 pb-1.5">
-                        <CheckCircle2 size={10} className="text-emerald-400" />
-                        <p className="text-emerald-400 font-black uppercase tracking-widest text-[8px]">Daily Audit</p>
-                    </div>
-                    Real-time log of all secure operations performed within the current 24-hour cycle.
-                </div>
-
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 transition-transform group-hover:scale-110">
-                    <CheckCircle2 size={24} />
-                </div>
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-emerald-400 transition-colors">Processed Today</p>
-                        <ArrowRight size={10} className="text-gray-600 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
-                    </div>
-                    <p className="text-xl font-light text-white my-0.5">{operationsSummary?.processedTodayCount || 0}</p>
-                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter leading-tight group-hover:text-gray-400">Completed operations. View in System Ledger.</p>
-                </div>
-            </button>
-
-            {/* Total Vault Card */}
-            <button 
+            />
+            <IntelligenceCard 
+                icon={FileBox}
+                label="Total Vault"
+                value={operationsSummary?.totalVaultCount || 0}
+                description="All entity documents. View in Global Vault."
+                tooltipTitle="Fleet Registry"
+                tooltipDesc="Complete encrypted repository containing all historical documents and high-value legal filings."
+                colorClass="text-white"
+                highlightActive={false}
                 onClick={() => {
                     setActiveSubTab('vault');
                     setVaultSearchQuery('');
                     setVaultFilter('all');
                 }}
-                className="relative bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 group hover:bg-white/[0.08] hover:border-white/20 hover:scale-[1.02] transition-all text-left outline-none w-full"
-            >
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 p-2 bg-[#0a0a0c] border border-white/10 rounded-xl text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 pointer-events-none transition-all duration-200 z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-                    <div className="flex items-center gap-2 mb-1.5 border-b border-white/5 pb-1.5">
-                        <FileBox size={10} className="text-white" />
-                        <p className="text-white font-black uppercase tracking-widest text-[8px]">Fleet Registry</p>
-                    </div>
-                    Complete encrypted repository containing all historical documents and high-value legal filings.
-                </div>
-
-                <div className="w-12 h-12 rounded-xl bg-white/5 text-gray-500 flex items-center justify-center shrink-0 transition-transform group-hover:scale-110">
-                    <FileBox size={24} />
-                </div>
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors">Total Vault</p>
-                        <ArrowRight size={10} className="text-gray-600 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
-                    </div>
-                    <p className="text-xl font-light text-white my-0.5">{operationsSummary?.totalVaultCount || 0}</p>
-                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter leading-tight group-hover:text-gray-400">All entity documents. View in Global Vault.</p>
-                </div>
-            </button>
+            />
         </div>
     );
 
-    const renderLedger = () => (
+
+
+
+    const renderGlobalVault = () => (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
                 <div>
-                    <h3 className="text-xl font-light text-white tracking-tight">System Ledger</h3>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Immutable audit trail of fleet operations ({filteredLedgerLogs.length})</p>
+                    <h3 className="text-xl font-light text-white tracking-tight">Mission Control File Registry</h3>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Cross-entity secure documents ({filteredVaultDocs.length})</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                    {/* Search Component */}
                     <div className="relative w-full sm:w-80">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
                         <input 
                             type="text"
-                            value={ledgerSearchQuery}
-                            onChange={(e) => setLedgerSearchQuery(e.target.value)}
-                            placeholder="Search action, email, LLC, or client..."
-                            className="w-full bg-white/5 border border-white/10 focus:border-purple-500/40 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-gray-600 outline-none transition-all shadow-inner shadow-black/20"
+                            value={vaultSearchQuery}
+                            onChange={(e) => setVaultSearchQuery(e.target.value)}
+                            placeholder="Search title, LLC, or owner..."
+                            className="w-full bg-white/5 border border-white/10 focus:border-luminous-blue/40 rounded-xl pl-9 pr-4 py-2.5 text-[10px] font-bold text-white placeholder:text-gray-600 outline-none transition-all uppercase tracking-widest shadow-inner shadow-black/20"
                         />
-                        {ledgerSearchQuery && (
+                        {vaultSearchQuery && (
                             <button 
-                                onClick={() => setLedgerSearchQuery('')}
+                                onClick={() => setVaultSearchQuery('')}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
                             >
                                 <X size={12} />
@@ -1342,10 +1439,270 @@ const RaOperationsSector = ({
                         )}
                     </div>
 
-                    {/* Filter Segment */}
                     <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 shrink-0 shadow-inner shadow-black/40">
                         {[
-                            { id: 'all', label: 'All' },
+                            { id: 'all', label: 'All Registry' },
+                            { id: 'llc', label: 'LLCs' },
+                            { id: 'individual', label: 'Direct' }
+                        ].map(f => (
+                            <button
+                                key={f.id}
+                                onClick={() => setVaultFilter(f.id)}
+                                className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${vaultFilter === f.id ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                            >
+                                {f.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            
+            <div className="bg-[#121214]/80 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+                {/* Table Header */}
+                <div className="grid grid-cols-12 gap-4 p-4 border-b border-white/10 bg-white/[0.02] items-center">
+                    <div className="col-span-1 flex items-center justify-center">
+                        <input 
+                            type="checkbox" 
+                            checked={selectedVaultIds.length === filteredVaultDocs.length && filteredVaultDocs.length > 0}
+                            onChange={(e) => {
+                                if (e.target.checked) setSelectedVaultIds(filteredVaultDocs.map(d => d.id));
+                                else setSelectedVaultIds([]);
+                            }}
+                            className="w-4 h-4 rounded border-white/10 bg-white/5 accent-[#00f3ff] cursor-pointer"
+                        />
+                    </div>
+                    <div className="col-span-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Document Focus</div>
+                    <div className="col-span-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Entity (LLC)</div>
+                    <div className="col-span-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Author / Actor</div>
+                    <div className="col-span-1 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Status</div>
+                    <div className="col-span-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 text-right">Actions</div>
+                </div>
+
+                <div className="divide-y divide-white/5">
+                    {filteredVaultDocs.map(doc => {
+                        const llcName = doc.llcs?.llc_name || 'Individual / Direct';
+                        const latestLog = (globalAuditLogs || []).find(l => l.document_id === doc.id);
+                        
+                        const formatStaffName = (email) => {
+                            if (!email) return 'System Initialized';
+                            const namePart = email.split('@')[0];
+                            return namePart.split(/[\._]/).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
+                        };
+
+                        const authorName = latestLog 
+                            ? (latestLog.actor_type === 'USER' ? (clientMap[latestLog.user_id]?.name || latestLog.actor_email) : formatStaffName(latestLog.actor_email))
+                            : (clientMap[doc.user_id]?.name || 'System Initialized');
+
+                        return (
+                            <div key={doc.id} className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-white/[0.04] transition-all group ${selectedVaultIds.includes(doc.id) ? 'bg-[#00f3ff]/5 border-l-2 border-l-[#00f3ff]' : 'border-l-2 border-l-transparent'}`}>
+                                <div className="col-span-1 flex items-center justify-center">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={selectedVaultIds.includes(doc.id)}
+                                        onChange={() => {
+                                            setSelectedVaultIds(prev => 
+                                                prev.includes(doc.id) ? prev.filter(id => id !== doc.id) : [...prev, doc.id]
+                                            );
+                                        }}
+                                        className="w-4 h-4 rounded border-white/10 bg-white/5 accent-[#00f3ff] cursor-pointer"
+                                    />
+                                </div>
+
+                                <div className="col-span-3 flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-all ${doc.urgent ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.15)]' : 'bg-white/5 text-gray-500 border-white/10'}`}>
+                                        <FileText size={14} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <button 
+                                            onClick={() => {
+                                                if (doc.download_url) setActiveViewerDoc({ id: doc.id, title: doc.title, url: doc.download_url, type: doc.type, llc_name: llcName });
+                                            }}
+                                            className="text-sm text-[#00f3ff] font-bold truncate hover:text-white transition-all text-left w-full hover:underline underline-offset-4 decoration-[#00f3ff]/30 block"
+                                        >
+                                            {doc.title || 'Untitled Registry Record'}
+                                        </button>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest">{doc.type || 'Managed'}</p>
+                                            <span className="text-[8px] text-gray-700 font-mono">v1.4</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="col-span-2 min-w-0">
+                                    <p className={`text-xs font-bold truncate transition-all ${doc.llc_id ? 'text-luminous-blue' : 'text-gray-600'}`}>
+                                        {llcName}
+                                    </p>
+                                </div>
+
+                                <div className="col-span-3 truncate">
+                                    <p className="text-[11px] text-white font-bold tracking-tight truncate">{authorName}</p>
+                                    <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black leading-none mt-0.5">{new Date(doc.date).toLocaleDateString([], { month: 'short', day: 'numeric' })} • {latestLog?.actor_email || 'SYSTEM'}</p>
+                                </div>
+
+                                <div className="col-span-1">
+                                    <div className="flex items-center">
+                                        {doc.status?.toUpperCase() === 'ARCHIVED' && <span className="text-[7px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">Archived</span>}
+                                        {doc.status?.toUpperCase() === 'FORWARDED' && <span className="text-[7px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">Forwarded</span>}
+                                        {(!doc.status || doc.status?.toUpperCase() === 'READY') && <span className="text-[7px] font-black uppercase tracking-widest text-luminous-blue bg-luminous-blue/10 px-1.5 py-0.5 rounded border border-luminous-blue/20">Active</span>}
+                                    </div>
+                                </div>
+
+                                <div className="col-span-2 flex items-center justify-end gap-1.5 text-right">
+                                    <div className="flex items-center opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all gap-1.5">
+                                        <button 
+                                            onClick={() => {
+                                                if (doc.download_url) setActiveViewerDoc({ id: doc.id, title: doc.title, url: doc.download_url, type: doc.type, llc_name: llcName });
+                                            }}
+                                            className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-white text-gray-500 hover:text-black border border-white/10 hover:border-white rounded-lg transition-all"
+                                            title="Quick View"
+                                        >
+                                            <Eye size={14} />
+                                        </button>
+                                        <button 
+                                            onClick={() => updateDocumentStatus(doc.id, 'ARCHIVED', 'DOCUMENT_ARCHIVED')}
+                                            className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-amber-500/20 text-gray-500 hover:text-amber-500 border border-white/10 hover:border-amber-500/30 rounded-lg transition-all"
+                                            title="Quick Archive"
+                                        >
+                                            <Archive size={14} />
+                                        </button>
+                                    </div>
+                                    <AcrylicActionControl doc={doc} />
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+                
+                {filteredVaultDocs.length === 0 && (
+                    <div className="p-20 text-center flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 text-gray-600">
+                            <FileSearch size={32} />
+                        </div>
+                        <h4 className="text-white font-medium">No Documents Found</h4>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 max-w-[200px]">Adjust your search or entity filters to locate records.</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
+
+    if (loading) return <div className="p-12 text-center text-gray-500 text-[10px] uppercase font-bold tracking-widest animate-pulse">Synchronizing Nodes...</div>;
+
+    const renderPremiumViewer = () => {
+        if (!activeViewerDoc) return null;
+        
+        return (
+            <div className="fixed inset-0 z-[600] bg-black/90 backdrop-blur-xl flex flex-col p-6 animate-in fade-in zoom-in duration-300">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8 px-4">
+                    <div className="flex items-center gap-5">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00f3ff]/20 to-purple-500/10 border border-[#00f3ff]/30 flex items-center justify-center text-[#00f3ff] shadow-[0_0_20px_rgba(0,243,255,0.15)]">
+                            <FileText size={28} />
+                        </div>
+                        <div className="space-y-1">
+                            <h3 className="text-2xl font-light text-white tracking-tight">{activeViewerDoc.title}</h3>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] text-[#00f3ff] font-black uppercase tracking-[0.2em] px-2 py-0.5 bg-[#00f3ff]/10 rounded border border-[#00f3ff]/20">Secure Mission Control Viewer</span>
+                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center gap-2">
+                                    <Briefcase size={10} className="text-white/20" />
+                                    {activeViewerDoc.llc_name || 'Individual Entity'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
+                        <button 
+                            onClick={() => {
+                                const frame = document.getElementById('premium-viewer-frame');
+                                if (frame) frame.contentWindow.print();
+                                else window.print();
+                            }}
+                            className="px-5 py-2.5 hover:bg-white hover:text-black text-gray-400 rounded-xl transition-all flex items-center gap-2.5 text-[10px] font-black uppercase tracking-widest group"
+                        >
+                            <Printer size={14} className="group-hover:scale-110 transition-transform" /> Print
+                        </button>
+                        <button 
+                            onClick={() => {
+                                if (!activeViewerDoc?.url) return;
+                                const link = document.createElement('a');
+                                link.href = activeViewerDoc.url;
+                                link.download = activeViewerDoc.title || 'document';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                setToast({ message: 'Document download initiated.', type: 'success' });
+                            }}
+                            className="px-5 py-2.5 hover:bg-emerald-500 hover:text-black text-emerald-500 rounded-xl transition-all flex items-center gap-2.5 text-[10px] font-black uppercase tracking-widest group"
+                        >
+                            <Download size={14} className="group-hover:scale-110 transition-transform" /> Save
+                        </button>
+                        <button 
+                            onClick={() => {
+                                setToast({ message: 'Initializing Forwarding Flow... System shifting to Inbox Context.', type: 'system' });
+                                setTimeout(() => {
+                                    setActiveSubTab('inbox');
+                                    setNewMessage(`[ATTACHMENT REFERENCE: ${activeViewerDoc?.title}] \n\nI have reviewed the document for ${activeViewerDoc?.llc_name} and...`);
+                                    setActiveViewerDoc(null);
+                                }, 800);
+                            }}
+                            className="px-5 py-2.5 hover:bg-[#00f3ff] hover:text-black text-[#00f3ff] rounded-xl transition-all flex items-center gap-2.5 text-[10px] font-black uppercase tracking-widest group"
+                        >
+                            <Mail size={14} className="group-hover:scale-110 transition-transform" /> Email
+                        </button>
+                        <div className="w-px h-8 bg-white/10 mx-2" />
+                        <button 
+                            onClick={() => setActiveViewerDoc(null)} 
+                            className="p-2.5 bg-white/5 hover:bg-rose-500/20 text-gray-500 hover:text-rose-500 rounded-xl transition-all border border-transparent hover:border-rose-500/30"
+                        >
+                            <X size={18} />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="flex-1 bg-white rounded-[32px] overflow-hidden border-8 border-white/5 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex items-center justify-center relative">
+                    {activeViewerDoc.type?.startsWith('image/') ? (
+                        <img src={activeViewerDoc.url} alt="Secure Preview" className="w-[98%] h-[98%] object-contain" />
+                    ) : (
+                        <iframe 
+                            id="premium-viewer-frame"
+                            src={`${activeViewerDoc.url}#toolbar=0`} 
+                            className="w-full h-full border-0 bg-white" 
+                            title="Mission Control Full Preview" 
+                        />
+                    )}
+                    <div className="absolute bottom-8 right-8 pointer-events-none opacity-[0.03] select-none text-right">
+                        <p className="text-4xl font-black uppercase tracking-[0.5em] text-black">Charter Legacy</p>
+                        <p className="text-sm font-mono text-black mt-2">SECURE_MISSION_CONTROL_STREAM_v4</p>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const renderLedger = () => (
+        <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
+                <div>
+                    <h3 className="text-xl font-light text-white tracking-tight">Mission Control Fleet Ledger</h3>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">High-fidelity audit stream & system interaction log</p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="relative w-full sm:w-80">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
+                        <input
+                            type="text"
+                            placeholder="Search by Action, Actor, or LLC..."
+                            value={ledgerSearchQuery}
+                            onChange={e => setLedgerSearchQuery(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-[10px] font-bold text-white focus:outline-none focus:border-purple-500/50 transition-all uppercase tracking-widest placeholder:text-gray-600"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
+                        {[
+                            { id: 'all', label: 'All Traffic' },
                             { id: 'user', label: 'Users' },
                             { id: 'system', label: 'System' }
                         ].map(f => (
@@ -1361,350 +1718,250 @@ const RaOperationsSector = ({
                 </div>
             </div>
 
-            <div className="bg-[#121214]/80 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden divide-y divide-white/5 shadow-2xl">
-                {filteredLedgerLogs.map(log => (
-                    <div key={log.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-white/[0.02] gap-4 transition-colors group">
-                        <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all ${log.actor_type === 'USER' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-green-500/10 text-green-400 border-green-500/20'}`}>
-                                {log.actor_type === 'USER' ? <User size={16} /> : <Cpu size={16} />}
-                            </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        {log.document_id ? (
-                                            <button 
-                                                onClick={() => { 
-                                                    setActiveSubTab('vault'); 
-                                                    setVaultSearchQuery(log.document_id); 
-                                                }}
-                                                className="text-sm text-white font-medium hover:text-purple-400 group-hover:text-purple-400 transition-colors uppercase tracking-tight shrink-0 underline decoration-purple-500/0 hover:decoration-purple-500/30"
-                                            >
-                                                {log.action}
-                                            </button>
-                                        ) : (
-                                            <p className="text-sm text-white font-medium group-hover:text-purple-400 transition-colors uppercase tracking-tight shrink-0">{log.action}</p>
-                                        )}
-                                        {log.document_id && (
-                                            <>
-                                                <span className="text-white/20 text-[10px]">•</span>
-                                                {(() => {
-                                                    const doc = globalDocuments?.find(d => d.id === log.document_id);
-                                                    const filename = log.metadata?.filename || doc?.title || 'Unknown Document';
-                                                    return (
-                                                        <button 
-                                                            onClick={() => doc?.download_url && window.open(doc.download_url, '_blank')}
-                                                            className={`text-[11px] font-bold tracking-tight transition-all truncate max-w-[200px] ${doc?.download_url ? 'text-luminous-blue hover:text-white hover:underline decoration-luminous-blue/30' : 'text-gray-500 cursor-not-allowed'}`}
-                                                            title={filename}
-                                                        >
-                                                            {filename}
-                                                        </button>
-                                                    );
-                                                })()}
-                                            </>
-                                        )}
-                                    </div>
-                                    <span className={`px-1.5 py-0.5 rounded-[4px] text-[7px] font-black uppercase tracking-widest border shrink-0 ${log.outcome === 'success' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/10' : 'bg-red-500/10 text-red-500 border-red-500/10'}`}>
-                                        {log.outcome}
-                                    </span>
-                                </div>
-                                <p className="text-[10px] text-gray-500 font-mono mt-0.5">{log.actor_email} • {log.ip_address || 'Internal'}</p>
-                            </div>
-                        </div>
-                        <div className="text-right flex md:flex-col items-center md:items-end justify-between md:justify-center gap-2">
-                            <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest">{new Date(log.created_at).toLocaleString()}</p>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[9px] text-gray-500 font-black uppercase tracking-widest">Target:</span>
-                                {log.llc_id && llcMap[log.llc_id] ? (
-                                    <div className="flex flex-col items-end">
-                                        <button 
-                                            onClick={() => { 
-                                                setActiveSubTab('vault'); 
-                                                setVaultSearchQuery(llcMap[log.llc_id].llc_name); 
-                                                setVaultFilter('llc');
-                                            }}
-                                            className="text-[9px] text-purple-400 font-black uppercase tracking-widest hover:text-white transition-colors"
-                                        >
-                                            {llcMap[log.llc_id].llc_name}
-                                        </button>
-                                        <span className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter">({clientMap[log.user_id]?.name || 'Direct'})</span>
-                                    </div>
-                                ) : (
-                                    <button 
-                                        onClick={() => { 
-                                            setActiveSubTab('vault'); 
-                                            setVaultSearchQuery(clientMap[log.user_id]?.name || ''); 
-                                            setVaultFilter('individual');
-                                        }}
-                                        className="text-[9px] text-purple-400 font-black uppercase tracking-widest hover:text-white transition-colors"
-                                    >
-                                        {clientMap[log.user_id]?.name || log.user_id.split('-')[0]}
-                                    </button>
-                                )}
-                            </div>
-                            {log.document_id && (
-                                <div className="flex items-center gap-2">
-                                    {(() => {
-                                        const doc = globalDocuments?.find(d => d.id === log.document_id);
-                                        if (doc?.download_url) {
-                                            return (
-                                                <button 
-                                                    onClick={() => window.open(doc.download_url, '_blank')}
-                                                    className="px-2 py-1 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded text-[8px] font-black uppercase text-purple-400 hover:text-white transition-all flex items-center gap-1"
-                                                >
-                                                    <Eye size={10} /> View Source
-                                                </button>
-                                            );
-                                        }
-                                        return null;
-                                    })()}
-                                    <button 
-                                        onClick={() => { 
-                                            setActiveSubTab('vault'); 
-                                            setVaultSearchQuery(log.document_id); 
-                                        }}
-                                        className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-[8px] font-black uppercase text-gray-400 hover:text-white transition-all"
-                                    >
-                                        Jump to Context
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                ))}
-                
-                {filteredLedgerLogs.length === 0 && (
-                    <div className="p-20 text-center flex flex-col items-center justify-center">
-                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 text-gray-600">
-                            <Search size={32} />
-                        </div>
-                        <h4 className="text-white font-medium">No Logs Found</h4>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 max-w-[200px]">Adjust your search or actor filters to locate audit records.</p>
-                        {(ledgerSearchQuery || ledgerFilter !== 'all') && (
-                            <button 
-                                onClick={() => { setLedgerSearchQuery(''); setLedgerFilter('all'); }} 
-                                className="mt-6 text-[10px] text-purple-500 font-black uppercase tracking-widest hover:text-white transition-colors border-b border-purple-500/30"
-                            >
-                                Reset Ledger Filters
-                            </button>
-                        )}
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-
-    const renderGlobalVault = () => (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
-                <div>
-                    <h3 className="text-xl font-light text-white tracking-tight">Global File Registry</h3>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Cross-entity secure documents ({filteredVaultDocs.length})</p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                    {/* Search Component */}
-                    <div className="relative w-full sm:w-80">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
+            <div className="bg-[#121214]/80 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+                {/* Table Header with Selection Nexus */}
+                <div className="grid grid-cols-12 gap-4 p-4 border-b border-white/10 bg-white/[0.02] items-center">
+                    <div className="col-span-1 flex items-center justify-center">
                         <input 
-                            type="text"
-                            value={vaultSearchQuery}
-                            onChange={(e) => setVaultSearchQuery(e.target.value)}
-                            placeholder="Search title, LLC, or owner..."
-                            className="w-full bg-white/5 border border-white/10 focus:border-luminous-blue/40 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-gray-600 outline-none transition-all shadow-inner shadow-black/20"
+                            type="checkbox" 
+                            checked={selectedLedgerIds.length === filteredLedgerLogs.length && filteredLedgerLogs.length > 0}
+                            onChange={(e) => {
+                                if (e.target.checked) setSelectedLedgerIds(filteredLedgerLogs.map(l => l.id));
+                                else setSelectedLedgerIds([]);
+                            }}
+                            className="w-4 h-4 rounded border-white/10 bg-white/5 accent-emerald-500 cursor-pointer"
                         />
-                        {vaultSearchQuery && (
-                            <button 
-                                onClick={() => setVaultSearchQuery('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
-                            >
-                                <X size={12} />
-                            </button>
-                        )}
                     </div>
-
-                    {/* Filter Segment */}
-                    <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 shrink-0 shadow-inner shadow-black/40">
-                        {[
-                            { id: 'all', label: 'All' },
-                            { id: 'llc', label: 'LLCs' },
-                            { id: 'individual', label: 'Direct' }
-                        ].map(f => (
-                            <button
-                                key={f.id}
-                                onClick={() => setVaultFilter(f.id)}
-                                className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${vaultFilter === f.id ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
-                            >
-                                {f.label}
-                            </button>
-                        ))}
-                    </div>
+                    <div className="col-span-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Operation / Action</div>
+                    <div className="col-span-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Entity (LLC)</div>
+                    <div className="col-span-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Document Focus</div>
+                    <div className="col-span-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Author</div>
+                    <div className="col-span-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 text-right">Timing</div>
                 </div>
-            </div>
-            
-            <div className="bg-[#121214]/80 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden divide-y divide-white/5 shadow-2xl">
-                {filteredVaultDocs.map(doc => {
-                    const client = clientMap[doc.user_id];
-                    const llc = llcDirectory?.find(l => l.id === doc.llc_id);
-                    
-                    // Derive RESENT status from audit ledger
-                    const isResent = globalAuditLogs?.some(log => 
-                        log.document_id === doc.id && 
-                        log.action === 'DOCUMENT_RESENT' && 
-                        log.outcome === 'SUCCESS'
-                    );
 
-                    return (
-                        <div key={doc.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-white/[0.02] gap-4 transition-colors group">
-                            <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border transition-all ${doc.urgent ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.15)] group-hover:scale-105' : 'bg-white/5 text-gray-500 border-white/10 group-hover:bg-white/10 group-hover:text-white'}`}>
-                                    <FileText size={20} />
+                <div className="divide-y divide-white/5">
+                    {filteredLedgerLogs.map(log => {
+                        const llcName = log.llcs?.llc_name || 'Global / System';
+                        const docTitle = log.registered_agent_documents?.title || log.metadata?.filename || 'No Attachment';
+                        const isSystem = log.actor_type === 'SYSTEM' || log.actor_type === 'CHARTER_ADMIN';
+                        
+                        const formatStaffName = (email) => {
+                            if (!email) return 'System';
+                            const namePart = email.split('@')[0];
+                            return namePart.split(/[\._]/).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
+                        };
+
+                        const authorName = log.actor_type === 'USER' ? (clientMap[log.user_id]?.name || log.actor_email) : formatStaffName(log.actor_email);
+
+                        return (
+                            <div key={log.id} className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-white/[0.04] transition-all group ${selectedLedgerIds.includes(log.id) ? 'bg-emerald-500/5 border-l-2 border-l-emerald-500' : 'border-l-2 border-l-transparent'}`}>
+                                {/* Selection Column */}
+                                <div className="col-span-1 flex items-center justify-center">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={selectedLedgerIds.includes(log.id)}
+                                        onChange={() => {
+                                            setSelectedLedgerIds(prev => 
+                                                prev.includes(log.id) ? prev.filter(id => id !== log.id) : [...prev, log.id]
+                                            );
+                                        }}
+                                        className="w-4 h-4 rounded border-white/10 bg-white/5 accent-emerald-500 cursor-pointer"
+                                    />
                                 </div>
-                                <div className="min-w-0">
-                                    <h4 className="text-sm text-white font-medium truncate group-hover:text-luminous-blue transition-colors">{doc.title}</h4>
-                                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                                        <span className={`px-2 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-[0.1em] border flex items-center gap-1.5 ${doc.type === 'State Requirement (FL)' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-white/5 text-gray-500 border-white/10'}`}>
-                                            <div className={`w-1 h-1 rounded-full ${doc.type === 'State Requirement (FL)' ? 'bg-amber-500' : 'bg-gray-500'}`} />
-                                            {doc.type}
-                                        </span>
-                                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider flex items-center gap-2">
-                                            <span className="text-white/40">{client?.name || 'Unknown Client'}</span>
-                                            {llc && (
-                                                <>
-                                                    <span className="opacity-20">|</span>
-                                                    <span className="text-luminous-blue/60">{llc.llc_name}</span>
-                                                </>
-                                            )}
-                                        </span>
+
+                                <div className="col-span-2 flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-all ${!isSystem ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-green-500/10 text-green-400 border-green-500/20'}`}>
+                                        {!isSystem ? <User size={14} /> : <Cpu size={14} />}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-[10px] text-white font-black uppercase tracking-widest truncate">{log.action}</p>
+                                            <span className={`px-1.5 py-0.5 rounded-[4px] text-[6px] font-black uppercase tracking-widest border shrink-0 ${log.outcome?.toUpperCase() === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                                                {log.outcome}
+                                            </span>
+                                        </div>
+                                        <p className="text-[7px] text-gray-500 font-mono mt-0.5 uppercase tracking-tighter truncate">{log.id.split('-')[0]}</p>
+                                    </div>
+                                </div>
+
+                                <div className="col-span-2 min-w-0">
+                                    <button 
+                                        onClick={() => {
+                                            if (log.llc_id) {
+                                                setActiveSubTab('vault');
+                                                setVaultSearchQuery(llcName);
+                                                setVaultFilter('llc');
+                                            }
+                                        }}
+                                        className={`text-xs font-bold truncate transition-all ${log.llc_id ? 'text-luminous-blue hover:text-white hover:underline decoration-luminous-blue/30' : 'text-gray-600 cursor-default'}`}
+                                    >
+                                        {llcName}
+                                    </button>
+                                </div>
+
+                                <div className="col-span-3 min-w-0 overflow-hidden">
+                                    <button 
+                                        disabled={!log.document_id}
+                                        onClick={() => {
+                                            const doc = globalDocuments?.find(d => d.id === log.document_id);
+                                            if (doc?.download_url) {
+                                                setActiveViewerDoc({
+                                                    id: doc.id,
+                                                    title: doc.title || docTitle,
+                                                    url: doc.download_url,
+                                                    type: doc.type || 'application/pdf',
+                                                    llc_name: log.llcs?.llc_name || 'Individual Entity'
+                                                });
+                                            }
+                                        }}
+                                        className={`text-xs font-bold truncate transition-all flex items-center gap-2 w-full text-left ${log.document_id ? 'text-[#00f3ff] hover:text-white cursor-pointer hover:underline decoration-[#00f3ff]/30' : 'text-gray-600 cursor-default'}`}
+                                        title={docTitle}
+                                    >
+                                        {log.document_id && <FileText size={10} className="text-[#00f3ff]/50 shrink-0" />}
+                                        <span className="truncate">{docTitle || 'System Metadata'}</span>
+                                    </button>
+                                </div>
+
+                                <div className="col-span-2 truncate">
+                                    <p className="text-[11px] text-white font-bold tracking-tight truncate">{authorName}</p>
+                                    {log.actor_type !== 'SYSTEM' && <p className="text-[9px] text-gray-600 uppercase tracking-widest font-black leading-none mt-0.5 truncate">{log.actor_email}</p>}
+                                </div>
+
+                                <div className="col-span-2 flex items-center justify-end gap-3 min-w-0">
+                                    {log.document_id && (
+                                        <AcrylicActionControl doc={globalDocuments?.find(d => d.id === log.document_id) || { id: log.document_id, title: docTitle, user_id: log.user_id, llc_id: log.llc_id }} />
+                                    )}
+                                    <div className="text-right shrink-0">
+                                        <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">{new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                        <p className="text-[8px] text-gray-600 font-bold uppercase tracking-tighter mt-0.5">{new Date(log.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                                     </div>
                                 </div>
                             </div>
-                             <div className="flex items-center gap-4 shrink-0 justify-between md:justify-end">
-                                 <div className="text-right hidden md:block">
-                                     <div className="flex flex-col items-end gap-1">
-                                         <div className="flex items-center gap-2">
-                                             {doc.status?.toUpperCase() === 'FORWARDED' && <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Forwarded</span>}
-                                             {doc.status?.toUpperCase() === 'FAILED' && <span className="text-[9px] font-black uppercase tracking-widest text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">Failed</span>}
-                                              {(doc.status?.toUpperCase() === 'READY' || doc.status?.toUpperCase() === 'FILED') && <span className="text-[9px] font-black uppercase tracking-widest text-luminous-blue bg-luminous-blue/10 px-2 py-0.5 rounded border border-luminous-blue/20">Filed</span>}
-                                             {doc.status?.toUpperCase() === 'ARCHIVED' && <span className="text-[9px] font-black uppercase tracking-widest text-gray-500 bg-white/5 px-2 py-0.5 rounded border border-white/10">Archived</span>}
-                                             
-                                             {isResent && (
-                                                 <span className="text-[9px] font-black uppercase tracking-widest text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 flex items-center gap-1">
-                                                     <RefreshCw size={8} className="animate-spin-slow" /> Resent
-                                                 </span>
-                                             )}
-                                             
-                                             <RAActionControl doc={doc} />
-                                         </div>
-                                         <p className="text-[8px] text-white/30 font-bold uppercase tracking-tighter mt-1">{doc.date}</p>
-                                     </div>
-                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <button 
-                                        onClick={() => {
-                                            if (doc.download_url) window.open(doc.download_url, '_blank');
-                                            else setToast({ message: 'Document physically expired or pending Sync.', type: 'error' });
-                                        }}
-                                        className="px-5 py-2.5 bg-white/5 hover:bg-white text-gray-400 hover:text-black border border-white/10 hover:border-white rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] transition-all shadow-xl active:scale-95"
-                                    >
-                                        <Eye size={12} /> View
-                                    </button>
-                                    <button 
-                                        onClick={() => {
-                                            setActiveSubTab('ledger');
-                                            setLedgerSearchQuery(doc.id);
-                                        }}
-                                        className="w-10 h-10 bg-white/5 hover:bg-white/10 text-gray-500 hover:text-purple-400 border border-white/10 rounded-xl flex items-center justify-center transition-all shadow-xl active:scale-95"
-                                        title="View Audit History"
-                                    >
-                                        <Clock size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })}
-                {filteredVaultDocs.length === 0 && (
-                    <div className="p-20 text-center flex flex-col items-center justify-center">
-                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 text-gray-600">
-                            <FileSearch size={32} />
-                        </div>
-                        <h4 className="text-white font-medium">No Documents Found</h4>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 max-w-[200px]">Adjust your search or filters to locate entity records.</p>
-                        {(vaultSearchQuery || vaultFilter !== 'llc') && (
-                            <button 
-                                onClick={() => { setVaultSearchQuery(''); setVaultFilter('llc'); }} 
-                                className="mt-6 text-[10px] text-luminous-blue font-black uppercase tracking-widest hover:text-white transition-colors border-b border-luminous-blue/30"
-                            >
-                                Reset Filters
-                            </button>
-                        )}
-                    </div>
-                )}
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
-
-    if (loading) return <div className="p-12 text-center text-gray-500 text-[10px] uppercase font-bold tracking-widest animate-pulse">Synchronizing Nodes...</div>;
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
-            <header className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-3xl font-light text-white tracking-tight">RA Operations <span className="text-gray-500 font-medium">Global.</span></h2>
-                    <p className="text-sm text-gray-400 font-light mt-1">Manage all registered agent interactions across the fleet.</p>
-                </div>
-            </header>
-
-            <div className="flex gap-4 border-b border-white/10 pb-4">
-                {[
-                    { id: 'inbox', label: 'Global Inbox', icon: Inbox },
-                    { id: 'mail', label: 'Scanner Room', icon: Mail },
-                    { id: 'vault', label: 'Global Vault', icon: FileBox },
-                    { id: 'ledger', label: 'System Ledger', icon: Search }
-                ].map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => { setActiveSubTab(tab.id); setSelectedThread(null); }}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors ${activeSubTab === tab.id ? 'bg-white text-black' : 'bg-white/5 text-gray-400 hover:text-white'}`}
-                    >
-                        <tab.icon size={14} /> {tab.label}
-                    </button>
-                ))}
-            </div>
-
-            <div>
-                <IntelligenceTray />
-                {activeSubTab === 'inbox' && renderInbox()}
-                {activeSubTab === 'mail' && renderMailRoom()}
-                {activeSubTab === 'vault' && renderGlobalVault()}
-                {activeSubTab === 'ledger' && renderLedger()}
-            </div>
-
+        <div className="min-h-screen bg-[#09090b] text-white p-8 font-sans selection:bg-[#00f3ff]/30 selection:text-white">
             {toast && <PremiumToast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
+            <div className="max-w-[1600px] mx-auto space-y-10">
+                {activeViewerDoc && renderPremiumViewer()}
 
-            {viewerExpanded && scannedFile?.previewUrl && (
-                <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col p-6 animate-in fade-in duration-200">
-                    <div className="flex justify-between items-center mb-4">
-                        <div className="flex items-center gap-3">
-                            <ShieldAlert className="text-emerald-500" size={24} />
+                {/* Selection Ribbon (Steve's Power Hub) */}
+                {(selectedVaultIds.length > 0 || selectedLedgerIds.length > 0) && (
+                    <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 bg-[#0a0a0c]/80 backdrop-blur-3xl border border-white/20 rounded-3xl px-8 py-5 flex items-center gap-8 shadow-[0_30px_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-bottom-12 duration-500">
+                        <div className="flex items-center gap-4 border-r border-white/10 pr-8">
+                            <div className="w-10 h-10 bg-[#00f3ff]/10 rounded-xl flex items-center justify-center text-[#00f3ff]">
+                                <CircleDot size={20} className="animate-pulse" />
+                            </div>
                             <div>
-                                <h3 className="text-xl font-light text-white tracking-tight">{scannedFile.name}</h3>
-                                <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Enlarged Secure Viewer</p>
+                                <p className="text-xl font-light text-white leading-none">{selectedVaultIds.length + selectedLedgerIds.length}</p>
+                                <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">Nodes Selected</p>
                             </div>
                         </div>
-                        <button onClick={() => setViewerExpanded(false)} className="px-5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-white/10 backdrop-blur-md">
-                            <Minimize2 size={14} /> Close Viewer
+
+                        <div className="flex items-center gap-3">
+                            <button 
+                                onClick={async () => {
+                                    const totalVault = selectedVaultIds.length;
+                                    const totalLedger = selectedLedgerIds.length;
+                                    setToast({ message: `Initiating bulk forward for ${totalVault + totalLedger} nodes...`, type: 'system' });
+                                    
+                                    if (totalVault > 0) {
+                                        for (const id of selectedVaultIds) {
+                                            await updateDocumentStatus(id, 'FORWARDED', 'BULK_FORWARD_OPS');
+                                        }
+                                        setSelectedVaultIds([]);
+                                    }
+                                    
+                                    // Ledger entries are records of actions, forwarding them might mean something else in this context
+                                    // but we'll clear the selection for now.
+                                    if (totalLedger > 0) {
+                                        setSelectedLedgerIds([]);
+                                    }
+                                    
+                                    setToast({ message: `Successfully processed ${totalVault + totalLedger} nodes.`, type: 'success' });
+                                }}
+                                className="px-6 py-2.5 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                            >
+                                <Mail size={14} /> Forward Bulk
+                            </button>
+                            <button 
+                                onClick={async () => {
+                                    const totalVault = selectedVaultIds.length;
+                                    setToast({ message: `Bulk archiving ${totalVault} registry nodes...`, type: 'system' });
+                                    
+                                    if (totalVault > 0) {
+                                        for (const id of selectedVaultIds) {
+                                            await updateDocumentStatus(id, 'ARCHIVED', 'BULK_ARCHIVE_OPS');
+                                        }
+                                        setSelectedVaultIds([]);
+                                    }
+                                    
+                                    setSelectedLedgerIds([]);
+                                    setToast({ message: `Successfully archived ${totalVault} nodes.`, type: 'success' });
+                                }}
+                                className="px-6 py-2.5 bg-white/5 border border-white/10 hover:border-white/30 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                            >
+                                <Archive size={14} /> Archive Bulk
+                            </button>
+                            <div className="w-px h-8 bg-white/10 mx-2" />
+                            <button 
+                                onClick={() => { setSelectedVaultIds([]); setSelectedLedgerIds([]); }}
+                                className="p-2.5 bg-white/5 hover:bg-rose-500/20 text-gray-500 hover:text-rose-500 rounded-xl transition-all border border-transparent hover:border-rose-500/30"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                    </div>
+                )}
+                
+                <header className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-3xl font-light text-white tracking-tight">RA Operations <span className="text-gray-500 font-medium">Global.</span></h2>
+                        <p className="text-sm text-gray-400 font-light mt-1">Manage all registered agent interactions across the fleet.</p>
+                    </div>
+                </header>
+
+                <div className="relative flex gap-1 bg-white/5 border border-white/10 p-1.5 rounded-full overflow-hidden w-fit shadow-inner shadow-black/40">
+                    {/* Kinetic Sliding Indicator (Jony's Materiality) */}
+                    <div 
+                        className="absolute h-[calc(100%-12px)] bg-white rounded-full transition-all duration-500 cubic-bezier(0.2, 1, 0.2, 1) z-0" 
+                        style={{
+                            width: `${indicatorStyle.width}px`,
+                            left: `${indicatorStyle.left}px`,
+                            opacity: indicatorStyle.opacity
+                        }}
+                    />
+
+                    {[
+                        { id: 'inbox', label: 'Global Inbox', icon: Inbox },
+                        { id: 'mail', label: 'Scanner Room', icon: Mail },
+                        { id: 'vault', label: 'Global Vault', icon: FileBox },
+                        { id: 'ledger', label: 'System Ledger', icon: Search }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            ref={tabRefs[tab.id]}
+                            onClick={() => { setActiveSubTab(tab.id); setSelectedThread(null); }}
+                            className={`relative z-10 flex items-center gap-2 px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${activeSubTab === tab.id ? 'text-black' : 'text-gray-400 hover:text-white'}`}
+                        >
+                            <tab.icon size={14} className="shrink-0" /> {tab.label}
                         </button>
-                    </div>
-                    <div className="flex-1 bg-white rounded-xl overflow-hidden border-2 border-white/10 shadow-2xl flex items-center justify-center">
-                        {scannedFile.type?.startsWith('image/') ? (
-                            <img src={scannedFile.previewUrl} alt="Preview" className="w-[95%] h-[95%] object-contain" />
-                        ) : (
-                            <iframe src={scannedFile.previewUrl} className="w-full h-full border-0 bg-white" title="Full Preview" />
-                        )}
-                    </div>
+                    ))}
                 </div>
-            )}
+
+                <div className="space-y-8 animate-in fade-in duration-500">
+                    <IntelligenceTray />
+                    {activeSubTab === 'inbox' && renderInbox()}
+                    {activeSubTab === 'mail' && renderMailRoom()}
+                    {activeSubTab === 'vault' && renderGlobalVault()}
+                    {activeSubTab === 'ledger' && renderLedger()}
+                </div>
+            </div>
         </div>
     );
 };

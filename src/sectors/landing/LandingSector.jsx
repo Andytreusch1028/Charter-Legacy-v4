@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Shield, ArrowRight, Zap, Globe, Lock, Eye, EyeOff, Building2, Landmark, Check, ChevronDown, ChevronRight, Vault, Users, FileKey, Star, Phone, Mail, MapPin } from 'lucide-react';
 import { GlassCard } from '../../shared/design-system/UIPrimitives';
 import DoubleLLCExplainer from '../../DoubleLLCExplainer';
+import BackgroundEffects from '../../shared/design-system/BackgroundEffects';
+import FilingLedger from './FilingLedger';
 
 /**
  * LandingSector
@@ -17,61 +19,52 @@ import DoubleLLCExplainer from '../../DoubleLLCExplainer';
  *   7. Footer — Links, compliance, UPL disclosure
  */
 const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
-    const [openFaq, setOpenFaq] = useState(null);
     const [showDoubleLLC, setShowDoubleLLC] = useState(false);
+    const [heroTypewriter, setHeroTypewriter] = useState('Autonomous.');
 
-    const faqs = [
-        {
-            q: "What exactly does CharterLegacy do?",
-            a: "CharterLegacy is a filing and compliance platform. We prepare and submit your LLC formation paperwork to the Florida Division of Corporations (Sunbiz) on your behalf, provide a registered agent address to keep your home off public record, and offer encrypted document storage through our Legacy Vault."
-        },
-        {
-            q: "How does the Privacy Shield work?",
-            a: "When you form an LLC, Florida requires a registered agent address on public record. We list our DeLand, FL office address instead of yours. This means anyone searching Sunbiz sees our commercial address — not your home."
-        },
-        {
-            q: "What is the Double LLC structure?",
-            a: "Florida requires LLCs to list a human manager or member on public filings. A Double LLC uses a Wyoming holding company as the listed manager of your Florida LLC. Since Wyoming does not require owner disclosure on state filings, your personal name stays off the record entirely."
-        },
-        {
-            q: "What is the Legacy Vault?",
-            a: "The Legacy Vault is an encrypted document storage system where you can securely store formation documents, operating agreements, succession protocols, and estate planning paperwork. Documents are protected with zero-knowledge encryption — meaning only you hold the decryption key."
-        },
-        {
-            q: "Do you provide legal advice?",
-            a: "No. CharterLegacy is a document preparation and filing service. We handle the ministerial task of preparing and submitting paperwork to state agencies. We do not provide legal, tax, or financial advice. We recommend consulting with a licensed attorney for legal guidance specific to your situation."
-        },
-        {
-            q: "How long does LLC formation take?",
-            a: "Standard processing through the Florida Division of Corporations typically takes 3-5 business days. We submit your filing electronically the same day your order is completed."
-        }
-    ];
+    // Typewriter effect for Steve Agent's technical transparency
+    React.useEffect(() => {
+        const phrases = ['Autonomous.', 'Zero-Knowledge.', 'Encrypted.'];
+        let i = 0;
+        const timer = setInterval(() => {
+            i = (i + 1) % phrases.length;
+            setHeroTypewriter(phrases[i]);
+        }, 3000);
+        return () => clearInterval(timer);
+    }, []);
+
 
     return (
-        <div className="min-h-screen bg-[#0A0A0B] text-white selection:bg-white/10 selection:text-white">
+        <div className="relative min-h-screen bg-neutral-dark text-white selection:bg-white/10 selection:text-white overflow-x-hidden">
+            <BackgroundEffects />
+            
             {/* Double LLC Modal */}
             <DoubleLLCExplainer isOpen={showDoubleLLC} onClose={() => setShowDoubleLLC(false)} />
 
             {/* ═══════════════════════════════════════════
                 NAVIGATION
             ═══════════════════════════════════════════ */}
-            <nav className="fixed top-0 left-0 right-0 z-50 h-24 flex items-center justify-between px-6 md:px-12 bg-gradient-to-b from-[#0A0A0B] via-[#0A0A0B]/90 to-transparent">
+            <nav className="fixed top-0 left-0 right-0 z-50 h-24 flex items-center justify-between px-6 md:px-12 bg-gradient-to-b from-[#050506] via-[#050506]/90 to-transparent backdrop-blur-sm border-b border-white/[0.03]">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-black">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-black shadow-[0_0_20px_rgba(255,255,255,0.2)]">
                         <Shield size={22} />
                     </div>
-                    <span className="font-black text-xl tracking-tighter uppercase">Charter Legacy</span>
+                    <div>
+                        <span className="font-black text-xl tracking-tighter uppercase block leading-none">Charter Legacy</span>
+                        <span className="text-[8px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-1 ml-0.5">Control Tower v4.5</span>
+                    </div>
                 </div>
                 <div className="flex items-center gap-4 md:gap-8">
                     <button 
                         onClick={onEnterConsole}
-                        className="hidden md:block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-white transition-colors"
+                        className="hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-white transition-all group"
                     >
+                        <div className="w-1.5 h-1.5 bg-gray-600 rounded-full group-hover:bg-emerald-500 group-hover:shadow-[0_0_8px_#10b981] transition-all" />
                         Access Terminal
                     </button>
                     <button 
                         onClick={onStartCheckout}
-                        className="px-6 py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/10"
+                        className="px-6 py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/20"
                     >
                         Form LLC
                     </button>
@@ -81,38 +74,46 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
             {/* ═══════════════════════════════════════════
                 1. HERO SECTION
             ═══════════════════════════════════════════ */}
-            <section className="relative pt-48 pb-32 px-6 md:px-12 flex flex-col items-center text-center overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] bg-gradient-to-b from-white/5 to-transparent rounded-full blur-[120px] pointer-events-none" />
-                
-                <div className="relative z-10 space-y-8 max-w-4xl">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 animate-in fade-in slide-in-from-top-4 duration-700">
-                        <Zap size={12} className="text-amber-400" /> Florida's Privacy-First LLC Platform
+            <section className="relative pt-64 pb-32 px-6 md:px-12 flex flex-col items-center text-center">
+                <div className="relative z-10 space-y-10 max-w-5xl">
+                    <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/[0.03] border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 backdrop-blur-xl transition-all hover:border-white/20">
+                        <Zap size={12} className="text-amber-400" /> 
+                        <span>Florida's Privacy-First LLC Platform</span>
+                        <div className="w-px h-3 bg-white/10 mx-1" />
+                        <span className="animate-pulse text-emerald-500/80">LIVE_FORMATION_ACTIVE</span>
                     </div>
                     
-                    <h1 className="text-6xl md:text-9xl font-black uppercase tracking-tighter leading-[0.85] animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+                    <h1 className="text-[clamp(3.5rem,15vw,10.5rem)] font-black uppercase tracking-tighter leading-[0.8]">
                         Florida LLC <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">Autonomous.</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-100 via-gray-400 to-gray-200 animate-in fade-in duration-1000">
+                            {heroTypewriter}
+                        </span>
                     </h1>
                     
-                    <p className="text-lg md:text-xl text-gray-500 font-medium max-w-2xl mx-auto italic leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+                    <p className="text-xl md:text-2xl text-gray-500 font-medium max-w-2xl mx-auto italic leading-relaxed">
                         Instant formation. Zero-knowledge privacy. <br /> 
-                        Your home address remains strictly off public record.
+                        <span className="text-gray-400">Your home address remains strictly off public record.</span>
                     </p>
 
-                    <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+                    <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-10">
                         <button 
                             onClick={onStartCheckout}
-                            className="group flex items-center gap-4 bg-white text-black px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
+                            className="group flex items-center gap-6 bg-white text-black px-12 py-6 rounded-[24px] font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.15)]"
                         >
-                            Initialize Formation <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
+                            Initialize Formation <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
                         </button>
                         <button 
                             onClick={() => setShowDoubleLLC(true)}
-                            className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-white transition-colors underline underline-offset-4 decoration-gray-700 hover:decoration-white"
+                            className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors underline underline-offset-8 decoration-white/10 hover:decoration-white/40"
                         >
                             What is a Double LLC?
                         </button>
                     </div>
+                </div>
+
+                {/* Floating Operational Pulse (Steve) */}
+                <div className="mt-32 w-full max-w-6xl mx-auto z-10">
+                    <FilingLedger />
                 </div>
             </section>
 
@@ -381,39 +382,6 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                 </div>
             </section>
 
-            {/* ═══════════════════════════════════════════
-                6. FAQ SECTION
-            ═══════════════════════════════════════════ */}
-            <section className="px-6 md:px-12 py-32 max-w-3xl mx-auto">
-                <div className="text-center mb-16 space-y-4">
-                    <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">Questions</h2>
-                    <p className="text-gray-500 text-sm font-medium">Common questions about LLC formation and privacy structures.</p>
-                </div>
-
-                <div className="space-y-3">
-                    {faqs.map((faq, i) => (
-                        <div 
-                            key={i}
-                            className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
-                                openFaq === i ? 'bg-white/5 border-white/20' : 'bg-transparent border-white/5 hover:border-white/10'
-                            }`}
-                        >
-                            <button 
-                                className="w-full flex items-center justify-between p-6 text-left"
-                                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                            >
-                                <span className={`text-sm font-bold ${openFaq === i ? 'text-white' : 'text-gray-400'} transition-colors`}>{faq.q}</span>
-                                <ChevronDown size={16} className={`text-gray-500 transition-transform duration-300 flex-shrink-0 ml-4 ${openFaq === i ? 'rotate-180' : ''}`} />
-                            </button>
-                            {openFaq === i && (
-                                <div className="px-6 pb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <p className="text-sm text-gray-500 font-medium leading-relaxed">{faq.a}</p>
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </section>
 
             {/* ═══════════════════════════════════════════
                 7. FOOTER

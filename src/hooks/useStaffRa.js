@@ -13,9 +13,8 @@ export const useStaffRa = () => {
     const [clientDirectory, setClientDirectory] = useState([]);
     const [llcDirectory, setLlcDirectory] = useState([]);
     const [raSettings, setRaSettings] = useState({});
-    
-    // Thread messages cache
     const [threadMessages, setThreadMessages] = useState({});
+    const [bridgeHealthy, setBridgeHealthy] = useState(true);
 
     /**
      * fetchStaffRaData
@@ -26,64 +25,38 @@ export const useStaffRa = () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return; // Add proper role check if needed
+            
+            // Bridge is responsive
+            setBridgeHealthy(true);
 
             // 1. Fetch open/active threads
-            const { data: threadsData, error: threadsErr } = await supabase
-                .from('ra_inquiry_threads')
-                .select('*')
-                .order('updated_at', { ascending: false });
+            const [threadsRes, auditRes, profilesRes, llcsRes, docsRes, settingsRes] = await Promise.all([
+                supabase.from('ra_inquiry_threads').select('*, llcs(llc_name)').order('updated_at', { ascending: false }),
+                supabase.from('ra_document_audit').select('*, llcs(llc_name), registered_agent_documents(title)').order('created_at', { ascending: false }).limit(500),
+                supabase.from('profiles').select('id, first_name, last_name'),
+                supabase.from('llcs').select('id, user_id, llc_name, filing_status'),
+                supabase.from('registered_agent_documents').select('*, llcs(llc_name)').order('created_at', { ascending: false }).limit(500),
+                supabase.from('ra_settings').select('*')
+            ]);
+            
+            if (threadsRes.data) setGlobalThreads(threadsRes.data);
+            if (auditRes.data) setGlobalAuditLogs(auditRes.data);
+            if (docsRes.data) setGlobalDocuments(docsRes.data);
+            
+            if (profilesRes.data) {
+                const clientsData = profilesRes.data.map(p => ({
+                    id: p.id,
+                    user_id: p.id,
+                    name: `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown Client',
+                    email: p.email || ''
+                }));
+                setClientDirectory(clientsData);
+            }
+            
+            if (llcsRes.data) setLlcDirectory(llcsRes.data);
 
-            // 2. Fetch global audit logs (limit 500 for performance)
-            const { data: auditData, error: auditErr } = await supabase
-                .from('ra_document_audit')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(500);
-
-            // 3. Fetch client directory (unified auth profiles)
-            const { data: rawProfiles, error: clientsErr } = await supabase
-                .from('profiles')
-                .select('id, first_name, last_name');
-
-            const clientsData = rawProfiles?.map(p => ({
-                id: p.id,
-                user_id: p.id,
-                name: `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown Client',
-                email: p.email || ''
-            })) || [];
-
-            // 4. Fetch LLC fleet registry to map business entities
-            const { data: llcsData, error: llcsErr } = await supabase
-                .from('llcs')
-                .select('id, user_id, llc_name, filing_status');
-
-            // 5. Fetch global documents (limit 500 for staff view)
-            const { data: docsData, error: docsErr } = await supabase
-                .from('registered_agent_documents')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(500);
-
-            // 6. Fetch RA Settings (Taxonomy, etc.)
-            const { data: settingsData, error: settingsErr } = await supabase
-                .from('ra_settings')
-                .select('*');
-
-            if (threadsErr) alert(`Fetch threads error: ${threadsErr.message}`);
-            if (auditErr) alert(`Fetch audit error: ${auditErr.message}`);
-            if (docsErr) alert(`Fetch docs error: ${docsErr.message}`);
-            if (clientsErr) alert(`Fetch clients error: ${clientsErr.message}`);
-            if (llcsErr) alert(`Fetch llcs error: ${llcsErr.message}`);
-            if (settingsErr) alert(`Fetch settings error: ${settingsErr.message}`);
-
-            if (threadsData) setGlobalThreads(threadsData);
-            if (auditData) setGlobalAuditLogs(auditData);
-            if (docsData) setGlobalDocuments(docsData);
-            if (clientsData) setClientDirectory(clientsData);
-            if (llcsData) setLlcDirectory(llcsData);
-
-            if (settingsData) {
-                const settingsMap = settingsData.reduce((acc, s) => {
+            if (settingsRes.data) {
+                const settingsMap = settingsRes.data.reduce((acc, s) => {
                     acc[s.key] = s.value;
                     return acc;
                 }, {});
@@ -92,11 +65,39 @@ export const useStaffRa = () => {
 
         } catch (err) {
             console.error("[Staff RA Data Error] Fetch failure:", err);
-            alert(`Fetch Failure: ${err.message || JSON.stringify(err)}`);
+            setBridgeHealthy(false);
         } finally {
             setLoading(false);
         }
     }, []);
+
+    useEffect(() => {
+        fetchStaffRaData();
+
+        // 1. Audit Ledger Channel (Realtime inserts for Terminal & Ledger)
+        const auditChannel = supabase
+            .channel('ra_audit_updates')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ra_document_audit' }, () => {
+                fetchStaffRaData();
+            })
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') setBridgeHealthy(true);
+                if (status === 'CLOSED' || status === 'CHANNEL_ERROR') setBridgeHealthy(false);
+            });
+
+        // 2. Document Registry Channel (Urgent counts & Vault updates)
+        const docChannel = supabase
+            .channel('ra_doc_updates')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'registered_agent_documents' }, () => {
+                fetchStaffRaData();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(auditChannel);
+            supabase.removeChannel(docChannel);
+        };
+    }, [fetchStaffRaData]);
 
     const fetchThreadMessages = useCallback(async (threadId) => {
         try {
@@ -108,9 +109,11 @@ export const useStaffRa = () => {
                 
             if (!error && data) {
                 setThreadMessages(prev => ({ ...prev, [threadId]: data }));
+                setBridgeHealthy(true);
             }
         } catch (err) {
              console.error("[Staff RA Data Error] Fetch messages failure:", err);
+             setBridgeHealthy(false);
         }
     }, []);
 
@@ -158,6 +161,7 @@ export const useStaffRa = () => {
             return msgData;
         } catch (err) {
              console.error("[Staff RA Data Error] Send message failure:", err);
+             setBridgeHealthy(false);
              return null;
         }
     }, [fetchStaffRaData]);
@@ -225,64 +229,147 @@ export const useStaffRa = () => {
             return docData;
          } catch (err) {
              console.error("[Staff RA Data Error] Upload failure:", err);
+             setBridgeHealthy(false);
              throw err;
          }
     }, [fetchStaffRaData]);
 
-    const updateRaSettings = useCallback(async (key, value) => {
+    const updateDocumentStatus = useCallback(async (docId, newStatus, actionType = 'DOCUMENT_STATUS_CHANGE') => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+            if (!user) return null;
 
+            // 1. Update document
+            const { data: docData, error: docError } = await supabase
+                .from('registered_agent_documents')
+                .update({ 
+                    status: newStatus,
+                    updated_at: new Date(),
+                    // Automatically clear urgency when handled/archived or explicitly requested
+                    urgent: (newStatus === 'FORWARDED' || newStatus === 'ARCHIVED' || actionType === 'URGENCY_RESOLVED') ? false : undefined,
+                    // Automatically set forwarded_at if status is FORWARDED
+                    ...(newStatus === 'FORWARDED' ? { forwarded_at: new Date() } : {})
+                })
+                .eq('id', docId)
+                .select().single();
+
+            if (docError) throw docError;
+
+            // 2. Log Audit Event
+            await supabase.from('ra_document_audit').insert({
+                user_id: docData.user_id,
+                document_id: docId,
+                llc_id: docData.llc_id,
+                action: actionType,
+                actor_type: 'CHARTER_ADMIN',
+                actor_email: user.email,
+                metadata: { previous_status: docData.status, new_status: newStatus },
+                outcome: 'SUCCESS'
+            });
+
+            fetchStaffRaData();
+            return docData;
+        } catch (err) {
+            console.error("[Staff RA Data Error] Status update failure:", err);
+            setBridgeHealthy(false);
+            throw err;
+        }
+    }, [fetchStaffRaData]);
+
+    const deleteDocument = useCallback(async (docId) => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return false;
+
+            // 1. Get info for audit before delete
+            const { data: docData } = await supabase
+                .from('registered_agent_documents')
+                .select('*')
+                .eq('id', docId)
+                .single();
+
+            // 2. Delete
+            const { error: deleteError } = await supabase
+                .from('registered_agent_documents')
+                .delete()
+                .eq('id', docId);
+
+            if (deleteError) throw deleteError;
+
+            // 3. Log Audit Event
+            await supabase.from('ra_document_audit').insert({
+                user_id: docData?.user_id,
+                document_id: docId,
+                action: 'DOCUMENT_DELETED_BY_STAFF',
+                actor_type: 'CHARTER_ADMIN',
+                actor_email: user.email,
+                outcome: 'SUCCESS'
+            });
+
+            fetchStaffRaData();
+            return true;
+        } catch (err) {
+            console.error("[Staff RA Data Error] Delete failure:", err);
+            setBridgeHealthy(false);
+            throw err;
+        }
+    }, [fetchStaffRaData]);
+
+    const updateRaSettings = useCallback(async (key, value) => {
+        try {
             const { error } = await supabase
                 .from('ra_settings')
-                .upsert({
-                    key,
-                    value,
-                    updated_at: new Date(),
-                    updated_by: user.id
-                });
-
+                .upsert({ key, value, updated_at: new Date() });
             if (error) throw error;
-            setRaSettings(prev => ({ ...prev, [key]: value }));
+            fetchStaffRaData();
         } catch (err) {
-            console.error("[Staff RA Data Error] Update settings failure:", err);
-            alert(`Update Settings Error: ${err.message}`);
+            console.error("Failed to update RA settings:", err);
+            setBridgeHealthy(false);
+            throw err;
         }
-    }, []);
+    }, [fetchStaffRaData]);
 
     const systemMetrics = useMemo(() => {
-        const hasData = globalAuditLogs.length > 0 || globalDocuments.length > 0;
-        const recentSuccess = globalAuditLogs.slice(0, 5).filter(l => l.outcome === 'SUCCESS').length;
+        const maxT = parseInt(raSettings?.max_auth_threads) || 8;
+        // Synthesize auth threads based on unique actors in recent logs or default to a healthy load
+        const uniqueActors = new Set(globalAuditLogs.slice(0, 20).map(l => l.actor_email)).size;
+        const currentThreads = Math.min(uniqueActors || 1, maxT);
         
-        const maxThreads = parseInt(raSettings.max_auth_threads) || 8;
-        return {
-            bridge: hasData ? 'Connected' : 'Disconnected',
-            compliance: recentSuccess >= 3 ? 'Online' : 'Degraded',
-            ocr: globalDocuments.some(d => d.status === 'Pending') ? 'Processing' : 'Standby',
-            capacity: Math.max(70, 100 - (globalDocuments.filter(d => d.status === 'Pending').length * 5)),
-            authThreads: Math.min(maxThreads, 
-                (new Set(globalAuditLogs
-                    .filter(log => new Date(log.created_at) > new Date(Date.now() - 30 * 60 * 1000))
-                    .map(log => log.user_id)
-                ).size + globalDocuments.filter(d => d.status === 'Pending').length) || 1
-            ),
-            maxThreads: maxThreads
-        };
-    }, [globalAuditLogs, globalDocuments, clientDirectory, raSettings]);
+        // Scan for recent failures in compliance
+        const recentFailures = globalAuditLogs.slice(0, 50).filter(l => {
+            const age = Date.now() - new Date(l.created_at).getTime();
+            return l.outcome === 'FAILURE' && age < 3600000; // 1 hour window
+        }).length;
 
-    const operationsSummary = useMemo(() => {
-        const today = new Date().toLocaleDateString();
         return {
-            urgentDocCount: globalDocuments.filter(d => d.urgent).length,
-            openThreadCount: globalThreads.filter(t => t.status === 'OPEN' || t.status === 'NEW').length,
-            processedTodayCount: globalAuditLogs.filter(log => {
-                const isToday = new Date(log.created_at).toLocaleDateString() === today;
-                return isToday && log.action === 'DOCUMENT_UPLOADED_BY_STAFF';
-            }).length,
-            totalVaultCount: globalDocuments.length
+            totalDocuments: globalDocuments.length,
+            urgentSops: globalDocuments.filter(d => d.urgent && d.status !== 'ARCHIVED').length,
+            openInquiries: globalThreads.filter(t => t.status === 'OPEN' || t.status === 'NEEDS_ACTION').length,
+            totalAuditLogs: globalAuditLogs.length,
+            // System Hub specific (Zen-Power)
+            compliance: recentFailures > 0 ? 'Issue' : 'Online',
+            ocr: globalDocuments.some(d => d.status === 'PROCESSING') ? 'Processing' : (globalDocuments.length > 0 ? 'Online' : 'Standby'),
+            bridge: bridgeHealthy ? 'Connected' : 'Error',
+            capacity: 100 - ((currentThreads / maxT) * 100),
+            authThreads: currentThreads,
+            maxThreads: maxT
         };
-    }, [globalDocuments, globalThreads, globalAuditLogs]);
+    }, [globalDocuments, globalThreads, globalAuditLogs, raSettings, bridgeHealthy]);
+
+    const operationsSummary = useMemo(() => ({
+        activeEntities: new Set(llcDirectory.map(l => l.id)).size,
+        pendingActions: globalDocuments.filter(d => d.urgent).length,
+        lastActivity: globalAuditLogs[0]?.created_at,
+        // RA Ops Sector specific (Zen-Power)
+        urgentDocCount: globalDocuments.filter(d => d.urgent && d.status !== 'ARCHIVED').length,
+        openThreadCount: globalThreads.filter(t => t.status === 'OPEN' || t.status === 'NEEDS_ACTION').length,
+        processedTodayCount: globalAuditLogs.filter(l => {
+            const d = new Date(l.created_at);
+            const today = new Date();
+            return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+        }).length,
+        totalVaultCount: globalDocuments.length
+    }), [llcDirectory, globalDocuments, globalAuditLogs, globalThreads]);
 
     return {
         loading,
@@ -299,6 +386,8 @@ export const useStaffRa = () => {
         fetchThreadMessages,
         sendStaffMessage,
         uploadDocumentToClient,
-        updateRaSettings
+        updateRaSettings,
+        updateDocumentStatus,
+        deleteDocument
     };
 };

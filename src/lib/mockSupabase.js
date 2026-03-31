@@ -25,7 +25,7 @@ const seedDatabase = (db, setStorage) => {
     const llcs = [];
     const wills = [];
     const raConfigs = [];
-    const auditLogs = [];
+    const raDocumentAudit = [];
     const vaultItems = [];
     const complianceAlerts = [];
     const privacyAliases = [];
@@ -82,16 +82,19 @@ const seedDatabase = (db, setStorage) => {
             });
         }
 
-        // Audit Logs
+        // RA Document Audit (Rich Ledger)
         const logActions = ["LLC Formation Started", "Sunbiz Filing Submitted", "RA Config Updated", "Secure Vault Sync", "Privacy Shield Activated", "Document Notarized", "Heritage Message Recorded"];
         const numLogs = Math.floor(Math.random() * 5) + 3;
         for (let l = 0; l < numLogs; l++) {
-            auditLogs.push({
-                id: `log-${i}-${l}`,
+            raDocumentAudit.push({
+                id: `audit-${i}-${l}`,
                 user_id: userId,
                 action: logActions[Math.floor(Math.random() * logActions.length)],
-                timestamp: new Date(Date.now() - Math.random() * 5000000000).toISOString(),
-                status: Math.random() > 0.1 ? 'Success' : 'Security Check'
+                actor_type: 'SYSTEM',
+                actor_email: 'system@charterlegacy.com',
+                outcome: Math.random() > 0.1 ? 'SUCCESS' : 'FAILURE',
+                metadata: { source: 'MOCK_SEED', context: 'Development' },
+                created_at: new Date(Date.now() - Math.random() * 5000000000).toISOString()
             });
         }
 
@@ -168,7 +171,7 @@ const seedDatabase = (db, setStorage) => {
     setStorage('mock_table_llcs', llcs);
     setStorage('mock_table_wills', wills);
     setStorage('mock_table_registered_agent_config', raConfigs);
-    setStorage('mock_table_audit_logs', auditLogs);
+    setStorage('mock_table_ra_document_audit', raDocumentAudit);
     setStorage('mock_table_vault_items', vaultItems);
     setStorage('mock_table_compliance_alerts', complianceAlerts);
     setStorage('mock_table_privacy_aliases', privacyAliases);
@@ -180,7 +183,7 @@ const seedDatabase = (db, setStorage) => {
         db.llcs = llcs;
         db.wills = wills;
         db.registered_agent_config = raConfigs;
-        db.audit_logs = auditLogs;
+        db.ra_document_audit = raDocumentAudit;
         db.vault_items = vaultItems;
         db.compliance_alerts = complianceAlerts;
         db.privacy_aliases = privacyAliases;
@@ -196,7 +199,7 @@ export const createMockClient = () => {
         profiles: getStorage('mock_table_profiles'),
         wills: getStorage('mock_table_wills'),
         registered_agent_config: getStorage('mock_table_registered_agent_config'),
-        audit_logs: getStorage('mock_table_audit_logs'),
+        ra_document_audit: getStorage('mock_table_ra_document_audit'),
         vault_items: getStorage('mock_table_vault_items'),
         compliance_alerts: getStorage('mock_table_compliance_alerts'),
         privacy_aliases: getStorage('mock_table_privacy_aliases'),

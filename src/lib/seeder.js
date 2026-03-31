@@ -17,7 +17,19 @@ export const seedTestData = async () => {
 
         console.log(`📍 Targeting Profile: ${targetEmail} (${targetUserId})`);
 
-        // 2. Create LLC Entities
+        // 2. Ensure current user profile exists with a name
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+                id: targetUserId,
+                first_name: "Executive",
+                last_name: "Operative",
+                user_type: "staff"
+            });
+        
+        if (profileError) console.error("❌ Profile Sync Error:", profileError);
+
+        // 3. Create LLC Entities
         const testEntities = [
             { name: "Nexus Prime Holdings LLC", status: "Active" },
             { name: "Quantum Logistics Group", status: "Active" },
@@ -64,7 +76,37 @@ export const seedTestData = async () => {
 
         console.log(`🏢 Seeded ${createdEntities.length} LLC Entities.`);
 
-        // 3. Generate Audit Logs (The "System Ledger" Feed)
+        // 4. Seed Virtual Clients (High-Density Test Data)
+        const virtualClients = [
+            { first: "Julian", last: "Vane", email: "julian@vane.com", type: "client" },
+            { first: "Elena", last: "Cassidy", email: "elena@cassidy.com", type: "will" },
+            { first: "Marcus", last: "Drax", email: "marcus@drax.com", type: "client" }
+        ];
+
+        for (const vc of virtualClients) {
+            // Check if profile exists by email (dummy check using maybe id if we had it, but we'll just insert/ignore)
+            // For simplicity, we'll use a fixed namespace of IDs or just insert new ones
+            const { data: profile } = await supabase
+                .from('profiles')
+                .insert({
+                    first_name: vc.first,
+                    last_name: vc.last,
+                    user_type: vc.type
+                })
+                .select()
+                .single();
+            
+            if (profile) {
+                // Seed at least one LLC per virtual client
+                await supabase.from('llcs').insert({
+                    user_id: profile.id,
+                    llc_name: `${vc.last} Capital Group`,
+                    filing_status: "Active"
+                });
+            }
+        }
+
+        // 5. Generate Audit Logs (The "System Ledger" Feed)
         const actions = [
             { action: 'FILE_RECEIVED', outcome: 'SUCCESS', actor: 'USER' },
             { action: 'COMPLIANCE_REVIEW', outcome: 'SUCCESS', actor: 'SYSTEM' },
@@ -96,7 +138,7 @@ export const seedTestData = async () => {
             }
         }
 
-        const summary = `Seeded ${createdEntities.length} LLCs and ${logCount} Audit Logs for ${targetEmail}.`;
+        const summary = `Seeded ${createdEntities.length} LLCs and ${logCount} Audit Logs. Profile synced for ${targetEmail}.`;
         
         if (errors.length > 0) {
             return { 

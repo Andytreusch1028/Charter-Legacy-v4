@@ -30,7 +30,7 @@ const TerminalHelpModal = ({ onClose }) => {
                  Overview
               </h4>
               <p className="text-sm text-gray-400 font-medium leading-relaxed">
-                 The System Terminal provides a real-time, unfiltered view of every significant action taken across the Charter Legacy platform. It connects directly to the immutable <span className="text-blue-400 font-mono">audit_logs</span> database table, ensuring a permanent record of all staff and system activity.
+                 The System Terminal provides a real-time, unfiltered view of every significant action taken across the Charter Legacy platform. It connects directly to the immutable <span className="text-blue-400 font-mono">Fleet Operations Ledger</span> (ra_document_audit), ensuring a permanent, high-fidelity record of all staff and system activity.
               </p>
            </div>
 
