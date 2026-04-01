@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, ArrowRight, Zap, Globe, Lock, Eye, EyeOff, Building2, Landmark, Check, ChevronDown, ChevronRight, Vault, Users, FileKey, Star, Phone, Mail, MapPin } from 'lucide-react';
+import { Shield, ArrowRight, Zap, Globe, Lock, Eye, EyeOff, Building2, Landmark, Check, ChevronDown, ChevronRight, Vault, Users, FileKey, Star, Phone, Mail, MapPin, Loader2 } from 'lucide-react';
 import { GlassCard } from '../../shared/design-system/UIPrimitives';
 import DoubleLLCExplainer from '../../DoubleLLCExplainer';
 import BackgroundEffects from '../../shared/design-system/BackgroundEffects';
@@ -16,11 +16,13 @@ import FilingLedger from './FilingLedger';
  *   4. Double LLC Explainer — Privacy structure education
  *   5. Pricing Tiers — Privacy Shield ($249) & Double LLC ($999)
  *   6. FAQ — AEO-optimized expandable Q&A
- *   7. Footer — Links, compliance, UPL disclosure
+ *   7. Footer — Links
  */
 const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
+  const [showPrivacy, setShowPrivacy] = useState(false);
     const [showDoubleLLC, setShowDoubleLLC] = useState(false);
     const [heroTypewriter, setHeroTypewriter] = useState('Autonomous.');
+
 
     // Typewriter effect for Steve Agent's technical transparency
     React.useEffect(() => {
@@ -32,6 +34,7 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
         }, 3000);
         return () => clearInterval(timer);
     }, []);
+
 
 
     return (
@@ -63,7 +66,7 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                         Access Terminal
                     </button>
                     <button 
-                        onClick={onStartCheckout}
+                        onClick={() => onStartCheckout('founder')}
                         className="px-6 py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/20"
                     >
                         Form LLC
@@ -91,13 +94,12 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                     </h1>
                     
                     <p className="text-xl md:text-2xl text-gray-500 font-medium max-w-2xl mx-auto italic leading-relaxed">
-                        Instant formation. Zero-knowledge privacy. <br /> 
-                        <span className="text-gray-400">Your home address remains strictly off public record.</span>
+                        A zero-knowledge holding company structure for founders who value privacy. Complete Florida and Wyoming synchronized protection.
                     </p>
 
                     <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-10">
                         <button 
-                            onClick={onStartCheckout}
+                            onClick={() => onStartCheckout('founder')}
                             className="group flex items-center gap-6 bg-white text-black px-12 py-6 rounded-[24px] font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.15)]"
                         >
                             Initialize Formation <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
@@ -108,13 +110,34 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                         >
                             What is a Double LLC?
                         </button>
+                        <button 
+                            onClick={() => setShowPrivacy(true)}
+                            className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors underline underline-offset-8 decoration-white/10 hover:decoration-white/40"
+                        >
+                            Get Full Privacy
+                        </button>
                     </div>
                 </div>
 
-                {/* Floating Operational Pulse (Steve) */}
                 <div className="mt-32 w-full max-w-6xl mx-auto z-10">
                     <FilingLedger />
                 </div>
+                {showPrivacy && (
+                  <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                    <div className="bg-[#0A0A0B] rounded-2xl p-8 max-w-md text-center">
+                      <h3 className="text-xl font-black uppercase mb-4">Full Privacy</h3>
+                      <p className="text-gray-400 mb-6">
+                        Charter Legacy uses zero‑knowledge architecture. Your documents never leave your browser unencrypted, and we never store your personal address. You remain fully anonymous.
+                      </p>
+                      <button
+                        onClick={() => setShowPrivacy(false)}
+                        className="mt-4 px-6 py-2 bg-white text-black rounded font-black uppercase"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                )}
             </section>
 
             {/* ═══════════════════════════════════════════
@@ -146,7 +169,6 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                 <div className="absolute top-1/2 left-0 w-[600px] h-[600px] bg-gradient-to-r from-amber-500/5 to-transparent rounded-full blur-[100px] pointer-events-none -translate-y-1/2" />
                 
                 <div className="relative z-10 max-w-6xl mx-auto grid md:grid-cols-2 gap-12 md:gap-16 items-center">
-                    {/* Left: Content */}
                     <div className="space-y-8">
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 text-amber-400 rounded-full text-[9px] font-black uppercase tracking-widest border border-amber-500/20">
                             <Vault size={12} /> Legacy Vault
@@ -181,10 +203,8 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                         </ul>
                     </div>
 
-                    {/* Right: Visual */}
                     <div className="relative">
                         <GlassCard className="p-8 space-y-6 border-amber-500/10">
-                            {/* Simulated Vault UI */}
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center">
@@ -248,7 +268,6 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                        {/* Problem */}
                         <GlassCard className="p-8 space-y-6 border-red-500/10 hover:border-red-500/20">
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/10 text-red-400 rounded-full text-[9px] font-black uppercase tracking-widest border border-red-500/20">
                                 <Eye size={12} /> The Problem
@@ -264,7 +283,6 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                             </p>
                         </GlassCard>
 
-                        {/* Solution */}
                         <GlassCard className="p-8 space-y-6 border-emerald-500/10 hover:border-emerald-500/20">
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
                                 <EyeOff size={12} /> The Solution
@@ -304,7 +322,6 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8">
-                        {/* Privacy Shield */}
                         <GlassCard className="p-8 md:p-10 space-y-8 hover:border-white/20 flex flex-col">
                             <div className="space-y-4">
                                 <h3 className="text-2xl font-black uppercase tracking-tighter">Privacy Shield</h3>
@@ -318,10 +335,8 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                             </div>
                             <ul className="space-y-3 flex-1">
                                 {[
-                                    'Florida LLC Formation (Articles of Organization)',
+                                    'Florida LLC Formation',
                                     'Registered Agent Service (1 Year)',
-                                    'Operating Agreement Template',
-                                    'EIN Application Assistance',
                                     'Legacy Vault Access (Encrypted Storage)',
                                     'Compliance Pulse Monitoring'
                                 ].map((item, i) => (
@@ -331,7 +346,7 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                                 ))}
                             </ul>
                             <button 
-                                onClick={onStartCheckout}
+                                onClick={() => onStartCheckout('founder')}
                                 className="w-full py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all"
                             >
                                 Start Formation
@@ -355,6 +370,12 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                                     <span className="text-5xl font-black text-white">$999</span>
                                     <span className="text-gray-500 font-bold mb-2">one-time</span>
                                 </div>
+                                <button 
+                                    onClick={() => onStartCheckout('sovereign')}
+                                    className="w-full py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all"
+                                >
+                                    Start Formation
+                                </button>
                                 <ul className="space-y-3 flex-1">
                                     {[
                                         'Everything in Privacy Shield',
@@ -370,12 +391,7 @@ const LandingSector = ({ onStartCheckout, onEnterConsole }) => {
                                         </li>
                                     ))}
                                 </ul>
-                                <button 
-                                    onClick={onStartCheckout}
-                                    className="w-full py-4 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)]"
-                                >
-                                    Get Full Privacy
-                                </button>
+                                
                             </GlassCard>
                         </div>
                     </div>

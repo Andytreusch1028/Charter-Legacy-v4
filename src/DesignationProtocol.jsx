@@ -368,9 +368,9 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                                     {usePrivacyAddress && <Check size={14} className="text-white" />}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-[#0A0A0B] text-lg">Use Charter Privacy Address</h4>
+                                    <h4 className="font-bold text-[#0A0A0B] text-lg">Use Charter Privacy Address (Highly Recommended)</h4>
                                     <p className="text-gray-500 text-sm mt-1 leading-relaxed">
-                                        Protect your home address. We will use our registered office in Ft. Lauderdale for all public filings.
+                                        Under Florida law, your Principal Place of Business must be listed publicly. However, it is fully legal to utilize your Registered Agent's address as your Principal Place of Business. Select this to legally keep your home address permanently off public records.
                                     </p>
                                     {usePrivacyAddress && (
                                         <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-[#00D084]/10 text-[#00D084] rounded-lg text-xs font-bold">
@@ -388,9 +388,9 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                                     {!usePrivacyAddress && <Check size={14} className="text-white" />}
                                 </div>
                                 <div className="w-full">
-                                    <h4 className="font-bold text-[#0A0A0B] text-lg">Use My Own Address</h4>
+                                    <h4 className="font-bold text-[#0A0A0B] text-lg">Use My Own Address <span className="text-red-500 text-xs ml-2 uppercase tracking-widest font-black">Warning</span></h4>
                                     <p className="text-gray-500 text-sm mt-1 leading-relaxed mb-4">
-                                        Your address will be public record.
+                                        Your exact physical address will be placed on the permanent, publicly searchable State of Florida registry.
                                     </p>
                                     {!usePrivacyAddress && (
                                         <input 

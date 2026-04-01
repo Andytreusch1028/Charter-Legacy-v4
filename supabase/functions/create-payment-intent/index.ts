@@ -53,6 +53,10 @@ serve(async (req) => {
             amount = 39900 // $399.00
             description = 'Legacy Will Package'
             break
+        case 'sovereign':
+            amount = 99900 // $999.00
+            description = 'Double LLC Shield'
+            break
         default:
             throw new Error('Invalid Package ID')
     }
