@@ -333,7 +333,7 @@ const DashboardZenith = ({ user, initialData }) => {
 
       <FoundersBlueprint isOpen={isBlueprintOpen} onClose={() => setIsBlueprintOpen(false)} llcData={currentLlc} />
       <SuccessionSuite isOpen={isSuccessionOpen} onClose={() => setIsSuccessionOpen(false)} companyName={currentLlc?.llc_name} user={user} />
-      {showDesignation && <DesignationProtocol onComplete={(data) => { setActiveLlc(data); setShowDesignation(false); }} />}
+      {showDesignation && <DesignationProtocol user={user} llc={currentLlc} onComplete={(data) => { setActiveLlc(data); setShowDesignation(false); }} />}
     </div>
   );
 };

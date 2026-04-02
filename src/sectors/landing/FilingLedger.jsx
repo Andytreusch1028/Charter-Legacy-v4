@@ -66,17 +66,6 @@ const FilingLedger = () => {
                 </div>
             </div>
 
-            {/* CSS Marquee Animation */}
-            <style jsx>{`
-                .animate-marquee {
-                    animation: marquee 30s linear infinite;
-                    display: inline-flex;
-                }
-                @keyframes marquee {
-                    from { transform: translateX(0); }
-                    to { transform: translateX(-50%); }
-                }
-            `}</style>
         </div>
     );
 };

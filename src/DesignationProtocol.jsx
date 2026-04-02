@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowRight, Search, Shield, Check, Loader2, AlertCircle, Info, ExternalLink } from 'lucide-react';
+import { ArrowRight, Search, Shield, Check, Loader2, AlertCircle, Info, ExternalLink, PenTool, X, Settings, ChevronUp, ChevronDown } from 'lucide-react';
 import { calculateAvailabilityScore } from './lib/sunbiz-validator';
 
-const DesignationProtocol = ({ user, onSuccess }) => {
+const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
+    const finishAction = onSuccess || onComplete;
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     
+    // Upsell & Product Tracking
+    const [hasSeenUpsell, setHasSeenUpsell] = useState(false);
+    const [showDoubleLLCUpsell, setShowDoubleLLCUpsell] = useState(false);
+    const [productType, setProductType] = useState('standard');
+    const [wyomingName, setWyomingName] = useState('');
+
     // Form Data - Required by Sunbiz
     const [llcName, setLlcName] = useState('');
     const [designator, setDesignator] = useState('LLC'); 
@@ -45,7 +52,19 @@ const DesignationProtocol = ({ user, onSuccess }) => {
 
     useEffect(() => {
         if (user?.email) setContactEmail(user.email);
-    }, [user]);
+        if (llc) {
+            if (llc.product_type) setProductType(llc.product_type);
+            if (llc.llc_name && llc.llc_name !== 'Pending Formation') {
+                const nameParts = llc.llc_name.split(' ');
+                if (nameParts.length > 1) {
+                    setDesignator(nameParts.pop());
+                    setLlcName(nameParts.join(' '));
+                } else {
+                    setLlcName(llc.llc_name);
+                }
+            }
+        }
+    }, [user, llc]);
 
     const handleSearchName = async () => {
         if (!llcName) return;
@@ -91,11 +110,15 @@ const DesignationProtocol = ({ user, onSuccess }) => {
         setLoading(true);
         
         // Construct the full payload for the backend/filing engine
+        const finalMembers = productType === 'double_llc_protocol' && wyomingName 
+            ? [{ name: wyomingName, role: 'Sole Manager', address: 'Charter Privacy Address' }] 
+            : members;
+
         const filingPayload = {
             user_id: user.id,
             llc_name: `${llcName} ${designator}`,
             llc_status: 'Setting Up',
-            product_type: 'standard',
+            product_type: productType,
             privacy_shield_active: usePrivacyAddress,
             // Core Sunbiz Fields
             principal_address: usePrivacyAddress ? 'Charter Privacy Address' : principalAddress,
@@ -109,7 +132,8 @@ const DesignationProtocol = ({ user, onSuccess }) => {
             effective_date: effectiveDate || 'Upon Filing',
             purpose: purpose,
             mailing_address: mailingSameAsPrincipal ? (usePrivacyAddress ? 'Charter Privacy Address' : principalAddress) : mailingAddress,
-            members: members // Now includes optional addresses
+            members: finalMembers,
+            internal_founders: productType === 'double_llc_protocol' ? members : null // Keep true owners for WY filing
         };
 
         try {
@@ -121,6 +145,8 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                 .eq('llc_status', 'Setting Up')
                 .maybeSingle();
 
+            let finalLlcId = null;
+
             if (existing) {
                 const { error } = await supabase
                     .from('llcs')
@@ -130,6 +156,7 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                     })
                     .eq('id', existing.id);
                 if (error) throw error;
+                finalLlcId = existing.id;
             } else {
                 // Insert New
                 const { data: newLLC, error: insertError } = await supabase
@@ -138,7 +165,7 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                         user_id: user.id,
                         llc_name: filingPayload.llc_name,
                         llc_status: 'Setting Up',
-                        product_type: 'standard',
+                        product_type: productType,
                         privacy_shield_active: true
                     }])
                     .select()
@@ -147,6 +174,7 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                 if (insertError) throw insertError;
 
                 if (newLLC) {
+                    finalLlcId = newLLC.id;
                     const { error: updateError } = await supabase
                         .from('llcs')
                         .update({ llc_status: 'Filing Initiated' })
@@ -155,10 +183,13 @@ const DesignationProtocol = ({ user, onSuccess }) => {
             }
             
             // Pass full data to dashboard for display/demo
-            onSuccess({
-                ...filingPayload,
-                llc_status: 'Filing Initiated'
-            });
+            if (finishAction) {
+                finishAction({
+                    ...filingPayload,
+                    llc_status: 'Filing Initiated',
+                    id: finalLlcId
+                });
+            }
 
         } catch (err) {
             console.error("Designation Error:", err);
@@ -189,10 +220,12 @@ const DesignationProtocol = ({ user, onSuccess }) => {
 
                         if (adminError) throw adminError;
                         
-                        onSuccess({
-                            ...filingPayload,
-                            llc_status: 'Filing Initiated'
-                        });
+                        if (finishAction) {
+                            finishAction({
+                                ...filingPayload,
+                                llc_status: 'Filing Initiated'
+                            });
+                        }
                         return;
 
                     } catch (adminErr) {
@@ -204,10 +237,12 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                 }
 
                 // Fallback to Demo Mode visuals
-                onSuccess({
-                    ...filingPayload,
-                    llc_status: 'Filing Initiated'
-                });
+                if (finishAction) {
+                    finishAction({
+                        ...filingPayload,
+                        llc_status: 'Filing Initiated'
+                    });
+                }
             } else {
                 alert(`Failed to save designation: ${err.message}`);
             }
@@ -546,11 +581,60 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                                         alert("Please enter names for all members.");
                                         return;
                                     }
-                                    setStep(5);
+                                    if (productType !== 'double_llc_protocol' && !hasSeenUpsell) {
+                                        setShowDoubleLLCUpsell(true);
+                                    } else if (productType === 'double_llc_protocol' && !wyomingName) {
+                                        setStep(4.5);
+                                    } else {
+                                        setStep(5);
+                                    }
                                 }}
                                 className="w-full bg-black text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 mt-auto"
                             >
                                 Review & Sign <ArrowRight size={18} />
+                            </button>
+                        </div>
+                    )}
+
+                    {step === 4.5 && (
+                        <div className="space-y-8 flex-1 flex flex-col animate-in slide-in-from-right-8 duration-500">
+                            <div className="bg-[#0A0A0B] p-6 rounded-3xl text-white space-y-4 shadow-xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-10">
+                                    <Shield size={100} />
+                                </div>
+                                <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] relative z-10">
+                                    <Check size={14} /> Double LLC Protocol Active
+                                </div>
+                                <h3 className="text-2xl font-black uppercase tracking-tighter relative z-10">Wyoming Configurator</h3>
+                                <p className="text-gray-400 text-sm font-medium leading-relaxed relative z-10">
+                                    Your Florida LLC manager has been automatically set to a Wyoming Holding Company. Wyoming does not require your name on public record, providing an absolute shield of anonymity.
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block pl-2">Name your Wyoming Holding Company</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. Acme Holdings LLC" 
+                                    value={wyomingName}
+                                    onChange={(e) => setWyomingName(e.target.value)}
+                                    className="w-full bg-white p-5 rounded-2xl text-lg font-black outline-none border-2 border-gray-100 focus:border-emerald-500 transition-all placeholder:text-gray-300 shadow-sm"
+                                    autoFocus
+                                />
+                                <p className="text-xs text-gray-400 px-2 italic">Charter Legacy will form this company immediately in Wyoming and assign it as the sole Manager of {llcName || 'your Florida LLC'}.</p>
+                            </div>
+
+                            <button 
+                                onClick={() => {
+                                    if (!wyomingName.trim()) {
+                                        alert("Please enter a name for your Wyoming holding company.");
+                                        return;
+                                    }
+                                    setStep(5);
+                                }}
+                                className="w-full bg-[#00D084] text-[#0A0A0B] py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-[0_20px_50px_rgba(0,208,132,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 mt-auto"
+                            >
+                                Secure Architecture <ArrowRight size={18} />
                             </button>
                         </div>
                     )}
@@ -832,6 +916,69 @@ const DesignationProtocol = ({ user, onSuccess }) => {
                     )}
                 </div>
             </div>
+            {showDoubleLLCUpsell && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDoubleLLCUpsell(false)} />
+                    <div className="relative w-full max-w-2xl bg-white rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                        <div className="p-8 sm:p-12 space-y-8">
+                            <div className="inline-flex items-center gap-2 text-rose-500 bg-rose-50 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest">
+                                <AlertCircle size={16} /> Privacy Warning
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <h2 className="text-3xl font-black tracking-tighter">Florida Public Record Notice</h2>
+                                <p className="text-gray-600 text-lg leading-relaxed">
+                                    Florida law requires the names and addresses of LLC members to be published on the Sunbiz public registry. This data is scraped by hundreds of broker websites within 24 hours.
+                                </p>
+                            </div>
+
+                            <div className="bg-[#0A0A0B] text-white p-8 rounded-3xl space-y-6 relative overflow-hidden">
+                                <div className="absolute right-0 top-0 opacity-10 p-4"><Shield size={120} /></div>
+                                <div className="relative z-10">
+                                    <div className="inline-flex items-center gap-2 text-emerald-400 text-xs font-black uppercase tracking-widest mb-4">
+                                        The Double LLC Solution
+                                    </div>
+                                    <h3 className="text-2xl font-black text-white mb-2">Anonymous Wyoming Manager</h3>
+                                    <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-md">
+                                        We will form a Wyoming Holding Company to act as the manager of your Florida LLC. Wyoming does not collect member names, meaning your identity remains completely off the public record.
+                                    </p>
+
+                                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                                        <div className="flex-1">
+                                            <div className="text-3xl font-black text-white">$750</div>
+                                            <div className="text-xs text-gray-500 font-medium uppercase tracking-widest">One-time upgrade</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button
+                                    onClick={() => {
+                                        setHasSeenUpsell(true);
+                                        setShowDoubleLLCUpsell(false);
+                                        setStep(5);
+                                    }}
+                                    className="px-6 py-3 rounded-xl text-gray-400 text-xs font-black uppercase tracking-widest hover:text-gray-600 transition-colors"
+                                >
+                                    Proceed with Public Record
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setHasSeenUpsell(true);
+                                        setProductType('double_llc_protocol');
+                                        setShowDoubleLLCUpsell(false);
+                                        setStep(4.5); // Go to Wyoming config
+                                    }}
+                                    className="bg-black text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-900 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1"
+                                >
+                                    Simulate $750 Upgrade
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

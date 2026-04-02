@@ -26,7 +26,9 @@ serve(async (req) => {
 
   try {
     // 1. Parse Request Body
-    const { packageId, userId } = await req.json()
+    const body = await req.json()
+    console.log("Edge Function Received Body:", JSON.stringify(body))
+    const { packageId, userId } = body
 
     if (!packageId || !userId) {
       throw new Error('Missing packageId or userId')
@@ -62,6 +64,20 @@ serve(async (req) => {
     }
 
     // 3. Create PaymentIntent
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') ?? ''
+
+    if (!stripeKey || stripeKey.includes('sk_test_51Q...')) {
+        console.log("DEV MODE: Bypassing Stripe because Stripe Secret Key is missing or invalid.")
+        return new Response(
+            JSON.stringify({ 
+                clientSecret: 'mock_secret',
+                amount: amount,
+                description: description
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
       currency: 'usd',
@@ -84,6 +100,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    console.error("Payment Intent Error Caught:", error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

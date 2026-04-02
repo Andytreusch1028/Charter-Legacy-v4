@@ -13,6 +13,16 @@
     
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+    display: inline-flex;
+  }
 }
 
 @layer utilities {

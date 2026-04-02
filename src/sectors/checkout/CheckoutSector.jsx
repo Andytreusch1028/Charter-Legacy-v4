@@ -391,27 +391,56 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
                   </div>
                   <div className="p-8 bg-white/[0.02] rounded-[32px] border border-white/[0.05]">
                     {clientSecret ? (
-                       <Elements 
-                         stripe={stripePromise} 
-                         options={{ 
-                           clientSecret,
-                           appearance: {
-                             theme: 'night',
-                             variables: {
-                               colorPrimary: '#ffffff',
-                               colorBackground: 'transparent',
-                               colorText: '#ffffff',
-                             }
-                           }
-                         }}
-                       >
-                          <CheckoutForm 
-                            onSuccess={handlePaymentSuccess} 
-                            onError={setError} 
-                            processing={loading}
-                            setProcessing={setLoading}
-                          />
-                       </Elements>
+                       <>
+                        {step === 'payment' && clientSecret && clientSecret !== 'mock_secret' && (
+                          <div className="space-y-8 animate-in slide-in-from-bottom-6 duration-500">
+                              <Elements stripe={stripePromise} options={{ 
+                                  clientSecret,
+                                  appearance: {
+                                      theme: 'night',
+                                      variables: {
+                                          colorPrimary: '#ffffff',
+                                          colorBackground: '#0a0a0a',
+                                          colorText: '#ffffff',
+                                          colorDanger: '#ff4444',
+                                          fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                                          spacingUnit: '4px',
+                                          borderRadius: '12px'
+                                      }
+                                  }
+                              }}>
+                                  <CheckoutForm 
+                                    onSuccess={handlePaymentSuccess} 
+                                    onError={setError} 
+                                    processing={loading} 
+                                    setProcessing={setLoading} 
+                                  />
+                              </Elements>
+                          </div>
+                        )}
+
+                        {step === 'payment' && clientSecret === 'mock_secret' && (
+                          <div className="space-y-8 animate-in slide-in-from-bottom-6 duration-500 flex flex-col items-center">
+                              <div className="p-4 bg-yellow-500/10 text-yellow-400 text-xs font-bold rounded-xl border border-yellow-500/20 w-full text-center">
+                                  <Info size={16} className="inline mr-2" />
+                                  DEV MODE: Stripe Secret Key is missing in Supabase Secrets.<br/>
+                                  Bypassing Stripe for testing.
+                              </div>
+                              <button 
+                                  onClick={handlePaymentSuccess} 
+                                  className="w-full bg-white text-black py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-[0_20px_50px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                              >
+                                  Simulate Payment Success <CheckCircle2 size={16} />
+                              </button>
+                              <button 
+                                   onClick={() => setStep('details')}
+                                   className="text-xs font-bold text-gray-500 uppercase tracking-widest hover:text-white transition-colors"
+                              >
+                                  Cancel
+                              </button>
+                          </div>
+                        )}
+                       </>
                     ) : (
                         <div className="flex items-center justify-center py-6">
                           <Loader2 className="animate-spin" />

@@ -51,13 +51,13 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleStartCheckout = () => {
-    setActivePackage({
-      id: 'founder',
-      title: "Privacy Shield",
-      price: "$249",
-      plainEnglish: "We file your official setup paperwork and list our registered office to protect your home address."
-    });
+  const handleStartCheckout = (packageId) => {
+    if (!appUser) {
+      setIsLoginOpen(true);
+      return;
+    }
+    const selectedPackage = menuItems.find(p => p.id === packageId) || null;
+    setActivePackage(selectedPackage);
   };
 
   const handleCheckoutSuccess = (user) => {
@@ -67,8 +67,8 @@ export default function App() {
   };
 
   const menuItems = [
-    { id: 'founder', title: "Privacy Shield", price: "$249", plainEnglish: "..." },
-    { id: 'sovereign', title: "Double LLC", price: "$999", plainEnglish: "..." }
+    { id: 'founder', title: "Privacy Shield", price: "$249", plainEnglish: "We file your official setup paperwork and list our registered office to protect your home address." },
+    { id: 'sovereign', title: "Double LLC", price: "$999", plainEnglish: "The full anonymity structure — Florida + Wyoming holding company. Your name never touches the public record." }
   ];
 
   // Routing Logic
