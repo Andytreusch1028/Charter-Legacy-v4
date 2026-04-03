@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Loader2, ChevronRight } from 'lucide-react';
 
 /**
  * GlassCard
@@ -8,7 +8,7 @@ import { CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 export const GlassCard = ({ children, className = '', onClick }) => (
     <div 
         onClick={onClick}
-        className={`bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[32px] overflow-hidden transition-all duration-500 hover:border-white/20 ${className}`}
+        className={`bg-white/80 backdrop-blur-3xl border border-black/5 rounded-[32px] overflow-hidden transition-all duration-500 hover:border-black/10 ${className}`}
     >
         {children}
     </div>
@@ -110,12 +110,15 @@ export const ActionBadge = ({ status }) => {
         'Dissolved': { color: 'gray', text: 'Inactive' }
     };
     const c = configs[status] || configs['Active'];
-    
     return (
-        <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border bg-${c.color}-500/10 text-${c.color}-400 border-${c.color}-500/20 whitespace-nowrap`}>
+        <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
+            c.color === 'emerald' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+            c.color === 'amber' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+            c.color === 'red' ? 'bg-red-50 text-red-600 border-red-100' :
+            'bg-gray-50 text-gray-600 border-gray-100'
+        } whitespace-nowrap`}>
             {c.text}
         </div>
     );
 };
 
-import { ChevronRight } from 'lucide-react';

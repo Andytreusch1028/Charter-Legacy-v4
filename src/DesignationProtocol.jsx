@@ -119,9 +119,9 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
             llc_name: `${llcName} ${designator}`,
             llc_status: 'Setting Up',
             product_type: productType,
-            privacy_shield_active: usePrivacyAddress,
+            privacy_shield_active: raType === 'charter',
             // Core Sunbiz Fields
-            principal_address: usePrivacyAddress ? 'Charter Privacy Address' : principalAddress,
+            principal_address: raType === 'charter' ? 'Charter Privacy Address' : raAddress,
             ra_type: raType,
             ra_name: raType === 'charter' ? 'Charter Legacy RA' : raName,
             ra_address: raType === 'charter' ? 'Charter HQ' : raAddress,
@@ -131,7 +131,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
             // Advanced / Optional Fields
             effective_date: effectiveDate || 'Upon Filing',
             purpose: purpose,
-            mailing_address: mailingSameAsPrincipal ? (usePrivacyAddress ? 'Charter Privacy Address' : principalAddress) : mailingAddress,
+            mailing_address: mailingSameAsPrincipal ? (raType === 'charter' ? 'Charter Privacy Address' : raAddress) : mailingAddress,
             members: finalMembers,
             internal_founders: productType === 'double_llc_protocol' ? members : null // Keep true owners for WY filing
         };
@@ -275,10 +275,10 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                     <p className="text-[#00D084] text-[10px] font-black uppercase tracking-[0.3em] mb-4">Charter Legacy Designation Protocol</p>
                     <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
                         {step === 1 && "Name Your Entity"}
-                        {step === 2 && "Corporate Address"}
-                        {step === 3 && "Registered Agent"}
-                        {step === 4 && "Board of Members"}
-                        {step === 5 && "Review & Sign"}
+                        {step === 2 && "Registered Agent & Privacy"}
+                        {step === 3 && "Board of Members"}
+                        {step === 3.5 && "Configurator"}
+                        {step === 4 && "Review & Sign"}
                     </h2>
                 </div>
 
@@ -394,62 +394,6 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                     )}
 
                     {step === 2 && (
-                        <div className="space-y-8 flex-1 flex flex-col">
-                             <div 
-                                onClick={() => setUsePrivacyAddress(true)}
-                                className={`p-6 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-4 ${usePrivacyAddress ? 'border-[#00D084] bg-[#00D084]/5' : 'border-gray-100 hover:border-gray-200'}`}
-                             >
-                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1 ${usePrivacyAddress ? 'border-[#00D084] bg-[#00D084]' : 'border-gray-200'}`}>
-                                    {usePrivacyAddress && <Check size={14} className="text-white" />}
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-[#0A0A0B] text-lg">Use Charter Privacy Address (Highly Recommended)</h4>
-                                    <p className="text-gray-500 text-sm mt-1 leading-relaxed">
-                                        Under Florida law, your Principal Place of Business must be listed publicly. However, it is fully legal to utilize your Registered Agent's address as your Principal Place of Business. Select this to legally keep your home address permanently off public records.
-                                    </p>
-                                    {usePrivacyAddress && (
-                                        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-[#00D084]/10 text-[#00D084] rounded-lg text-xs font-bold">
-                                            <Shield size={12} /> Privacy Shield Active
-                                        </div>
-                                    )}
-                                </div>
-                             </div>
-
-                             <div 
-                                onClick={() => setUsePrivacyAddress(false)}
-                                className={`p-6 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-4 ${!usePrivacyAddress ? 'border-black' : 'border-gray-100 hover:border-gray-200'}`}
-                             >
-                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1 ${!usePrivacyAddress ? 'border-black bg-black' : 'border-gray-200'}`}>
-                                    {!usePrivacyAddress && <Check size={14} className="text-white" />}
-                                </div>
-                                <div className="w-full">
-                                    <h4 className="font-bold text-[#0A0A0B] text-lg">Use My Own Address <span className="text-red-500 text-xs ml-2 uppercase tracking-widest font-black">Warning</span></h4>
-                                    <p className="text-gray-500 text-sm mt-1 leading-relaxed mb-4">
-                                        Your exact physical address will be placed on the permanent, publicly searchable State of Florida registry.
-                                    </p>
-                                    {!usePrivacyAddress && (
-                                        <input 
-                                            type="text" 
-                                            value={principalAddress}
-                                            onChange={(e) => setPrincipalAddress(e.target.value)}
-                                            placeholder="123 Founder Way, Miami FL..."
-                                            className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-sm outline-none focus:border-black transition-colors"
-                                            autoFocus
-                                        />
-                                    )}
-                                </div>
-                             </div>
-
-                             <button 
-                                onClick={() => setStep(3)}
-                                className="w-full bg-black text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 mt-auto"
-                             >
-                                Next <ArrowRight size={18} />
-                             </button>
-                        </div>
-                    )}
-
-                    {step === 3 && (
                         <div className="space-y-6 flex-1 flex flex-col">
                             <p className="text-center text-gray-500 text-sm">Who should accept legal mail for your company?</p>
 
@@ -462,10 +406,15 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                     {raType === 'charter' && <Check size={14} className="text-white" />}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-[#0A0A0B] text-lg">Charter Legacy Agent</h4>
+                                    <h4 className="font-bold text-[#0A0A0B] text-lg">Charter Legacy Agent (Recommended)</h4>
                                     <p className="text-gray-500 text-sm mt-1 leading-relaxed">
-                                        Included with your package. We handle legal notices and protect your privacy.
+                                        Included with your package. We handle legal notices and provide our firm's address to be used as your public Principal Place of Business, keeping your home address completely off public records.
                                     </p>
+                                    {raType === 'charter' && (
+                                        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-[#00D084]/10 text-[#00D084] rounded-lg text-xs font-bold">
+                                            <Shield size={12} /> Privacy Shield Active
+                                        </div>
+                                    )}
                                 </div>
                              </div>
 
@@ -478,9 +427,9 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                     {raType === 'custom' && <Check size={14} className="text-white" />}
                                 </div>
                                 <div className="w-full">
-                                    <h4 className="font-bold text-[#0A0A0B] text-lg">I will be the Registered Agent</h4>
+                                    <h4 className="font-bold text-[#0A0A0B] text-lg">I will be the Registered Agent <span className="text-red-500 text-xs ml-2 uppercase tracking-widest font-black">Warning</span></h4>
                                     <p className="text-gray-500 text-sm mt-1 leading-relaxed mb-4">
-                                        You must be available at a Florida street address during business hours.
+                                        You must be available at a Florida street address during business hours. This address will also publicly become your company's Principal Place of Business.
                                     </p>
                                     
                                     {raType === 'custom' && (
@@ -491,6 +440,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                                 value={raName}
                                                 onChange={(e) => setRaName(e.target.value)}
                                                 className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-sm outline-none focus:border-black"
+                                                autoFocus
                                             />
                                             <input 
                                                 type="text" 
@@ -520,7 +470,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                         alert("Please complete the Registered Agent details.");
                                         return;
                                     }
-                                    setStep(4);
+                                    setStep(3);
                                 }}
                                 className="w-full bg-black text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 mt-auto"
                              >
@@ -529,12 +479,12 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                         </div>
                     )}
 
-                    {step === 4 && (
+                    {step === 3 && (
                         <div className="space-y-6 flex-1 flex flex-col">
                             <p className="text-gray-500 text-sm font-medium text-center">Who owns/manages this LLC?</p>
                             
                             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-                                {members.map((member, idx) => (
+                                {(members || []).map((member, idx) => (
                                     <div key={idx} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
                                         <div className="flex justify-between items-center">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Member {idx + 1}</span>
@@ -561,12 +511,6 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                                 <option>Manager</option>
                                             </select>
                                         </div>
-                                        {/* Optional Member Address - Hidden unless they want to add it? Actually, user wanted advanced customization. 
-                                            Let's just show it if they type in it, or simpler: let's leave it hidden in this view as per Steve/Mom, 
-                                            but allow it via the Advanced section?
-                                            Wait, "managers and memeber fields to complete" in the Advanced Accordion request.
-                                            I'll add specific inputs in the Advanced Accordion to override these.
-                                        */}
                                     </div>
                                 ))}
                             </div>
@@ -584,19 +528,19 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                     if (productType !== 'double_llc_protocol' && !hasSeenUpsell) {
                                         setShowDoubleLLCUpsell(true);
                                     } else if (productType === 'double_llc_protocol' && !wyomingName) {
-                                        setStep(4.5);
+                                        setStep(3.5);
                                     } else {
-                                        setStep(5);
+                                        setStep(4);
                                     }
                                 }}
                                 className="w-full bg-black text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 mt-auto"
-                            >
+                             >
                                 Review & Sign <ArrowRight size={18} />
-                            </button>
+                             </button>
                         </div>
                     )}
 
-                    {step === 4.5 && (
+                    {step === 3.5 && (
                         <div className="space-y-8 flex-1 flex flex-col animate-in slide-in-from-right-8 duration-500">
                             <div className="bg-[#0A0A0B] p-6 rounded-3xl text-white space-y-4 shadow-xl relative overflow-hidden">
                                 <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -630,7 +574,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                         alert("Please enter a name for your Wyoming holding company.");
                                         return;
                                     }
-                                    setStep(5);
+                                    setStep(4);
                                 }}
                                 className="w-full bg-[#00D084] text-[#0A0A0B] py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-[0_20px_50px_rgba(0,208,132,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 mt-auto"
                             >
@@ -639,7 +583,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                         </div>
                     )}
 
-                    {step === 5 && (
+                    {step === 4 && (
                         <div className="space-y-6 flex-1 flex flex-col">
                             <div className="bg-[#F5F5F7] p-6 rounded-2xl space-y-4 border border-gray-200/50 text-sm">
                                 <div className="flex justify-between items-center border-b border-gray-200 pb-3">
@@ -957,7 +901,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                     onClick={() => {
                                         setHasSeenUpsell(true);
                                         setShowDoubleLLCUpsell(false);
-                                        setStep(5);
+                                        setStep(4);
                                     }}
                                     className="px-6 py-3 rounded-xl text-gray-400 text-xs font-black uppercase tracking-widest hover:text-gray-600 transition-colors"
                                 >
@@ -968,7 +912,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                         setHasSeenUpsell(true);
                                         setProductType('double_llc_protocol');
                                         setShowDoubleLLCUpsell(false);
-                                        setStep(4.5); // Go to Wyoming config
+                                        setStep(3.5); // Go to Wyoming config
                                     }}
                                     className="bg-black text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-900 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1"
                                 >
