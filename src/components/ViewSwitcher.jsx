@@ -8,14 +8,14 @@ import { Zap, Eye, LayoutGrid, RotateCcw } from 'lucide-react';
  */
 const ViewSwitcher = ({ activeView, recommended, isOverridden, onSelect, onReset }) => {
     const views = [
-        { id: 'command', label: 'Command', icon: Zap, desc: 'Action-first cockpit' },
-        { id: 'situational', label: 'Adaptive', icon: Eye, desc: 'Context-aware intelligence' },
-        { id: 'fleet', label: 'Empire', icon: LayoutGrid, desc: 'Portfolio management' },
+        { id: 'command', label: 'Workspace', icon: Zap, desc: 'Detailed business view' },
+        { id: 'situational', label: 'Adaptive', icon: Eye, desc: 'Smart context view' },
+        { id: 'fleet', label: 'Portfolio', icon: LayoutGrid, desc: 'All companies' },
     ];
 
     return (
         <div className="flex items-center gap-3">
-            <div className="flex bg-[#F0F2F5] rounded-2xl p-1.5 gap-1">
+            <div className="flex bg-white/5 rounded-2xl p-1.5 gap-1 border border-white/5">
                 {views.map((v) => {
                     const isActive = activeView === v.id;
                     const isRecommended = recommended === v.id && !isActive;
@@ -27,9 +27,9 @@ const ViewSwitcher = ({ activeView, recommended, isOverridden, onSelect, onReset
                             title={`${v.label}: ${v.desc}${recommended === v.id ? ' (Recommended)' : ''}`}
                             className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
                                 isActive
-                                    ? 'bg-[#0A0A0B] text-white shadow-lg'
-                                    : 'text-gray-400 hover:text-[#0A0A0B] hover:bg-white/80'
-                            }`}
+                                    ? 'bg-white text-black shadow-xl ring-1 ring-white/10'
+                                    : 'text-white/30 hover:text-white hover:bg-white/10'
+                            } text-[9px]`}
                         >
                             <v.icon size={14} strokeWidth={2} />
                             <span className="hidden md:inline">{v.label}</span>
@@ -48,7 +48,7 @@ const ViewSwitcher = ({ activeView, recommended, isOverridden, onSelect, onReset
                 <button
                     onClick={onReset}
                     title="Reset to AI-recommended view"
-                    className="p-2 rounded-xl text-gray-300 hover:text-[#00D084] hover:bg-[#00D084]/10 transition-all"
+                    className="p-2 rounded-xl text-gray-500 hover:text-[#00D084] hover:bg-[#00D084]/10 transition-all"
                 >
                     <RotateCcw size={14} />
                 </button>

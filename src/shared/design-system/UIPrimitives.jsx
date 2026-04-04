@@ -4,15 +4,31 @@ import { CheckCircle2, AlertTriangle, Loader2, ChevronRight } from 'lucide-react
 /**
  * GlassCard
  * The foundational layout wrapper for the CharterLegacy "Absolute Depth" aesthetic.
+ * 
+ * Variants:
+ *  - glass: Translucent, blurry "Neural Material" feel (Default)
+ *  - solid: High-contrast, solid white for data-heavy dashboard views
+ *  - zenith: The Semi-Opaque Frost
  */
-export const GlassCard = ({ children, className = '', onClick }) => (
-    <div 
-        onClick={onClick}
-        className={`bg-white/80 backdrop-blur-3xl border border-black/5 rounded-[32px] overflow-hidden transition-all duration-500 hover:border-black/10 ${className}`}
-    >
-        {children}
-    </div>
-);
+export const GlassCard = ({ children, className = '', onClick, variant = 'glass' }) => {
+    const variants = {
+        glass: 'bg-white/[0.03] backdrop-blur-3xl border-white/10 hover:border-white/20 hover:bg-white/[0.06] hover:shadow-[0_20px_80px_rgba(0,0,0,0.4)] ive-inner-glow', // The Neural Spark
+        solid: 'bg-[#111112] border-white/5 shadow-2xl hover:shadow-[0_0_40px_rgba(255,255,255,0.02)] transition-all duration-500', // Midnight Card
+        zenith: 'bg-white/5 backdrop-blur-3xl border-white/10 ive-inner-glow' // The Semi-Opaque Frost
+    };
+
+    const variantStyles = variants[variant] || variants.glass;
+
+    return (
+        <div 
+            onClick={onClick}
+            className={`${variantStyles} rounded-[32px] overflow-hidden transition-all duration-500 ${className} ${variant === 'glass' ? 'ive-premium-shadow' : ''}`}
+        >
+            {children}
+        </div>
+    );
+};
+
 
 /**
  * StatusBadge
@@ -69,31 +85,31 @@ export const PremiumToast = ({ message, type, onDismiss }) => {
     );
 };
 /**
- * PrivateSovereignButton
- * A high-fidelity, interactive button for critical corporate actions.
+ * ActionButton
+ * A high-fidelity, interactive button for critical business actions.
  */
-export const SovereignButton = ({ onClick, label, icon: Icon, description, variant = 'primary' }) => (
+export const ActionButton = ({ onClick, label, icon: Icon, description, variant = 'primary' }) => (
     <button 
         onClick={onClick}
-        className={`group relative p-6 rounded-[28px] border transition-all duration-500 flex items-center gap-6 text-left overflow-hidden ${
+        className={`group relative p-6 rounded-[32px] border transition-all duration-500 flex items-center gap-6 text-left overflow-hidden ${
             variant === 'primary' 
-                ? 'bg-[#0A0A0B] border-white/10 hover:border-emerald-500/30' 
+                ? 'bg-white/[0.03] border-white/10 hover:border-emerald-500/30' 
                 : 'bg-white/5 border-white/5 hover:border-white/20'
         }`}
     >
         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${
             variant === 'primary' 
-                ? 'bg-white/5 text-gray-400 group-hover:bg-emerald-500 group-hover:text-white' 
-                : 'bg-white/5 text-gray-400 group-hover:bg-white group-hover:text-black'
+                ? 'bg-white/5 text-white/30 group-hover:bg-emerald-500 group-hover:text-white group-hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]' 
+                : 'bg-white/5 text-white/30 group-hover:bg-white group-hover:text-black'
         }`}>
             {Icon && <Icon size={24} strokeWidth={1.5} />}
         </div>
         <div className="flex-1">
             <h4 className="text-[13px] font-black uppercase tracking-widest text-white mb-0.5">{label}</h4>
-            <p className="text-[11px] text-gray-500 font-medium leading-tight">{description}</p>
+            <p className="text-[11px] text-white/30 font-medium leading-tight">{description}</p>
         </div>
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-4 group-hover:translate-x-0">
-            <ChevronRight size={18} className="text-gray-400" />
+        <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 group-hover:translate-x-0">
+            <ChevronRight size={18} className="text-white/40" />
         </div>
     </button>
 );
@@ -112,10 +128,10 @@ export const ActionBadge = ({ status }) => {
     const c = configs[status] || configs['Active'];
     return (
         <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
-            c.color === 'emerald' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-            c.color === 'amber' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-            c.color === 'red' ? 'bg-red-50 text-red-600 border-red-100' :
-            'bg-gray-50 text-gray-600 border-gray-100'
+            c.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+            c.color === 'amber' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+            c.color === 'red' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+            'bg-white/5 text-white/40 border-white/10'
         } whitespace-nowrap`}>
             {c.text}
         </div>

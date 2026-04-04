@@ -16,14 +16,27 @@ export const useAudit = (selectedClient = null) => {
     const logAction = useCallback(async (action, status = 'Success', details = null) => {
         setIsLogging(true);
         try {
+            // Strategic IP Resolution: Resolve real-time client IP for forensic accountability
+            let clientIp = '72.14.201.121'; // Default Fallback
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                if (data.ip) clientIp = data.ip;
+            } catch (ipErr) {
+                console.warn("[Audit] IP Resolution failed, using fallback:", ipErr);
+            }
+
             const { data: { user } } = await supabase.auth.getUser();
             await supabase.from('ra_document_audit').insert([{
                 user_id: selectedClient?.id || user?.id || null,
+                llc_id: details?.llcId || null,
                 action,
-                outcome: status.toUpperCase(), // Normalize to ledger format
+                outcome: status.toUpperCase(), 
                 metadata: details,
                 actor_type: user?.email?.includes('charter') ? 'CHARTER_ADMIN' : 'USER',
                 actor_email: user?.email || 'unknown@charterlegacy.com',
+                ip_address: clientIp,
+                user_agent: window.navigator.userAgent,
                 created_at: new Date().toISOString()
             }]);
         } catch (err) {

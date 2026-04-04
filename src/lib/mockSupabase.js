@@ -57,6 +57,8 @@ const seedDatabase = (db, setStorage) => {
                     llc_name: `${sector} ${lName} ${suffix}`,
                     llc_status: Math.random() > 0.2 ? 'Active' : 'Setting Up',
                     product_type: Math.random() > 0.5 ? 'Shield' : 'Foundation',
+                    auto_renewal: false,
+                    renewal_consent_at: null,
                     created_at: new Date().toISOString()
                 });
             }
@@ -164,7 +166,9 @@ const seedDatabase = (db, setStorage) => {
         user_id: longUserId,
         llc_name: 'Intercontinental Global Strategic Multi-National Conglomerate Holdings and Ventures Services Group LLC',
         llc_status: 'Active',
-        product_type: 'Shield'
+        product_type: 'Shield',
+        auto_renewal: false,
+        renewal_consent_at: null
     });
 
     setStorage('mock_table_profiles', profiles);
@@ -195,17 +199,16 @@ export const createMockClient = () => {
 
     // We'll use a simple global store that persists to localStorage
     const db = {
-        llcs: getStorage('mock_table_llcs'),
+        llcs: [], // Production Only
         profiles: getStorage('mock_table_profiles'),
         wills: getStorage('mock_table_wills'),
         registered_agent_config: getStorage('mock_table_registered_agent_config'),
-        ra_document_audit: getStorage('mock_table_ra_document_audit'),
+        ra_document_audit: [], // Production Only
         vault_items: getStorage('mock_table_vault_items'),
         compliance_alerts: getStorage('mock_table_compliance_alerts'),
         privacy_aliases: getStorage('mock_table_privacy_aliases'),
         ra_inquiry_threads: getStorage('mock_table_ra_inquiry_threads'),
         ra_inquiry_messages: getStorage('mock_table_ra_inquiry_messages'),
-        ra_document_audit: getStorage('mock_table_ra_document_audit'),
         registered_agent_documents: getStorage('mock_table_registered_agent_documents')
     };
 

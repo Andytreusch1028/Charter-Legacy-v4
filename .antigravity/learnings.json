@@ -57,6 +57,14 @@
           "correction": "Always use clean, absolute local paths. Avoid %20 or other URL encodings when passing paths to filesystem tools.",
           "impact": "Low - Execution Delay",
           "prevention_rule": "CRITICAL: Never use URL-encoded strings for filesystem tool arguments. Paths must be literal absolute strings."
+        },
+        {
+          "id": "learning-027",
+          "date": "2026-04-02",
+          "mistake": "Grey-Slab dashboard cards created low-contrast, 'muddy' surfaces when placed on light-grey backgrounds, making Obsidian Ink text hard to read.",
+          "correction": "Refactored GlassCard and EmpireGrid to use Zenith White backgrounds (pure white/high-opacity white) with subtle borders and glowing active states for selection.",
+          "impact": "High - Severely degraded readability and aesthetic premium feel.",
+          "prevention_rule": "MANDATORY: Follow the ZENITH WHITE Pattern. For dashboard cards on light backgrounds, always use pure white or high-opacity white (bg-white/90) surfaces with border-black/5. Never use bg-black/X on light slabs as it creates muddy grey results."
         }
       ]
     },
@@ -178,6 +186,14 @@
           "pattern": "Implement 'View History' buttons in document registries that switch tabs and populate the target sub-tab's search query with the document's UUID. This creates a vertical slice of all actions taken on a specific entity or file.",
           "impact": "High - Seamless traceability between inventory and audit logs.",
           "reuse_guidance": "Always provide a 'History' jump from any high-value record (Document, LLC, User) to the System Ledger using UUID isolation."
+        },
+        {
+          "id": "learning-029",
+          "date": "2026-04-02",
+          "success": "Single-Step 'Registered Agent & Privacy' Handoff",
+          "pattern": "Integrated the Privacy Shield upsell directly into the Registered Agent selection step. If the user opts for the Charter Privacy RA, they are automatically offered the Double LLC upgrade as a contextual logic branch.",
+          "impact": "High - Reduces friction and increase premium conversion.",
+          "reuse_guidance": "Use the 'Integrated Upsell' pattern for contextually related premium upgrades. Don't force a new page if the upsell relates to a current selection."
         }
       ]
     },
@@ -228,6 +244,14 @@
           "correction": "Synchronized the urgency lifecycle: 'RESEND', 'ARCHIVE', and 'MARK_HANDLED' actions now explicitly clear the `urgent` flag in the registered_agent_documents table.",
           "impact": "High - Ensures the Intelligence Tray accurately represents pending work.",
           "prevention_rule": "When implementing 'Urgency' flags, always define the 'Resolution Event' that clears the flag (e.g., Resending or Archiving) to prevent task list stagnation."
+        },
+        {
+          "id": "learning-028",
+          "date": "2026-04-02",
+          "mistake": "ReferenceError: 'c is not defined' in ActionBadge and missing ChevronRight import in UIPrimitives.jsx due to accidental deletion during multi-chunk refactor.",
+          "correction": "Restored variable definition and consolidated all lucide-react imports at the top. Verified icons are present before finalize.",
+          "impact": "Critical - Application crashed (White Screen of Death) immediately after styling update.",
+          "prevention_rule": "MANDATORY COMPONENT INTEGRITY SCAN: After any multi-chunk edit to shared primitives, verify: 1. All variables are defined. 2. All Icons used are imported at the TOP. 3. Core React hooks are present."
         }
       ]
     }
@@ -266,7 +290,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 26,
-    "last_updated": "2026-03-29T13:00:00Z"
+    "total_learnings": 29,
+    "last_updated": "2026-04-02T20:50:00Z"
   }
 }

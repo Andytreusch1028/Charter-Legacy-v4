@@ -419,13 +419,51 @@ const PremiumFeature = ({ isPremium, onUpgrade, title, description, children, cl
 };
 
 
-const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", user }) => {
+const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", user, llc, logAction }) => {
   // Navigation & Core State
   const [activeStep, setActiveStep] = useState('heritage');
   const [isPremium, setIsPremium] = useState(true);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [vaultData, setVaultData] = useState('');
+  
+  // Forensic Audit Integration
+  const [productionAuditLog, setProductionAuditLog] = useState([]);
+  const [isLoadingAudit, setIsLoadingAudit] = useState(false);
+
+  // Fetch Production Audit Logs
+  const fetchProductionLogs = async () => {
+    if (!llc?.id) return;
+    setIsLoadingAudit(true);
+    try {
+        const { data, error } = await charterSupabase
+            .from('ra_document_audit')
+            .select('*')
+            .eq('llc_id', llc.id)
+            .order('created_at', { ascending: false })
+            .limit(50);
+        
+        if (data) {
+            setProductionAuditLog(data.map(log => ({
+                id: log.id,
+                action: log.action_type,
+                user: log.actor_role || 'Founder',
+                details: log.action_description,
+                timestamp: new Date(log.created_at).toLocaleString(),
+                metadata: log.metadata
+            })));
+        }
+    } catch (err) {
+        console.error("Forensic Audit Fetch Error:", err);
+    } finally {
+        setIsLoadingAudit(false);
+    }
+  };
+
+  // Sync logs when suite opens
+  useEffect(() => {
+    if (isOpen) fetchProductionLogs();
+  }, [isOpen, llc?.id]);
   
   // Physical Locations State
   const [locations, setLocations] = useState([
@@ -469,88 +507,18 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
   }, [activeVault, heritageDocs, businessDocs, legalDocs]);
 
 
-  // Audit Log State
-  const [auditLog, setAuditLog] = useState([
-      { id: 1, action: 'VIEW', user: 'Founder', details: 'Viewed Succession Dashboard', timestamp: 'Today, 10:42 AM' },
-      { id: 2, action: 'LOGIN', user: 'System', details: 'Secure Session Established', timestamp: 'Today, 10:41 AM' }
-  ]);
-
-  // Lock body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = 'unset';
-      };
-    }
-  }, [isOpen]);
-
-
-  // Upload/Certify Workflow State
-  const [isCertifying, setIsCertifying] = useState(false);
-  const [tempFile, setTempFile] = useState(null);
-  const [certifyLabel, setCertifyLabel] = useState('Last Will & Testament');
-  const [certifyNote, setCertifyNote] = useState('');
-  const [certifyVisibility, setCertifyVisibility] = useState('post-mortem');
-
-  // Load Vault Data & Supabase Protocols
-  React.useEffect(() => {
-    const saved = localStorage.getItem('charter_vault_instructions');
-    if (saved) setVaultData(saved);
-
-    const loadProtocols = async () => {
-        if (!user) return;
-        setIsLoadingProtocols(true);
-        try {
-            const { data, error } = await charterSupabase
-                .from('wills')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
-            
-            if (data && data.length > 0) {
-                const latest = data[0];
-                setActiveProtocolData(latest.protocol_data);
-                
-                // Construct a UI doc from the database record
-                const dbDoc = {
-                    id: latest.id,
-                    name: latest.file_name || `${latest.type}_Protocol.pdf`,
-                    label: latest.type === 'trust' ? 'Heritage Living Trust Protocol' : 'Last Will & Testament',
-                    date: new Date(latest.created_at).toLocaleDateString(),
-                    createdAt: new Date(latest.created_at).toLocaleString(),
-                    visibility: 'post-mortem',
-                    status: 'active',
-                    size: latest.type === 'trust' ? '2.4 MB' : '1.2 MB'
-                };
-                setLegalDocs(prev => {
-                    // Avoid duplicates if already in list
-                    if (prev.some(d => d.id === latest.id)) return prev;
-                    return [dbDoc, ...prev];
-                });
-            }
-        } catch (err) {
-            console.error("Error loading protocols:", err);
-        } finally {
-            setIsLoadingProtocols(false);
-        }
-    };
-
-    if (isOpen) loadProtocols();
-  }, [isOpen, user]);
-
   // --- HANDLERS ---
 
-  const addAuditEntry = (action, details, note = null) => {
-      const newEntry = {
-          id: Date.now(),
-          action,
-          user: 'Founder',
+  const performForensicLog = async (action, status, details, metadata = {}) => {
+      if (!logAction) return;
+      await logAction(action, status, {
+          llcId: llc?.id,
+          llcName: llc?.llc_name,
           details,
-          note,
-          timestamp: new Date().toLocaleString()
-      };
-      setAuditLog(prev => [newEntry, ...prev]);
+          suite: 'SUCCESSION',
+          ...metadata
+      });
+      fetchProductionLogs(); // Refresh view
   };
 
   const handleUpgradeTrigger = () => setShowUpgradeModal(true);
@@ -560,7 +528,7 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
       setTimeout(async () => {
           setIsPremium(true);
           setShowUpgradeModal(false);
-          addAuditEntry('UPGRADE', 'Unlocked Legacy Vault', 'Subscribed to Compliance Guard');
+          performForensicLog('UPGRADE_SUCCESS', 'SUCCESS', 'Unlocked Legacy Vault', { tier: 'Premium', cost: 199 });
           await window.zenith.alert("🔓 Vault Unlocked. Your legacy is secure.", "Vault Decrypted");
       }, 1500);
   };
@@ -571,7 +539,7 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
       setTimeout(async () => {
           localStorage.setItem('charter_vault_instructions', vaultData);
           setIsSaving(false);
-          addAuditEntry('UPDATE', 'Updated Vault Instructions', 'Encrypted new content');
+          performForensicLog('VAULT_UPDATE', 'SUCCESS', 'Updated Vault Instructions', { type: 'ENC_CONTENT' });
           await window.zenith.alert("🔒 Instructions Encrypted & Saved Securely.", "Vault Saved");
       }, 1500);
   };
@@ -579,12 +547,12 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
   const handleAddLocation = (item) => {
       const newLoc = { ...item, id: Date.now() };
       setLocations([...locations, newLoc]);
-      addAuditEntry('UPDATE', `Added location for ${item.docType}`, 'Vault Map Updated');
+      performForensicLog('LOCATION_ADD', 'SUCCESS', `Added location for ${item.docType}`, { location: item.location });
   };
 
   const handleRemoveLocation = (id) => {
       setLocations(locations.filter(l => l.id !== id));
-      addAuditEntry('DELETE', 'Removed location', 'Vault Map Updated');
+      performForensicLog('LOCATION_DELETE', 'INFO', 'Removed location from map');
   };
 
 
@@ -619,7 +587,11 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
       const visibilityText = certifyVisibility === 'post-mortem' ? '(Private until Transfer)' : '(Shared with Heirs)';
       
       setLegalDocs([newDoc, ...legalDocs]);
-      addAuditEntry('UPLOAD', `Uploaded ${certifyLabel} ${visibilityText}`, certifyNote);
+      performForensicLog('DOCUMENT_UPLOAD', 'SUCCESS', `Uploaded ${certifyLabel}`, { 
+          fileName: tempFile.name,
+          visibility: certifyVisibility,
+          note: certifyNote 
+      });
       
       // Reset
       setIsCertifying(false);
@@ -642,7 +614,7 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
       }
 
       const doc = allDocs.find(d => d.id === docId);
-      if(doc) addAuditEntry('ARCHIVE', `Archived ${doc.label}`, 'User Archive Action');
+      if(doc) performForensicLog('DOCUMENT_ARCHIVE', 'INFO', `Archived ${doc.label}`, { docId });
   };
 
   const handleRestore = (docId) => {
@@ -658,7 +630,7 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
       }
 
       const doc = allDocs.find(d => d.id === docId);
-      if(doc) addAuditEntry('RESTORE', `Restored ${doc.label}`, 'User Restore Action');
+      if(doc) performForensicLog('DOCUMENT_RESTORE', 'SUCCESS', `Restored ${doc.label}`, { docId });
   };
 
   const handleDownloadWill = async (data) => {
@@ -698,7 +670,10 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
                       size: isTrust ? '2.4 MB' : '1.2 MB'
                   };
                   setLegalDocs(prev => [newDoc, ...prev]);
-                  addAuditEntry('PERSIST', `Protocol Secured in Iron Vault`, `Reference: ${savedRecord.id.substring(0,8)}`);
+                  performForensicLog('PROTOCOL_PERSIST', 'SUCCESS', `Protocol Secured in Iron Vault`, { 
+                      protocolId: savedRecord.id,
+                      type: protocolType 
+                  });
               }
           } catch (err) {
               console.error("Supabase Save Error:", err);
@@ -708,7 +683,10 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
           }
       }
 
-      addAuditEntry('DOWNLOAD', `Generated ${isTrust ? 'Trust Protocol' : 'Will Foundation'} for ${name}`, `User completed ${isTrust ? 'Comprehensive Trust' : 'Essential Will'} Engine`);
+      performForensicLog('PROTOCOL_GENERATE', 'SUCCESS', `Generated ${isTrust ? 'Trust' : 'Will'} for ${name}`, { 
+          protocolType,
+          heir: data.successorMember 
+      });
   };
 
   if (!isOpen) return null;
@@ -793,7 +771,7 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
                             onArchive={handleArchive} 
                             onRestore={handleRestore} 
                             onDownloadWill={handleDownloadWill} 
-                            auditLog={auditLog} 
+                            auditLog={productionAuditLog} 
                             isPremium={isPremium}
                             onUpgrade={handleUpgradeTrigger}
                             // Vault Props
@@ -804,7 +782,7 @@ const SuccessionSuite = ({ isOpen, onClose, companyName = "Your Company LLC", us
                             locations={locations}
                             onAddLocation={handleAddLocation}
                             onRemoveLocation={handleRemoveLocation}
-                            addAuditEntry={addAuditEntry}
+                            performForensicLog={performForensicLog}
                             // Vault Switcher
                             activeVault={activeVault}
                             setActiveVault={setActiveVault}
@@ -995,7 +973,7 @@ const HeritageDashboard = ({
     docs, onUpload, onArchive, onRestore, onDownloadWill, 
     auditLog, isPremium, onUpgrade,
     vaultData, setVaultData, onSaveVault, isSavingVault,
-    locations, onAddLocation, onRemoveLocation, addAuditEntry,
+    locations, onAddLocation, onRemoveLocation, performForensicLog,
     activeVault, setActiveVault, activeProtocolData
 }) => {
   const [isVaultUnlocked, setIsVaultUnlocked] = useState(false);
@@ -1017,13 +995,13 @@ const HeritageDashboard = ({
   const handleArchiveDeputy = (id) => {
       setDeputies(prev => prev.map(d => d.id === id ? { ...d, archived: true } : d));
       const deputy = deputies.find(d => d.id === id);
-      if(deputy) addAuditEntry('DEPUTY_ARCHIVE', `Archived Helper: ${deputy.name}`, 'Security Privilege Revoked');
+      if(deputy) performForensicLog('DEPUTY_ARCHIVE', 'WARN', `Archived Helper: ${deputy.name}`, { deputyId: id });
   };
 
   const handleRestoreDeputy = (id) => {
       setDeputies(prev => prev.map(d => d.id === id ? { ...d, archived: false } : d));
       const deputy = deputies.find(d => d.id === id);
-      if(deputy) addAuditEntry('DEPUTY_RESTORE', `Restored Helper: ${deputy.name}`, 'Security Privilege Reinstated');
+      if(deputy) performForensicLog('DEPUTY_RESTORE', 'SUCCESS', `Restored Helper: ${deputy.name}`, { deputyId: id });
   };
 
   // UPL Audit / Signature States
@@ -1090,10 +1068,11 @@ const HeritageDashboard = ({
     const complianceHash = generateComplianceHash();
     const simulatedIP = `172.24.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
     
-    addAuditEntry(
+    performForensicLog(
         'STATUTORY_ACK_SIGNED', 
+        'SUCCESS',
         `User signed disclosure via Option B (Fortress Mode)`, 
-        `IP: ${simulatedIP} | Hash: ${complianceHash} | Signature: ${disclosureSignature} | Version: ${disclosureVersion}`
+        { complianceHash, signature: disclosureSignature, version: disclosureVersion }
     );
     
     setShowStatutoryWarning(false);
@@ -1121,7 +1100,7 @@ const HeritageDashboard = ({
     const randomKey = Array.from({length: 4}, () => Math.random().toString(36).substring(2, 6).toUpperCase()).join('-');
     setMasterRecoveryKey(randomKey);
     setShowPINSetup(false);
-    addAuditEntry('VAULT_INITIALIZED', 'Master PIN Created', `Zero-Knowledge Key Generated | Helpers: ${deputies.length}`);
+    performForensicLog('VAULT_INITIALIZED', 'SUCCESS', 'Master PIN Created', { recoveryKey: 'REDACTED', helperCount: deputies.length });
   };
 
   const handleVaultUnlockAttempt = (pin) => {
@@ -1130,10 +1109,10 @@ const HeritageDashboard = ({
         setHasUnlockedOnce(true);
         setShowSecurityChallenge(false);
         setEnteredPIN('');
-        addAuditEntry('ACCESS_GRANTED', 'Master Identity Verified', `Auth Level: ${hasUnlockedOnce ? 'High-Trust' : 'Standard'}`);
+        performForensicLog('ACCESS_GRANTED', 'SUCCESS', 'Master Identity Verified', { trustLevel: hasUnlockedOnce ? 'High' : 'Standard' });
     } else {
         setEnteredPIN('');
-        addAuditEntry('ACCESS_DENIED', 'Invalid PIN Attempt', 'Security Lockout Cooldown: 30s');
+        performForensicLog('ACCESS_DENIED', 'WARN', 'Invalid PIN Attempt', { retryLimit: '30s Cool-down' });
         window.zenith.alert("ACCESS DENIED: Master Identity PIN Mismatch.", "Authentication Error");
     }
   };
@@ -1160,7 +1139,7 @@ const HeritageDashboard = ({
         setHasUnlockedOnce(false);
         setShowPINSetup(true);
         setShowSecurityChallenge(true);
-        addAuditEntry('SECURITY_RESET', 'Vault Keys Wiped', 'System returned to factory initialization');
+        performForensicLog('SECURITY_RESET', 'WARN', 'Vault Keys Wiped', { reason: 'FACTORY_INITIALIZATION' });
     }
   };
 
@@ -1184,7 +1163,7 @@ const HeritageDashboard = ({
 
   // Steve-Pro: Export Audit Logs to JSON
   const exportAuditLogs = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(auditLog, null, 2));
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(productionAuditLog, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href",     dataStr);
     downloadAnchorNode.setAttribute("download", "charter_vault_audit_trail.json");
@@ -1313,7 +1292,7 @@ const HeritageDashboard = ({
                             <>
                                 <button onClick={() => {
                                     setViewingDoc(activeAEO || activeTrust || activeWill);
-                                    addAuditEntry('VIEW_DOC', `Opened ${activeAEO?.label || activeTrust?.label || activeWill?.label}`, 'Secure Viewer Session');
+                                    performForensicLog('VIEW_DOC', 'SUCCESS', `Opened ${activeAEO?.label || activeTrust?.label || activeWill?.label}`, { type: 'PROTOCOL' });
                                 }} className="px-6 py-3 bg-white text-black rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#d4af37] transition-all flex items-center gap-2">
                                     <Eye size={14} /> View Protocol Preview
                                 </button>
@@ -1577,7 +1556,7 @@ const HeritageDashboard = ({
                                     onClick={() => {
                                         if(!newDeputy.name || !newDeputy.email) return;
                                         setDeputies([...deputies, { ...newDeputy, id: Date.now(), status: 'Pending' }]);
-                                        addAuditEntry('DEPUTY_INVITE', `Invited ${newDeputy.name}`, `Role: ${newDeputy.role}`);
+                                        performForensicLog('DEPUTY_INVITE', 'SUCCESS', `Invited ${newDeputy.name}`, { role: newDeputy.role });
                                         setShowAddDeputyForm(false);
                                         setNewDeputy({ name: '', email: '', role: 'Beneficiary', condition: 'Post-Mortem' });
                                     }}
@@ -1906,7 +1885,7 @@ const HeritageDashboard = ({
                                             <button 
                                                 onClick={() => {
                                                     setViewingDoc(doc);
-                                                    addAuditEntry('VIEW_DOC', `Opened ${doc.label}`, 'Secure Viewer Session');
+                                                    performForensicLog('VIEW_DOC', 'SUCCESS', `Opened ${doc.label}`, { docId: doc.id });
                                                 }}
                                                 className="p-2.5 text-gray-500 hover:text-[#d4af37] hover:bg-[#d4af37]/10 rounded-lg transition-all"
                                                 title="View Document"
@@ -2092,7 +2071,7 @@ const HeritageDashboard = ({
                 <div className="bg-[#050505] border border-gray-900 rounded-[2rem] p-8 font-mono text-[11px] leading-relaxed overflow-hidden h-80 relative group-hover/console:border-[#00D084]/40 transition-all shadow-2xl">
                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#00D084]/40 to-transparent"></div>
                     <div className="overflow-y-auto h-full space-y-3 scroller-steve pr-4">
-                        {auditLog && auditLog.slice().reverse().map((entry, idx) => (
+                        {productionAuditLog && productionAuditLog.slice().reverse().map((entry, idx) => (
                             <div key={idx} className="flex gap-6 animate-in slide-in-from-left-4 duration-500 hover:bg-white/5 p-2 rounded-lg transition-colors group/entry">
                                 <span className="text-gray-700 shrink-0 font-bold">[{entry.timestamp?.split('T')[1]?.split('.')[0] || 'LIVE'}]</span>
                                 <span className={`shrink-0 font-black tracking-tighter w-24 ${
@@ -2106,7 +2085,7 @@ const HeritageDashboard = ({
                                 <span className="text-gray-800 italic ml-auto font-bold opacity-40">{entry.user}</span>
                             </div>
                         ))}
-                        {(!auditLog || auditLog.length === 0) && (
+                        {(!productionAuditLog || productionAuditLog.length === 0) && (
                             <div className="text-gray-800 italic h-full flex items-center justify-center border-2 border-dashed border-gray-900 rounded-xl">
                                 <Terminal size={24} className="mr-3 opacity-20" /> Sentinel standing by... System secured.
                             </div>
@@ -2135,9 +2114,9 @@ const HeritageDashboard = ({
                  </div>
                  
                 <div className="bg-[#111] rounded-2xl border border-gray-800 p-6 max-h-64 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-800 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#d4af37]">
-                   {auditLog && auditLog.length > 0 ? (
+                   {productionAuditLog && productionAuditLog.length > 0 ? (
                        <div className="space-y-3">
-                           {auditLog.map((entry, idx) => (
+                           {productionAuditLog.map((entry, idx) => (
                                <div key={entry.id || idx} className="flex justify-between items-start text-xs border-b border-gray-800/50 pb-3 last:border-0 last:pb-0 hover:bg-white/5 p-3 rounded-xl transition-all group">
                                    <div className="flex items-start gap-4">
                                        <div className={`mt-1.5 w-2 h-2 rounded-full ring-4 ring-opacity-20 ${
@@ -2470,7 +2449,7 @@ const HeritageDashboard = ({
               onClose={() => setShowSyncRecord(false)} 
               onComplete={(videoData) => {
                   setShowSyncRecord(false);
-                  addAuditEntry('VIDEO_HERITAGE_ADDED', 'New Video Message Secured', 'Uploaded via Mobile Handoff');
+                  performForensicLog('VIDEO_HERITAGE_ADDED', 'SUCCESS', 'New Video Message Secured', { method: 'MOBILE_HANDOFF' });
               }}
           />
       )}

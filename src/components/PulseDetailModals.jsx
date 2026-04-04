@@ -21,7 +21,7 @@ const PulseDetailModal = ({ type, data, alerts, onClose }) => {
             case 'active':
                 return (
                     <div className="space-y-4">
-                        {data.filter(c => c.llc_status === 'Active').map((llc, i) => (
+                        {(data || []).filter(c => c && c.llc_status === 'Active').map((llc, i) => (
                             <div key={llc.id || i} className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between group hover:bg-white/10 transition-all">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-xl bg-[#00D084]/10 flex items-center justify-center text-[#00D084]">
@@ -49,8 +49,8 @@ const PulseDetailModal = ({ type, data, alerts, onClose }) => {
             case 'due':
                 return (
                     <div className="space-y-4">
-                        {alerts.filter(a => {
-                            if (a.status === 'Completed') return false;
+                        {(alerts || []).filter(a => {
+                            if (!a || a.status === 'Completed') return false;
                             const dueDate = new Date(a.due_date);
                             const today = new Date();
                             const next30Days = new Date();
@@ -84,7 +84,7 @@ const PulseDetailModal = ({ type, data, alerts, onClose }) => {
             case 'shield':
                 return (
                     <div className="space-y-4">
-                        {data.filter(c => c.product_type === 'Shield' || c.product_type === 'double_llc_protocol').map((llc, i) => (
+                        {(data || []).filter(c => c && (c.product_type === 'Shield' || c.product_type === 'double_llc_protocol')).map((llc, i) => (
                             <div key={llc.id || i} className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between group hover:bg-white/10 transition-all">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-xl bg-cyan-400/10 flex items-center justify-center text-cyan-400">

@@ -16,6 +16,7 @@ import CompanyWorkspace from './components/SovereignCommandView';
 import ViewSwitcher from './components/ViewSwitcher';
 import PulseDetailModal from './components/PulseDetailModals';
 import { useCompliance } from './hooks/useCompliance';
+import { useAudit } from './hooks/useAudit';
 import { useViewIntelligence } from './hooks/useViewIntelligence';
 import { GlassCard } from './shared/design-system/UIPrimitives';
 
@@ -29,6 +30,9 @@ const DashboardZenith = ({ user, initialData }) => {
   const [isSuccessionOpen, setIsSuccessionOpen] = useState(false);
   const [showDesignation, setShowDesignation] = useState(false);
   const [activePulseModal, setActivePulseModal] = useState(null); // 'active', 'due', 'shield'
+
+  // Audit Ledger Engine
+  const { logAction } = useAudit();
 
   // Compliance Monitoring
   const compliance = useCompliance(user, activeLlc) || { 
@@ -73,12 +77,22 @@ const DashboardZenith = ({ user, initialData }) => {
         }
 
         // Fetch Compliance Alerts
-        const { data: alerts, error: alertError } = await supabase
-            .from('compliance_alerts')
-            .select('*')
-            .eq('user_id', user.id);
-        
-        if (alerts) setComplianceAlerts(alerts);
+        try {
+          const { data: alerts, error: alertError } = await supabase
+              .from('compliance_alerts')
+              .select('*')
+              .eq('user_id', user.id);
+          
+          if (alertError) {
+              console.warn("[Dashboard Warning] compliance_alerts missing in production.");
+              setComplianceAlerts([]);
+          } else if (alerts) {
+              setComplianceAlerts(alerts);
+          }
+        } catch (alertErr) {
+          console.error("Compliance fetch failure:", alertErr);
+          setComplianceAlerts([]);
+        }
 
         setActivityLog([
             { id: 1, message: "Account Secure", time: "Just now", icon: Shield },
@@ -310,6 +324,15 @@ const DashboardZenith = ({ user, initialData }) => {
                         llc={currentLlc} 
                         compliance={compliance}
                         onAction={handleAction}
+                        onSuccession={() => {
+                            setIsSuccessionOpen(true);
+                            logAction('OPEN_SUCCESSION_SUITE', 'SUCCESS', { 
+                                llcId: currentLlc?.id,
+                                llcName: currentLlc?.llc_name 
+                            });
+                        }}
+                        userId={user?.id}
+                        logAction={logAction}
                     />
                 )}
             </div>
@@ -372,7 +395,13 @@ const DashboardZenith = ({ user, initialData }) => {
 
       {/* DASHBOARD MODALS */}
       {isBlueprintOpen && <FoundersBlueprint llc={currentLlc} onClose={() => setIsBlueprintOpen(false)} />}
-      {isSuccessionOpen && <SuccessionSuite llc={currentLlc} onClose={() => setIsSuccessionOpen(false)} />}
+      {isSuccessionOpen && (
+        <SuccessionSuite 
+            llc={currentLlc} 
+            onClose={() => setIsSuccessionOpen(false)} 
+            logAction={logAction}
+        />
+      )}
       {showDesignation && (
         <div className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-xl flex items-center justify-center p-6">
           <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">

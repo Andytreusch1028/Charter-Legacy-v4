@@ -3,21 +3,21 @@ import {
     Plus, FileEdit, Trash2, FileCheck, 
     Shield, Activity, Zap, ChevronRight 
 } from 'lucide-react';
+import FilingLedger from './FilingLedger';
 import StatusRing from './StatusRing';
+import { GlassCard, StatusBadge } from '../shared/design-system/UIPrimitives';
 
 /**
- * SovereignCommandView (Option 1)
+ * CompanyWorkspace
  * 
- * A cockpit-style, action-first dashboard for power users.
- * Minimal information display, maximum action surface.
- * Designed for speed and muscle memory.
+ * An action-focused dashboard for managing a specific business.
  */
-const SovereignCommandView = ({ llc, compliance, onAction, onSuccession }) => {
+const CompanyWorkspace = ({ llc, compliance, onAction, onSuccession, userId, logAction }) => {
     const actions = [
         {
             id: 'new_entity',
-            label: 'Genesis',
-            desc: 'Form New Entity',
+            label: 'Register',
+            desc: 'New Company',
             icon: Plus,
             color: '#00D084',
             bgColor: 'bg-emerald-500/10',
@@ -60,7 +60,7 @@ const SovereignCommandView = ({ llc, compliance, onAction, onSuccession }) => {
     return (
         <div className="space-y-10 animate-in slide-in-from-bottom-8 duration-700">
             {/* Compact Status Bar */}
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-8 border-b border-gray-100">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-8 border-b border-white/5">
                 <div className="flex items-center gap-6">
                     <StatusRing 
                         percentage={compliance?.healthScore || 100} 
@@ -71,24 +71,24 @@ const SovereignCommandView = ({ llc, compliance, onAction, onSuccession }) => {
                         <Zap size={16} style={{ color: compliance?.pulseColor || '#00D084' }} />
                     </StatusRing>
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-[#0A0A0B] leading-none">
-                            {llc?.llc_name || 'Sovereign Entity'}
-                        </h1>
-                        <div className="flex items-center gap-3 mt-1">
+                        <h2 className="text-sm font-black uppercase tracking-widest text-white/50 mb-1">
+                            Business Workspace
+                        </h2>
+                        <div className="flex items-center gap-3">
                             <span className="text-[10px] font-black uppercase tracking-widest text-[#00D084] flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 bg-[#00D084] rounded-full animate-pulse" />
-                                {llc?.llc_status || 'Active'}
+                                <div className="w-1.5 h-1.5 bg-[#00D084] rounded-full shadow-[0_0_8px_#10b981]" />
+                                {llc?.llc_status || 'Setting Up'}
                             </span>
-                            <span className="text-gray-200">•</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                                {compliance?.healthScore || 100}% Health
+                            <span className="text-white/10">•</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
+                                Status: {(compliance?.healthScore || 100) >= 100 ? 'Good Standing' : 'Needs Attention'}
                             </span>
                         </div>
                     </div>
                 </div>
                 <button 
                     onClick={onSuccession}
-                    className="px-5 py-2.5 bg-[#0A0A0B] text-[#d4af37] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#d4af37] hover:text-[#0A0A0B] transition-all shadow-lg"
+                    className="px-5 py-2.5 bg-white/5 text-[#d4af37] border border-[#d4af37]/20 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#d4af37] hover:text-black transition-all shadow-xl"
                 >
                     Succession Plan
                 </button>
@@ -100,7 +100,7 @@ const SovereignCommandView = ({ llc, compliance, onAction, onSuccession }) => {
                     <button
                         key={action.id}
                         onClick={() => onAction(action.id)}
-                        className={`group relative p-8 rounded-[32px] border ${action.borderColor} ${action.bgColor} ${action.hoverBg} hover:text-white transition-all duration-500 text-center hover:scale-[1.03] hover:shadow-2xl`}
+                        className={`group relative p-8 rounded-[36px] border ${action.borderColor} ${action.bgColor} ${action.hoverBg} hover:text-white transition-all duration-500 text-center hover:scale-[1.03] hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]`}
                     >
                         {action.urgent && (
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
@@ -114,10 +114,10 @@ const SovereignCommandView = ({ llc, compliance, onAction, onSuccession }) => {
                                 <action.icon size={32} strokeWidth={1.5} className="group-hover:text-white transition-colors" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black uppercase tracking-tight text-[#0A0A0B] group-hover:text-white transition-colors">
+                                <h3 className="text-lg font-black uppercase tracking-tight text-white/90 group-hover:text-white transition-colors">
                                     {action.label}
                                 </h3>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-white/70 transition-colors mt-1">
+                                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest group-hover:text-white/70 transition-colors mt-1">
                                     {action.desc}
                                 </p>
                             </div>
@@ -127,22 +127,25 @@ const SovereignCommandView = ({ llc, compliance, onAction, onSuccession }) => {
             </div>
 
             {/* Quick Stats Strip */}
-            <div className="flex flex-wrap gap-4 pt-4">
-                <div className="flex items-center gap-3 px-5 py-3 bg-[#FAFAFA] rounded-2xl border border-gray-100">
+            <div className="flex flex-wrap gap-4 pt-4 pb-8 border-b border-white/5">
+                <div className="flex items-center gap-3 px-5 py-3 bg-white/5 rounded-2xl border border-white/5">
                     <Shield size={14} className="text-[#00D084]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
                         Privacy Shield: {llc?.privacy_shield_active ? 'Active' : 'Inactive'}
                     </span>
                 </div>
-                <div className="flex items-center gap-3 px-5 py-3 bg-[#FAFAFA] rounded-2xl border border-gray-100">
-                    <Activity size={14} className="text-gray-400" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
-                        {compliance?.daysToDeadline ? `Next Filing: ${compliance.daysToDeadline}d` : 'All Filings Current'}
+                <div className="flex items-center gap-3 px-5 py-3 bg-white/5 rounded-2xl border border-white/5">
+                    <Activity size={14} className="text-white/20" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
+                        {compliance?.daysToDeadline ? `Next Filing: ${compliance.daysToDeadline}d` : 'Status Active'}
                     </span>
                 </div>
             </div>
+
+            {/* Active Filings Ledger */}
+            <FilingLedger llc={llc} userId={userId} />
         </div>
     );
 };
 
-export default SovereignCommandView;
+export default CompanyWorkspace;

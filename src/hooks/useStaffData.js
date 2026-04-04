@@ -50,7 +50,12 @@ export const useStaffData = () => {
                 .select('*, profiles(full_name)')
                 .order('due_date', { ascending: true });
             
-            if (!error) setCompliancePulse(data || []);
+            if (error) {
+                console.warn("[StaffData Warning] compliance_alerts missing in production, falling back to empty state.");
+                setCompliancePulse([]);
+            } else {
+                setCompliancePulse(data || []);
+            }
         } catch (err) {
             console.error("[StaffData Error] Compliance pulse failure:", err);
         } finally {
@@ -70,7 +75,12 @@ export const useStaffData = () => {
                 .select('*, profiles(full_name)')
                 .order('is_active', { ascending: false });
             
-            if (!error) setPrivacyAliases(data || []);
+            if (error) {
+                console.warn("[StaffData Warning] privacy_aliases missing in production, falling back to empty state.");
+                setPrivacyAliases([]);
+            } else {
+                setPrivacyAliases(data || []);
+            }
         } catch (err) {
             console.error("[StaffData Error] Privacy mask fetch failure:", err);
         } finally {

@@ -3,7 +3,7 @@ import {
   Plus, FileEdit, Trash2, History, 
   ArrowUpRight, Landmark, Gavel, FileCheck 
 } from 'lucide-react';
-import { SovereignButton, GlassCard } from '../shared/design-system/UIPrimitives';
+import { ActionButton, GlassCard } from '../shared/design-system/UIPrimitives';
 
 /**
  * ActionConsole
@@ -15,30 +15,30 @@ const ActionConsole = ({ onAction, status = 'Active', health = 100 }) => {
     const actions = [
         {
             id: 'new_entity',
-            label: 'Genesis Protocol',
-            desc: 'Form a new Florida LLC or Subsidiary.',
+            label: 'Form New Company',
+            desc: 'Start a new Florida LLC.',
             icon: Plus,
             variant: 'secondary'
         },
         {
             id: 'amend',
-            label: 'Amendment Protocol',
-            desc: 'Update Managers, Members, or Structure.',
+            label: 'Update Structure',
+            desc: 'Change Owners, Address, or Name.',
             icon: FileEdit,
             variant: 'primary'
         },
         {
             id: 'annual_report',
-            label: 'Maintenance Protocol',
-            desc: 'File Annual Report to Sunbiz.',
+            label: 'Keep in Good Standing',
+            desc: 'File your mandatory yearly update.',
             icon: FileCheck,
             variant: health < 100 ? 'primary' : 'secondary',
             urgent: health < 100
         },
         {
             id: 'dissolve',
-            label: 'Termination Protocol',
-            desc: 'Legally dissolve and close business.',
+            label: 'Close Company',
+            desc: 'Legally dissolve this business.',
             icon: Trash2,
             variant: 'secondary'
         }
@@ -55,7 +55,7 @@ const ActionConsole = ({ onAction, status = 'Active', health = 100 }) => {
                             </div>
                         </div>
                     )}
-                    <SovereignButton 
+                    <ActionButton 
                         label={action.label}
                         description={action.desc}
                         icon={action.icon}
@@ -66,21 +66,21 @@ const ActionConsole = ({ onAction, status = 'Active', health = 100 }) => {
             ))}
             
             {/* Quick Links Card */}
-            <GlassCard className="md:col-span-2 p-6 flex flex-col md:flex-row items-center justify-between gap-6 border-white/5 bg-white/[0.02]">
+            <GlassCard variant="glass" className="md:col-span-2 p-6 flex flex-col md:row items-center justify-between gap-6 border-white/5">
                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-500">
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/20">
                         <Gavel size={18} />
                     </div>
                     <div>
-                        <h5 className="text-[10px] font-black uppercase tracking-widest text-[#0A0A0B] opacity-40 mb-1">External Nexus</h5>
-                        <p className="text-xs font-bold text-gray-400">Official Sunbiz Records & Filing History</p>
+                        <h5 className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-1">State Records</h5>
+                        <p className="text-xs font-bold text-white/50">View official Florida documents and history.</p>
                     </div>
                 </div>
                 <div className="flex gap-3">
-                    <button className="px-4 py-2 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:border-white/20 transition-all flex items-center gap-2">
+                    <button className="px-4 py-2 rounded-xl border border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white hover:border-white/20 transition-all flex items-center gap-2">
                         Sunbiz Search <ArrowUpRight size={12} />
                     </button>
-                    <button className="px-4 py-2 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:border-white/20 transition-all flex items-center gap-2">
+                    <button className="px-4 py-2 rounded-xl border border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white hover:border-white/20 transition-all flex items-center gap-2">
                         Filing History <History size={12} />
                     </button>
                 </div>

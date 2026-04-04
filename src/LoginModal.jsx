@@ -98,7 +98,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }) => {
                             <Lock size={12} /> Secure Access
                         </div>
                         <h2 className="text-3xl font-black uppercase tracking-tighter text-[#1D1D1F]">Client Login</h2>
-                        <p className="text-gray-500 mt-2 text-sm italic">Access your secure console.</p>
+                        <p className="text-gray-500 mt-2 text-sm italic font-medium">Access your secure console.</p>
                     </div>
 
                     {error && (
@@ -117,26 +117,26 @@ const LoginModal = ({ isOpen, onClose, onSuccess }) => {
                         <div>
                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Email Address</label>
                             <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input 
                                     type="email" 
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="founder@legacy.com" 
-                                    className="w-full bg-[#F5F5F7] border-0 rounded-xl py-4 pl-12 pr-4 font-bold text-lg focus:ring-2 focus:ring-[#007AFF] outline-none transition-all" 
+                                    className="w-full bg-[#F5F5F7] border-0 rounded-xl py-4 pl-12 pr-4 font-bold text-lg focus:ring-2 focus:ring-[#007AFF] outline-none transition-all placeholder:text-gray-400" 
                                 />
                             </div>
                         </div>
                         <div>
                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Password</label>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input 
                                     type="password" 
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••••••" 
-                                    className="w-full bg-[#F5F5F7] border-0 rounded-xl py-4 pl-12 pr-4 font-bold text-lg focus:ring-2 focus:ring-[#007AFF] outline-none transition-all" 
+                                    className="w-full bg-[#F5F5F7] border-0 rounded-xl py-4 pl-12 pr-4 font-bold text-lg focus:ring-2 focus:ring-[#007AFF] outline-none transition-all placeholder:text-gray-400" 
                                 />
                             </div>
                         </div>
@@ -147,7 +147,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }) => {
                             {loading ? <Loader2 className="animate-spin" /> : <>Enter Console <ArrowRight size={18} /></>}
                         </button>
                         
-                        <button onClick={handleMagicLink} disabled={loading} className="w-full bg-white text-gray-500 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-gray-50 transition-all">
+                        <button onClick={handleMagicLink} disabled={loading} className="w-full bg-white text-gray-700 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all border border-gray-100">
                              Email me a Magic Link
                         </button>
 
