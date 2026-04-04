@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { ArrowRight, Search, Shield, Check, Loader2, AlertCircle, Info, ExternalLink, PenTool, X, Settings, ChevronUp, ChevronDown } from 'lucide-react';
 import { calculateAvailabilityScore } from './lib/sunbiz-validator';
 
-const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
+const DesignationProtocol = ({ user, llc, onSuccess, onComplete, onClose }) => {
     const finishAction = onSuccess || onComplete;
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -114,24 +114,27 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
             ? [{ name: wyomingName, role: 'Sole Manager', address: 'Charter Privacy Address' }] 
             : members;
 
+        // Stabilization: Prevent 'LLC LLC' or 'Ltd. Co. Ltd. Co.' redundancies
+        const cleanName = llcName.replace(new RegExp(`\s+(${['LLC', 'L.L.C.', 'Ltd. Co.', 'Limited Liability Company'].join('|')})$`, 'i'), '').trim();
+
         const filingPayload = {
             user_id: user.id,
-            llc_name: `${llcName} ${designator}`,
-            llc_status: 'Setting Up',
+            llc_name: `${cleanName} ${designator}`,
+            llc_status: 'Active',
             product_type: productType,
-            privacy_shield_active: raType === 'charter',
+            privacy_shield_active: productType === 'double_llc_protocol' || raType === 'charter',
             // Core Sunbiz Fields
-            principal_address: raType === 'charter' ? 'Charter Privacy Address' : raAddress,
+            principal_address: (raType === 'charter' || productType === 'double_llc_protocol') ? 'Charter Privacy Address' : raAddress,
             ra_type: raType,
-            ra_name: raType === 'charter' ? 'Charter Legacy RA' : raName,
-            ra_address: raType === 'charter' ? 'Charter HQ' : raAddress,
-            ra_signature: raType === 'charter' ? 'Charter Signed' : raSignature,
+            ra_name: (raType === 'charter' || productType === 'double_llc_protocol') ? 'Charter Legacy RA' : raName,
+            ra_address: (raType === 'charter' || productType === 'double_llc_protocol') ? 'Charter HQ' : raAddress,
+            ra_signature: (raType === 'charter' || productType === 'double_llc_protocol') ? 'Charter Signed' : raSignature,
             organizer_signature: organizerSignature,
             contact_email: contactEmail,
             // Advanced / Optional Fields
             effective_date: effectiveDate || 'Upon Filing',
             purpose: purpose,
-            mailing_address: mailingSameAsPrincipal ? (raType === 'charter' ? 'Charter Privacy Address' : raAddress) : mailingAddress,
+            mailing_address: mailingSameAsPrincipal ? ((raType === 'charter' || productType === 'double_llc_protocol') ? 'Charter Privacy Address' : raAddress) : mailingAddress,
             members: finalMembers,
             internal_founders: productType === 'double_llc_protocol' ? members : null // Keep true owners for WY filing
         };
@@ -152,7 +155,9 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                     .from('llcs')
                     .update({ 
                         llc_name: filingPayload.llc_name,
-                        llc_status: 'Filing Initiated', 
+                        llc_status: 'Active',
+                        product_type: productType,
+                        privacy_shield_active: filingPayload.privacy_shield_active
                     })
                     .eq('id', existing.id);
                 if (error) throw error;
@@ -164,29 +169,22 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                     .insert([{ 
                         user_id: user.id,
                         llc_name: filingPayload.llc_name,
-                        llc_status: 'Setting Up',
+                        llc_status: 'Active',
                         product_type: productType,
-                        privacy_shield_active: true
+                        privacy_shield_active: filingPayload.privacy_shield_active
                     }])
                     .select()
                     .single();
 
                 if (insertError) throw insertError;
-
-                if (newLLC) {
-                    finalLlcId = newLLC.id;
-                    const { error: updateError } = await supabase
-                        .from('llcs')
-                        .update({ llc_status: 'Filing Initiated' })
-                        .eq('id', newLLC.id);
-                }
+                if (newLLC) finalLlcId = newLLC.id;
             }
             
             // Pass full data to dashboard for display/demo
             if (finishAction) {
                 finishAction({
                     ...filingPayload,
-                    llc_status: 'Filing Initiated',
+                    llc_status: 'Active',
                     id: finalLlcId
                 });
             }
@@ -213,9 +211,9 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                             .insert([{ 
                                 user_id: user.id,
                                 llc_name: filingPayload.llc_name,
-                                llc_status: 'Filing Initiated',
-                                product_type: 'standard',
-                                privacy_shield_active: true
+                                llc_status: 'Active',
+                                product_type: productType,
+                                privacy_shield_active: filingPayload.privacy_shield_active
                             }]);
 
                         if (adminError) throw adminError;
@@ -223,7 +221,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                         if (finishAction) {
                             finishAction({
                                 ...filingPayload,
-                                llc_status: 'Filing Initiated'
+                                llc_status: 'Active'
                             });
                         }
                         return;
@@ -240,7 +238,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                 if (finishAction) {
                     finishAction({
                         ...filingPayload,
-                        llc_status: 'Filing Initiated'
+                        llc_status: 'Active'
                     });
                 }
             } else {
@@ -272,14 +270,24 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                 {/* Header Strip */}
                 <div className="bg-[#0A0A0B] p-8 pb-12 text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00D084] to-transparent opacity-50"></div>
-                    <p className="text-[#00D084] text-[10px] font-black uppercase tracking-[0.3em] mb-4">Charter Legacy Designation Protocol</p>
+                    <p className="text-[#00D084] text-[10px] font-black uppercase tracking-[0.2em] mb-4">Charter Legacy Setup Guide</p>
                     <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
-                        {step === 1 && "Name Your Entity"}
-                        {step === 2 && "Registered Agent & Privacy"}
-                        {step === 3 && "Board of Members"}
-                        {step === 3.5 && "Configurator"}
+                        {step === 1 && "Name Your Business"}
+                        {step === 2 && "Privacy & Address"}
+                        {step === 3 && "Company Owners"}
+                        {step === 3.5 && "Privacy Setup"}
                         {step === 4 && "Review & Sign"}
                     </h2>
+
+                    {onClose && (
+                        <button 
+                            onClick={onClose}
+                            className="absolute top-6 right-6 text-white/50 hover:text-white transition-all p-2 rounded-full hover:bg-white/10"
+                            aria-label="Cancel Operation"
+                        >
+                            <X size={20} />
+                        </button>
+                    )}
                 </div>
 
                 {/* Content Area */}
@@ -318,7 +326,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                 <p className="text-blue-800 text-sm font-bold">
                                     "{llcName || 'Your Business'} {designator}"
                                 </p>
-                                <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest mt-1">Institutional Preview</p>
+                                <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest mt-1">Official Name Preview</p>
                                 
                                 {availability && (
                                     <div className={`mt-4 p-4 rounded-xl border-2 ${availability.score >= 90 ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
@@ -408,7 +416,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                 <div>
                                     <h4 className="font-bold text-[#0A0A0B] text-lg">Charter Legacy Agent (Recommended)</h4>
                                     <p className="text-gray-500 text-sm mt-1 leading-relaxed">
-                                        Included with your package. We handle legal notices and provide our firm's address to be used as your public Principal Place of Business, keeping your home address completely off public records.
+                                        Included with your package. We handle all state mail and provide our professional office address for public records, keeping your home address private.
                                     </p>
                                     {raType === 'charter' && (
                                         <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-[#00D084]/10 text-[#00D084] rounded-lg text-xs font-bold">
@@ -429,7 +437,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                 <div className="w-full">
                                     <h4 className="font-bold text-[#0A0A0B] text-lg">I will be the Registered Agent <span className="text-red-500 text-xs ml-2 uppercase tracking-widest font-black">Warning</span></h4>
                                     <p className="text-gray-500 text-sm mt-1 leading-relaxed mb-4">
-                                        You must be available at a Florida street address during business hours. This address will also publicly become your company's Principal Place of Business.
+                                        You must be available at a Florida street address during business hours. This address will also be listed on public records.
                                     </p>
                                     
                                     {raType === 'custom' && (
@@ -481,13 +489,13 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
 
                     {step === 3 && (
                         <div className="space-y-6 flex-1 flex flex-col">
-                            <p className="text-gray-500 text-sm font-medium text-center">Who owns/manages this LLC?</p>
+                            <p className="text-gray-500 text-sm font-medium text-center">Who owns this company?</p>
                             
                             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
                                 {(members || []).map((member, idx) => (
                                     <div key={idx} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Member {idx + 1}</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Owner {idx + 1}</span>
                                             {idx > 0 && <button onClick={() => {
                                                 const newM = [...members];
                                                 newM.splice(idx, 1);
@@ -507,7 +515,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                                 onChange={(e) => updateMember(idx, 'role', e.target.value)}
                                                 className="bg-white p-3 rounded-xl text-sm font-bold outline-none border border-gray-200 focus:border-black"
                                             >
-                                                <option>Authorized Member</option>
+                                                <option>Initial Owner</option>
                                                 <option>Manager</option>
                                             </select>
                                         </div>
@@ -547,9 +555,9 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                     <Shield size={100} />
                                 </div>
                                 <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] relative z-10">
-                                    <Check size={14} /> Double LLC Protocol Active
+                                    <Check size={14} /> Enhanced Privacy Active
                                 </div>
-                                <h3 className="text-2xl font-black uppercase tracking-tighter relative z-10">Wyoming Configurator</h3>
+                                <h3 className="text-3xl font-black uppercase tracking-tighter text-white">Identity Shielding</h3>
                                 <p className="text-gray-400 text-sm font-medium leading-relaxed relative z-10">
                                     Your Florida LLC manager has been automatically set to a Wyoming Holding Company. Wyoming does not require your name on public record, providing an absolute shield of anonymity.
                                 </p>
@@ -578,7 +586,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete }) => {
                                 }}
                                 className="w-full bg-[#00D084] text-[#0A0A0B] py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-[0_20px_50px_rgba(0,208,132,0.2)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 mt-auto"
                             >
-                                Secure Architecture <ArrowRight size={18} />
+                                Finalize Setup <ArrowRight size={18} />
                             </button>
                         </div>
                     )}

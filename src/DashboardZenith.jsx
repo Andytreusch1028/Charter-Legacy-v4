@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Shield, Clock, FileText, CheckCircle2, AlertCircle, 
   ChevronRight, Lock, Activity, RefreshCw, LogOut, Settings,
-  Copy, Download, Eye, EyeOff, LayoutGrid, List
+  Copy, Download, Eye, EyeOff, LayoutGrid, List, Info, Zap
 } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
@@ -11,22 +11,26 @@ import SuccessionSuite from './SuccessionSuite';
 import DesignationProtocol from './DesignationProtocol';
 import StatusRing from './components/StatusRing';
 import ActionConsole from './components/ActionConsole';
-import EmpireGrid from './components/EmpireGrid';
-import SovereignCommandView from './components/SovereignCommandView';
+import PortfolioGrid from './components/EmpireGrid';
+import CompanyWorkspace from './components/SovereignCommandView';
 import ViewSwitcher from './components/ViewSwitcher';
+import PulseDetailModal from './components/PulseDetailModals';
 import { useCompliance } from './hooks/useCompliance';
 import { useViewIntelligence } from './hooks/useViewIntelligence';
+import { GlassCard } from './shared/design-system/UIPrimitives';
 
 const DashboardZenith = ({ user, initialData }) => {
   const [loading, setLoading] = useState(true);
   const [activeLlc, setActiveLlc] = useState(initialData || null);
-  const [fleet, setFleet] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [activityLog, setActivityLog] = useState([]);
+  const [complianceAlerts, setComplianceAlerts] = useState([]);
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [isSuccessionOpen, setIsSuccessionOpen] = useState(false);
   const [showDesignation, setShowDesignation] = useState(false);
+  const [activePulseModal, setActivePulseModal] = useState(null); // 'active', 'due', 'shield'
 
-  // Compliance & Statutory Monitoring
+  // Compliance Monitoring
   const compliance = useCompliance(user, activeLlc) || { 
       healthScore: 100, pulseColor: '#00D084', alerts: [], daysToDeadline: null 
   };
@@ -34,7 +38,7 @@ const DashboardZenith = ({ user, initialData }) => {
   // View Intelligence Engine
   const viewIntel = useViewIntelligence(
       user?.id,
-      fleet?.length || 0,
+      companies?.length || 0,
       compliance.healthScore < 100
   );
 
@@ -51,7 +55,7 @@ const DashboardZenith = ({ user, initialData }) => {
         if (error) throw error;
 
         if (data && data.length > 0) {
-            setFleet(data);
+            setCompanies(data);
             if (!activeLlc) {
                 setActiveLlc(data[0]);
                 if (data[0]?.llc_name?.includes('Pending') || data[0]?.llc_status === 'Setting Up') {
@@ -59,27 +63,35 @@ const DashboardZenith = ({ user, initialData }) => {
                 }
             }
         } else {
-            const mockFleet = [
-                { id: 1, llc_name: 'Charter Legacy Demo LLC', llc_status: 'Active', privacy_shield_active: true, created_at: new Date().toISOString() },
-                { id: 2, llc_name: 'Wyoming Holdings LLC', llc_status: 'Active', privacy_shield_active: true, created_at: new Date().toISOString() },
-                { id: 3, llc_name: 'Heritage Property LLC', llc_status: 'Action Required', privacy_shield_active: false, created_at: new Date().toISOString() }
+            const demoCompanies = [
+                { id: 1, llc_name: 'Charter Legacy Demo LLC', llc_status: 'Active', created_at: new Date().toISOString() },
+                { id: 2, llc_name: 'Wyoming Holdings LLC', llc_status: 'Active', created_at: new Date().toISOString() },
+                { id: 3, llc_name: 'Heritage Property LLC', llc_status: 'Action Required', created_at: new Date().toISOString() }
             ];
-            setFleet(mockFleet);
-            if (!activeLlc) setActiveLlc(mockFleet[0]);
+            setCompanies(demoCompanies);
+            if (!activeLlc) setActiveLlc(demoCompanies[0]);
         }
 
+        // Fetch Compliance Alerts
+        const { data: alerts, error: alertError } = await supabase
+            .from('compliance_alerts')
+            .select('*')
+            .eq('user_id', user.id);
+        
+        if (alerts) setComplianceAlerts(alerts);
+
         setActivityLog([
-            { id: 1, message: "Sovereign Environment Initialized", time: "Just now", icon: Shield },
-            { id: 2, message: "Fleet Status Synchronized", time: "1 min ago", icon: RefreshCw },
-            { id: 3, message: "View Intelligence Calibrated", time: "Auto", icon: Eye },
+            { id: 1, message: "Account Secure", time: "Just now", icon: Shield },
+            { id: 2, message: "Company List Updated", time: "1 min ago", icon: RefreshCw },
+            { id: 3, message: "Dashboard Ready", time: "Auto", icon: Eye },
         ]);
       } catch (err) {
         console.error("Dashboard Load Error:", err);
-        const errFleet = [{ id: 'err', llc_name: 'Recovery Mode', llc_status: 'Active', created_at: new Date().toISOString() }];
-        setFleet(errFleet);
-        setActiveLlc(errFleet[0]);
+        const errCompanies = [{ id: 'err', llc_name: 'Main Company', llc_status: 'Active', created_at: new Date().toISOString() }];
+        setCompanies(errCompanies);
+        setActiveLlc(errCompanies[0]);
       } finally {
-        setTimeout(() => setLoading(false), 500);
+        setTimeout(() => setLoading(false), 800);
       }
     };
     fetchData();
@@ -92,248 +104,298 @@ const DashboardZenith = ({ user, initialData }) => {
 
   const selectEntity = (entity) => {
       setActiveLlc(entity);
-      // When selecting from fleet, switch to situational to see that entity
       viewIntel.setOverride('situational');
   };
 
+  const sanitizeName = (name) => {
+    if (!name) return "";
+    // Remove double occurrences of common company suffixes
+    return name.replace(/(LTD\. CO\.)\s+\1/gi, "$1").replace(/(LLC)\s+\1/gi, "$1");
+  };
+
+  const currentLlc = activeLlc || (companies && companies[0]) || null;
+  const currentLlcName = sanitizeName(currentLlc?.llc_name);
+  const currentView = viewIntel.activeView;
+
+  // Pulse Metrics Logic
+  const activeFilingsCount = companies.filter(c => c.llc_status === 'Active').length;
+  const shieldedCount = companies.filter(c => c.product_type === 'Shield').length;
+  const dueSoonCount = complianceAlerts.filter(a => {
+      if (a.status === 'Completed') return false;
+      const dueDate = new Date(a.due_date);
+      const today = new Date();
+      const next30Days = new Date();
+      next30Days.setDate(today.getDate() + 30);
+      return dueDate >= today && dueDate <= next30Days;
+  }).length;
+
   if (loading) {
       return (
-          <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center">
-              <div className="text-center space-y-4">
-                  <div className="w-12 h-12 border-4 border-[#0A0A0B] border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Calibrating View Intelligence...</p>
+          <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center space-y-8 text-white">
+              <div className="relative">
+                  <div className="w-16 h-16 border-4 border-white/5 border-t-white rounded-full animate-spin" />
+                  <Shield size={24} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/50" />
+              </div>
+              <div className="space-y-2 text-center">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Preparing your Workspace</p>
+                  <p className="text-[11px] text-white/20 font-medium animate-pulse">Setting up your secure view...</p>
               </div>
           </div>
       );
   }
 
-  const currentLlc = activeLlc || (fleet && fleet[0]) || null;
-  const currentView = viewIntel.activeView;
-
   return (
-    <div className="min-h-screen bg-[#F0F2F5] text-[#0A0A0B] font-sans antialiased flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
-        <style>{`
-          :root { --obsidian-ink: #0A0A0B; --accent-green: #00D084; --gold-leaf: #d4af37; }
-          .zenith-slab-shadow { box-shadow: 0 50px 100px -20px rgba(0,0,0,0.15), 0 30px 60px -30px rgba(0,0,0,0.15); }
-        `}</style>
-      
-      <div className="bg-white w-full max-w-7xl min-h-[90vh] rounded-[48px] zenith-slab-shadow flex flex-col md:flex-row relative z-10 border border-white/70 animate-in fade-in zoom-in-95 duration-700 overflow-hidden">
-        
-        <main className="flex-1 p-8 md:p-16 overflow-y-auto">
-            {/* Header with View Switcher */}
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-4">
-                <ViewSwitcher 
-                    activeView={currentView}
-                    recommended={viewIntel.recommended}
-                    isOverridden={viewIntel.isOverridden}
-                    onSelect={viewIntel.setOverride}
-                    onReset={viewIntel.clearOverride}
-                />
-                <div className="text-[0.55rem] font-black uppercase tracking-[0.5em] text-[#0A0A0B] opacity-20">
-                    {currentView === 'fleet' ? 'Sovereign Fleet' : currentView === 'command' ? 'Command Cockpit' : 'Adaptive Console'}
-                </div>
-            </div>
+    <div className="min-h-screen bg-[#0A0A0B] selection:bg-white selection:text-black">
+      {/* 1. NAVIGATION */}
+      <nav className="h-20 bg-[#0D0D0E]/80 backdrop-blur-xl border-b border-white/5 px-8 flex items-center justify-between sticky top-0 z-[100]">
+        <div className="flex items-center gap-10">
+          <div className="flex items-center gap-3">
+             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-black">
+               <Shield size={18} />
+             </div>
+             <span className="font-black uppercase tracking-tighter text-xl text-white">Charter Legacy</span>
+          </div>
+          <div className="h-8 w-px bg-white/5" />
+          <div className="flex items-center gap-8">
+             <div className="flex flex-col">
+                <span className="text-[9px] font-black uppercase tracking-widest text-white/30 mb-0.5">Account Owner</span>
+                <span className="text-xs font-bold text-white">{user?.email || 'Guest Founder'}</span>
+             </div>
+          </div>
+        </div>
 
-            {/* ═══════════════════════════════════════════ */}
-            {/* VIEW ROUTER                                */}
-            {/* ═══════════════════════════════════════════ */}
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/5 rounded-xl">
+             <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_12px_rgba(16,185,129,0.4)]" />
+             <span className="text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap">Cloud Sync Active</span>
+          </div>
+          <button className="p-3 text-white/30 hover:text-white transition-colors">
+            <Settings size={20} />
+          </button>
+          <button className="px-5 py-2.5 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/90 active:scale-95 transition-all">
+            Secure Logout
+          </button>
+        </div>
+      </nav>
 
-            {currentView === 'fleet' && (
-                <div className="pt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-[#0A0A0B] mb-4">The Empire.</h1>
-                    <p className="text-gray-400 font-medium mb-16 max-w-xl">
-                        Managing {fleet?.length || 0} active entities. Global health indicators synchronized.
-                    </p>
-                    <EmpireGrid 
-                        entities={(fleet || []).map(e => ({
-                            id: e.id,
-                            name: e.llc_name || 'Unnamed LLC',
-                            status: e.llc_status || 'Active',
-                            health: e.privacy_shield_active === false ? 60 : 100
-                        }))}
-                        activeId={currentLlc?.id}
-                        onSelect={selectEntity}
-                        onAdd={() => setShowDesignation(true)}
-                    />
-                </div>
-            )}
+      <main className="p-8 max-w-[1600px] mx-auto space-y-12 pb-32">
+        {/* 2. HEADER */}
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+           <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 text-white/50 border border-white/5 rounded-full text-[9px] font-black uppercase tracking-[0.2em]">
+                 <Activity size={12} /> Dashboard Overview
+              </div>
+              <div>
+                 <h1 className="text-5xl font-black uppercase tracking-tighter text-white leading-none">
+                     {currentView === 'fleet' ? 'Business Portfolio' : (currentView === 'situational' ? 'Intelligence Feed' : currentLlcName)}
+                 </h1>
+                 <p className="text-white/40 text-sm font-medium mt-3">
+                     {currentView === 'fleet' 
+                       ? 'Overview of all your registered entities and their standing.' 
+                       : (currentView === 'situational' 
+                           ? 'Real-time portfolio telemetry and suggested actions.'
+                           : 'Manage your selected company and active filings.')}
+                 </p>
+              </div>
+           </div>
 
-            {currentView === 'command' && (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <SovereignCommandView 
-                        llc={currentLlc}
+          <div className="flex items-center gap-3">
+              <ViewSwitcher 
+                activeView={currentView} 
+                recommended={viewIntel.recommended}
+                isOverridden={viewIntel.isOverridden}
+                onSelect={(v) => viewIntel.setOverride(v)} 
+                onReset={viewIntel.clearOverride}
+              />
+           </div>
+        </header>
+
+        {/* 3. DYNAMIC WORKSPACE */}
+        <section className="grid grid-cols-12 gap-8">
+            {/* LEFT COLUMN */}
+            <div className="col-span-12 lg:col-span-8 space-y-8">
+                {currentView === 'fleet' ? (
+                    <>
+                        <PortfolioGrid 
+                            entities={companies} 
+                            onSelect={selectEntity}
+                        />
+                        {/* ACTIONS - Only shown in Portfolio view */}
+                        <ActionConsole onAction={handleAction} />
+                    </>
+                ) : currentView === 'situational' ? (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                        {/* ADAPTIVE FEED - Surfaced Intelligence */}
+                        <GlassCard variant="glass" className="p-8 border-[#00D084]/10 bg-[#00D084]/5">
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <h3 className="text-2xl font-black uppercase tracking-tighter text-white">Portfolio Pulse</h3>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#00D084] mt-1 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 bg-[#00D084] rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
+                                        Systems Nominal
+                                    </p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/30 block mb-1">Health Score</span>
+                                    <span className="text-3xl font-black text-white">98%</span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div 
+                                    onClick={() => setActivePulseModal('active')}
+                                    className="p-6 bg-white/5 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 hover:scale-[1.02] active:scale-95 transition-all group relative overflow-hidden"
+                                >
+                                    <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <ChevronRight size={12} className="text-white/40" />
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/20 block mb-2">Active Filings</span>
+                                    <div className="flex items-end justify-between">
+                                        <span className="text-3xl font-black text-white">{activeFilingsCount}</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-[#00D084] opacity-0 group-hover:opacity-100 transition-all">View Detail →</span>
+                                    </div>
+                                </div>
+
+                                <div 
+                                    onClick={() => setActivePulseModal('due')}
+                                    className="p-6 bg-white/5 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 hover:scale-[1.02] active:scale-95 transition-all group relative overflow-hidden"
+                                >
+                                    <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <ChevronRight size={12} className="text-white/40" />
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/20 block mb-2">Due Soon</span>
+                                    <div className="flex items-end justify-between">
+                                        <span className="text-3xl font-black text-amber-500">{dueSoonCount}</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-amber-500 opacity-0 group-hover:opacity-100 transition-all">Resolve →</span>
+                                    </div>
+                                </div>
+
+                                <div 
+                                    onClick={() => setActivePulseModal('shield')}
+                                    className="p-6 bg-white/5 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 hover:scale-[1.02] active:scale-95 transition-all group relative overflow-hidden"
+                                >
+                                    <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <ChevronRight size={12} className="text-white/40" />
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/20 block mb-2">Shielded Entities</span>
+                                    <div className="flex items-end justify-between">
+                                        <span className="text-3xl font-black text-cyan-400">{shieldedCount}</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-cyan-400 opacity-0 group-hover:opacity-100 transition-all">Verify →</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </GlassCard>
+
+                        {/* CENTRAL ACTIVITY FEED */}
+                        <div className="space-y-4">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 px-2">Recent Intelligence</h4>
+                            {activityLog.map((log) => (
+                                <GlassCard key={log.id} variant="glass" className="p-6 flex items-center justify-between group hover:border-white/10 transition-all">
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/40 group-hover:bg-white group-hover:text-black transition-all">
+                                            <log.icon size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-black text-white/90 group-hover:text-white">{log.message}</p>
+                                            <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1">{log.time}</p>
+                                        </div>
+                                    </div>
+                                    <ChevronRight size={16} className="text-white/10 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                                </GlassCard>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <CompanyWorkspace 
+                        llc={currentLlc} 
                         compliance={compliance}
                         onAction={handleAction}
-                        onSuccession={() => setIsSuccessionOpen(true)}
                     />
-                </div>
-            )}
-
-            {currentView === 'situational' && (
-                <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {/* Adaptive Hero */}
-                    {compliance.healthScore < 100 ? (
-                        // WARNING STATE
-                        <div className="p-8 bg-amber-50 border border-amber-200 rounded-[32px] space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-3 h-3 bg-amber-500 rounded-full animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">Action Required</span>
-                            </div>
-                            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-[#0A0A0B] leading-[0.9]">
-                                {currentLlc?.llc_name || "Your Entity"}
-                            </h1>
-                            <p className="text-amber-700 font-medium">
-                                {compliance.daysToDeadline 
-                                    ? `Your annual report is due in ${compliance.daysToDeadline} days. File now to maintain good standing.`
-                                    : 'One or more compliance items need your attention.'}
-                            </p>
-                            <button 
-                                onClick={() => handleAction('annual_report')}
-                                className="bg-amber-500 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-amber-600 transition-all shadow-lg"
-                            >
-                                File Annual Report →
-                            </button>
-                        </div>
-                    ) : (
-                        // SAFE STATE
-                        <div className="space-y-2">
-                            <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-[#0A0A0B] leading-[0.9]">
-                                {currentLlc?.llc_name || "Sovereign Entity"}
-                            </h1>
-                            <div className="flex items-center gap-3">
-                                <span className="text-xs font-bold text-[#00D084] uppercase tracking-widest flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-[#00D084] rounded-full animate-pulse" />
-                                    {currentLlc?.llc_status || "Operational"}
-                                </span>
-                                <span className="text-gray-200">/</span>
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                    Established {currentLlc?.created_at ? new Date(currentLlc.created_at).toLocaleDateString() : '--/--/----'}
-                                </span>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Status Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div className="bg-[#FAFAFA] border border-gray-100 rounded-[32px] p-8 space-y-4 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Statutory Health</span>
-                                <Activity size={16} className="text-gray-200" />
-                            </div>
-                            <div className="flex items-center gap-6">
-                                <StatusRing 
-                                    percentage={compliance.healthScore} color={compliance.pulseColor}
-                                    size={72} strokeWidth={6} pulse={compliance.healthScore < 100}
-                                >
-                                    <span className="text-xs font-black" style={{ color: compliance.pulseColor }}>{compliance.healthScore}%</span>
-                                </StatusRing>
-                                <div>
-                                    <p className="text-sm font-black uppercase tracking-tight text-[#0A0A0B]">
-                                        {compliance.healthScore === 100 ? 'In Good Standing' : 'Maintenance Required'}
-                                    </p>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
-                                        {compliance.daysToDeadline ? `${compliance.daysToDeadline} days to report` : 'No upcoming filings'}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div onClick={() => setIsSuccessionOpen(true)} className="p-8 bg-[#0A0A0B] text-white rounded-[32px] shadow-xl hover:scale-[1.02] transition-transform cursor-pointer overflow-hidden relative">
-                            <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-[#d4af37]/20 blur-[80px]"></div>
-                            <div className="flex items-center justify-between relative z-10">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[#d4af37]">Continuity Plan</span>
-                                <Clock size={16} className="text-[#d4af37] opacity-40" />
-                            </div>
-                            <div className="space-y-1 relative z-10 pt-4">
-                                <p className="text-xl font-black uppercase tracking-tight text-[#d4af37]">Active Protection</p>
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2">364:23:59:59</p>
-                            </div>
-                        </div>
-
-                        <div className="p-8 bg-white border border-gray-100 rounded-[32px] shadow-sm flex flex-col justify-between">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Privacy Armor</span>
-                                <Shield size={16} className="text-[#00D084] opacity-20" />
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-[#00D084]/10 flex items-center justify-center text-[#00D084]">
-                                    <Shield size={20} />
-                                </div>
-                                <p className="text-sm font-black uppercase tracking-tight text-[#0A0A0B]">Registered Agent <br/><span className="text-[10px] text-[#00D084]">Masked • DeLand FL</span></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Action Console */}
-                    <div className="space-y-6 pt-4 border-t border-gray-50">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-300 text-center">Sovereign Action Console</h3>
-                        <ActionConsole 
-                            status={currentLlc?.llc_status}
-                            health={compliance.healthScore}
-                            onAction={handleAction} 
-                        />
-                    </div>
-                </div>
-            )}
-        </main>
-
-        {/* Sidebar */}
-        <aside className="w-full md:w-[400px] bg-[#F8F9FB] border-l border-[#F0F2F5] p-12 flex flex-col">
-            <div className="flex items-center justify-between mb-12">
-                <div className="text-[0.6rem] font-black uppercase tracking-[0.6em] text-[#0A0A0B] opacity-20">Live Stream</div>
-                <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())} className="text-gray-300 hover:text-red-500 transition-colors">
-                    <LogOut size={16} />
-                </button>
+                )}
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-8">
-                {activityLog.map((log) => (
-                    <div key={log.id} className="relative pl-8 border-l border-gray-100">
-                        <div className="absolute left-[-4.5px] top-1.5 w-2 h-2 rounded-full border border-white shadow-sm" style={{ backgroundColor: log.message.includes('Required') ? '#FF3B30' : '#0A0A0B' }}></div>
-                        <p className="text-xs font-black text-[#0A0A0B] mb-1">{log.message}</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{log.time}</p>
-                    </div>
-                ))}
-            </div>
+            {/* RIGHT COLUMN */}
+            <aside className="col-span-12 lg:col-span-4 space-y-8">
+                 {/* HEALTH CARD */}
+                 <GlassCard variant="glass" className="p-8 flex flex-col items-center text-center space-y-6">
+                     <div className="w-full flex items-center justify-between">
+                         <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Business Standing</span>
+                         <Info size={14} className="text-white/20" />
+                     </div>
+                     
+                     <StatusRing 
+                         score={compliance.healthScore} 
+                         color={compliance.pulseColor} 
+                         label={currentView === 'situational' ? 'Company' : 'Portfolio'}
+                     />
+ 
+                     <div className="space-y-1">
+                         <h4 className="text-lg font-black uppercase tracking-tight text-white">
+                             {compliance.healthScore === 100 ? 'Fully Operational' : 'Action Required'}
+                         </h4>
+                         <p className="text-xs text-white/40 font-medium">
+                             {compliance.healthScore === 100 
+                                 ? 'All filings are active and your business is in good standing.' 
+                                 : 'Specific items require your attention to maintain status.'}
+                         </p>
+                     </div>
+ 
+                     <button className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white/60 hover:bg-white hover:text-black transition-all">
+                         View Full Report
+                     </button>
+                 </GlassCard>
 
-            {/* Intelligence Telemetry (subtle) */}
-            <div className="py-6 border-t border-gray-100 space-y-3">
-                <p className="text-[9px] font-black uppercase tracking-widest text-gray-300">View Intelligence</p>
-                <div className="flex gap-2 flex-wrap">
-                    {Object.entries(viewIntel.scores).map(([view, score]) => (
-                        <div key={view} className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${
-                            viewIntel.activeView === view 
-                                ? 'bg-[#0A0A0B] text-white border-transparent' 
-                                : 'bg-white text-gray-400 border-gray-100'
-                        }`}>
-                            {view}: {score}
-                        </div>
-                    ))}
-                </div>
-                <p className="text-[9px] text-gray-300">
-                    {viewIntel.isOverridden ? '⚡ Manual Override' : '🤖 Auto-Selected'} 
-                    {' '}• Logins: {viewIntel.signals.loginCount} • Actions: {viewIntel.signals.recentActions}
-                </p>
-            </div>
+                 {/* ACTIVITY LOG */}
+                 <GlassCard variant="glass" className="p-8 space-y-6">
+                     <div className="flex items-center justify-between">
+                         <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Recent Events</span>
+                         <RefreshCw size={14} className="text-white/20 pointer-events-none" />
+                     </div>
+ 
+                     <div className="space-y-6 text-left">
+                         {activityLog.map((log) => (
+                             <div key={log.id} className="flex gap-4 group">
+                                 <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/30 group-hover:bg-white group-hover:text-black transition-all flex-shrink-0">
+                                     <log.icon size={18} />
+                                 </div>
+                                 <div className="flex flex-col justify-center">
+                                     <p className="text-xs font-bold text-white/90">{log.message}</p>
+                                     <p className="text-[10px] text-white/20 font-medium">{log.time}</p>
+                                 </div>
+                             </div>
+                         ))}
+                     </div>
+                 </GlassCard>
+            </aside>
+        </section>
+      </main>
 
-            <div className="pt-6 border-t border-gray-100">
-                <div className="bg-[#0A0A0B] rounded-[32px] p-8 text-white">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center"><Settings size={18} /></div>
-                        <div>
-                            <p className="text-xs font-black uppercase tracking-widest">{user?.email ? user.email.split('@')[0] : "Founder"}</p>
-                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Sovereign Admin</p>
-                        </div>
-                    </div>
-                    <button onClick={() => window.location.reload()} className="w-full py-3 bg-white/5 hover:bg-white hover:text-[#0A0A0B] border border-white/10 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all">Sync System</button>
-                </div>
-            </div>
-        </aside>
-      </div>
-
-      <FoundersBlueprint isOpen={isBlueprintOpen} onClose={() => setIsBlueprintOpen(false)} llcData={currentLlc} />
-      <SuccessionSuite isOpen={isSuccessionOpen} onClose={() => setIsSuccessionOpen(false)} companyName={currentLlc?.llc_name} user={user} />
-      {showDesignation && <DesignationProtocol user={user} llc={currentLlc} onComplete={(data) => { setActiveLlc(data); setShowDesignation(false); }} />}
+      {/* DASHBOARD MODALS */}
+      {isBlueprintOpen && <FoundersBlueprint llc={currentLlc} onClose={() => setIsBlueprintOpen(false)} />}
+      {isSuccessionOpen && <SuccessionSuite llc={currentLlc} onClose={() => setIsSuccessionOpen(false)} />}
+      {showDesignation && (
+        <div className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-xl flex items-center justify-center p-6">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DesignationProtocol 
+                user={user} 
+                llc={currentLlc} 
+                onClose={() => setShowDesignation(false)} 
+                onComplete={() => {
+                  setShowDesignation(false);
+                  window.location.reload(); 
+                }}
+            />
+          </div>
+        </div>
+      )}
+      {activePulseModal && (
+          <PulseDetailModal 
+            type={activePulseModal} 
+            data={companies} 
+            alerts={complianceAlerts} 
+            onClose={() => setActivePulseModal(null)} 
+          />
+      )}
     </div>
   );
 };
