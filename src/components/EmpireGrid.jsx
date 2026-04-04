@@ -50,12 +50,12 @@ const PortfolioGrid = ({ entities = [], onSelect, onAdd, activeId }) => {
 
                         <div className="space-y-1 mb-6">
                             <h4 className="text-sm font-black uppercase tracking-tight text-white/90 truncate pr-4">
-                                {entity?.name || 'Pending Company'}
+                                {entity?.llc_name || entity?.name || 'Main Company'}
                             </h4>
                             <div className="flex items-center gap-2">
-                                <Activity size={12} className={(entity?.health || 100) >= 100 ? 'text-emerald-500' : 'text-amber-500'} />
-                                <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">
-                                    {(entity?.health || 100) >= 100 ? 'In Good Standing' : 'Action Needed'}
+                                <Activity size={12} className={entity?.llc_status === 'Active' ? 'text-emerald-500' : 'text-amber-500'} />
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${entity?.llc_status === 'Active' ? 'text-white/30' : 'text-amber-500'}`}>
+                                    {entity?.llc_status || 'In Good Standing'}
                                 </span>
                             </div>
                         </div>
