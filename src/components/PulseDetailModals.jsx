@@ -7,13 +7,15 @@ const PulseDetailModal = ({ type, data, alerts, onClose }) => {
     const titles = {
         active: 'Active Portfolio Filings',
         due: 'Compliance Deadlines',
-        shield: 'Shielded Entities'
+        shield: 'Shielded Entities',
+        health: 'Business Health Report'
     };
 
     const icons = {
         active: <Building2 className="text-[#00D084]" size={24} />,
         due: <AlertCircle className="text-amber-500" size={24} />,
-        shield: <Shield className="text-cyan-400" size={24} />
+        shield: <Shield className="text-cyan-400" size={24} />,
+        health: <CheckCircle2 className="text-[#00D084]" size={24} />
     };
 
     const renderContent = () => {
@@ -100,6 +102,73 @@ const PulseDetailModal = ({ type, data, alerts, onClose }) => {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                );
+            case 'health':
+                return (
+                    <div className="space-y-8 text-left animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        {/* 1. The "What is it?" Section */}
+                        <div className="space-y-3">
+                            <h4 className="text-[#00D084] font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                                <Shield size={14} /> What is a Health Rating?
+                            </h4>
+                            <p className="text-gray-400 text-xs font-medium leading-relaxed">
+                                Think of your Health Rating as a "wellness check" for your business. It measures how secure and compliant your entity is with state and federal regulations. A 100% rating means your corporate veil is strong and your records are pristine.
+                            </p>
+                        </div>
+
+                        {/* 2. Common Reasons for Rating Drips */}
+                        <div className="space-y-4">
+                            <h4 className="text-amber-500 font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                                <AlertCircle size={14} /> Why is my rating below 100%?
+                            </h4>
+                            <div className="grid gap-3">
+                                {[
+                                    { title: "Missing Operating Agreement", reason: "Without an OA, the state may treat your LLC like a sole proprietorship, risking your personal assets." },
+                                    { title: "Inactive Privacy Shield", reason: "Your home address or personal name may be visible on public records." },
+                                    { title: "Pending State Activation", reason: "The state is still processing your initial filing." },
+                                    { title: "Upcoming Annual Reports", reason: "Failure to file by May 1st results in a $400 state penalty." }
+                                ].map((item, i) => (
+                                    <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-1">
+                                        <p className="text-white font-bold text-xs">{item.title}</p>
+                                        <p className="text-[10px] text-gray-500 font-medium">{item.reason}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* 3. Actionable Steps */}
+                        <div className="space-y-4">
+                            <h4 className="text-cyan-400 font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                                <CheckCircle2 size={14} /> Let's Get You to 100%
+                            </h4>
+                            <ul className="space-y-3 pl-1">
+                                {[
+                                    "Ensure your 'Privacy Shield' is active to hide personal data.",
+                                    "Purchase or upload your Operating Agreement immediately.",
+                                    "Verify your EIN is on file for tax & banking compliance.",
+                                    "Respond to any state inquiries within 48 hours."
+                                ].map((step, i) => (
+                                    <li key={i} className="flex gap-3 text-xs text-gray-400 font-medium">
+                                        <span className="text-[#00D084] font-black">•</span>
+                                        <span>{step}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* 4. Support Call to Action */}
+                        <div className="p-6 bg-[#00D084]/5 rounded-[24px] border border-[#00D084]/20 space-y-3">
+                            <p className="text-[#00D084] font-bold text-sm">We're here to help!</p>
+                            <p className="text-[11px] text-[#00D084]/70 font-medium leading-relaxed">
+                                Improving your health rating should be stress-free. If you're unsure about a specific step, our specialist team can guide you through the process in minutes.
+                            </p>
+                            <div className="pt-2">
+                                <p className="text-[10px] text-white font-black uppercase tracking-widest italic">
+                                    "You're building a legacy — we're here to protect it."
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 );
             default:

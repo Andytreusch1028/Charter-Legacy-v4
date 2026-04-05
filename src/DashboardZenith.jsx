@@ -532,24 +532,27 @@ const DashboardZenith = ({ user, initialData }) => {
                           pulse={compliance.healthScore < 80}
                       />
  
-                     <div className="space-y-1">
-                         <h4 className="text-lg font-black uppercase tracking-tight text-white">
-                             {compliance.healthScore === 100 ? 'Fully Operational' : 
-                              (compliance.healthScore === 0 ? 'Action Required' : 
-                               (currentLlc?.llc_status || 'Attention Needed'))}
-                         </h4>
-                         <p className="text-xs text-white/40 font-medium px-4">
-                             {compliance.healthScore === 100 
-                                 ? 'All filings are active and your business is in good standing.' 
-                                 : (compliance.healthScore === 0 
-                                     ? `Critical: This entity is currently ${currentLlc?.llc_status || 'Inactive'}. Restoration required.`
-                                     : `Current Standing: ${currentLlc?.llc_status || 'Pending'}. Monitoring for state activation.`)}
-                         </p>
-                     </div>
- 
-                     <button className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white/60 hover:bg-white hover:text-black transition-all">
-                         View Full Report
-                     </button>
+                      <div className="space-y-1">
+                          <h4 className="text-lg font-black uppercase tracking-tight text-white">
+                              {compliance.healthScore === 100 ? 'Fully Operational' : 
+                               (compliance.healthScore === 0 ? 'Action Required' : 
+                                (currentLlc?.llc_status || 'Attention Needed'))}
+                          </h4>
+                          <p className="text-xs text-white/40 font-medium px-4">
+                              {compliance.healthScore === 100 
+                                  ? 'All filings are active and your business is in good standing.' 
+                                  : (compliance.healthScore === 0 
+                                      ? `We've detected that this entity is currently ${currentLlc?.llc_status || 'Inactive'}. We can help you restore it easily.`
+                                      : `Your business is currently ${currentLlc?.llc_status || 'Active'}. We're simply monitoring for the final state confirmation.`)}
+                          </p>
+                      </div>
+  
+                      <button 
+                        onClick={() => setActivePulseModal('health')}
+                        className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white/60 hover:bg-white hover:text-black transition-all"
+                      >
+                          View Full Report
+                      </button>
                  </GlassCard>
 
                   {/* ACTIVITY LOG */}
