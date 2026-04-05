@@ -29,12 +29,12 @@ export const seedTestData = async () => {
         
         if (profileError) console.error("❌ Profile Sync Error:", profileError);
 
-        // 3. Create LLC Entities
+        // 3. Create LLC Entities (The "Prime Fleet" - 100% Compliant)
         const testEntities = [
-            { name: "Nexus Prime Holdings LLC", status: "Active" },
-            { name: "Quantum Logistics Group", status: "Active" },
-            { name: "Silverstone Estate Assets", status: "Pending" },
-            { name: "Emerald City Digital LLC", status: "Active" }
+            { name: "Vanguard Equity Partners LLC", status: "Active" },
+            { name: "Silveridian Growth Holdings LLC", status: "Active" },
+            { name: "Silverstone Estate Assets LLC", status: "Pending" },
+            { name: "Nexus Prime Holdings L.L.C.", status: "Active" }
         ];
 
         const createdEntities = [];
@@ -61,7 +61,8 @@ export const seedTestData = async () => {
                 .insert({
                     user_id: targetUserId,
                     llc_name: ent.name,
-                    filing_status: ent.status
+                    llc_status: ent.status,
+                    filing_status: "ACTIVE"
                 })
                 .select()
                 .single();

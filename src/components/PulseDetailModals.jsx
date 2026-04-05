@@ -40,7 +40,7 @@ const PulseDetailModal = ({ type, data, alerts, onClose }) => {
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
                                     <ChevronRight className="text-white/20 group-hover:text-white transition-colors" size={16} />
-                                    <span className="text-[8px] font-black text-white/10 uppercase tracking-widest group-hover:text-white/30 transition-colors">Vault Ref: {llc.id?.substring(0,8) || 'MOCK-REF'}</span>
+                                    <span className="text-[8px] font-black text-white/10 uppercase tracking-widest group-hover:text-white/30 transition-colors">Vault Ref: {String(llc.id || '').substring(0,8) || 'MOCK-REF'}</span>
                                 </div>
                             </div>
                         ))}

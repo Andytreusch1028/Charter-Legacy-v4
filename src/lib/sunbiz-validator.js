@@ -105,6 +105,23 @@ export function calculateAvailabilityScore(desiredName, existingNames = []) {
         };
     }
 
+    // Check for suffix duplication (e.g., QUANTUM LLC LLC)
+    const activeSuffixes = [...SUNBIZ_RULES.MANDATORY_SUFFIXES, ...SUNBIZ_RULES.PRO_SUFFIXES];
+    const words = upperDesired.split(/\s+/);
+    if (words.length >= 2) {
+        const lastWord = words[words.length - 1];
+        const secondToLastWord = words[words.length - 2].replace(/[.,]/g, '');
+        // Check both exact and common punctuation variants
+        if (activeSuffixes.some(s => s.replace(/[.,]/g, '') === lastWord.replace(/[.,]/g, '')) && 
+            activeSuffixes.some(s => s.replace(/[.,]/g, '') === secondToLastWord)) {
+            return {
+                score: 10,
+                status: 'Suffix Duplicated',
+                message: `Double suffix detected ("${words[words.length - 2]} ${lastWord}"). Please remove one.`
+            };
+        }
+    }
+
     // Check against existing database results
     const allSuffixes = [...SUNBIZ_RULES.MANDATORY_SUFFIXES, ...SUNBIZ_RULES.PRO_SUFFIXES];
     let nameNoSuffix = upperDesired;
@@ -130,6 +147,23 @@ export function calculateAvailabilityScore(desiredName, existingNames = []) {
                 status: 'Exact Conflict',
                 message: `This name is already registered as "${existing}". Please try a completely different name.`
             };
+        }
+
+        // 2. Suffix Duplication Check (e.g., QUANTUM LLC LLC)
+        const activeSuffixes = [...SUNBIZ_RULES.MANDATORY_SUFFIXES, ...SUNBIZ_RULES.PRO_SUFFIXES];
+        const words = upperDesired.split(/\s+/).filter(w => w.length > 0);
+        if (words.length >= 2) {
+            const lastWord = words[words.length - 1].replace(/[.,]/g, '');
+            const secondToLastWord = words[words.length - 2].replace(/[.,]/g, '');
+            const normalizedSuffixes = activeSuffixes.map(s => s.replace(/[.,]/g, ''));
+            
+            if (normalizedSuffixes.includes(lastWord) && normalizedSuffixes.includes(secondToLastWord)) {
+                return {
+                    score: 10,
+                    status: 'Suffix Duplicated',
+                    message: `Strategic Alert: Detected duplicated suffix "${words[words.length - 2]} ${words[words.length - 1]}". Please select only one designator.`
+                };
+            }
         }
 
         // Close Match Path

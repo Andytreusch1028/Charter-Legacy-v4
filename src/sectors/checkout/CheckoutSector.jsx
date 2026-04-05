@@ -85,10 +85,15 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
           setLoading(false);
           setClientSecret('');
           setUserLLCs([]);
-          setManualLLC({ name: '', sunbizId: '' });
+          // Frictionless: Pre-populate from provided context
+          setManualLLC({ 
+            name: item?.llc_name || '', 
+            sunbizId: '',
+            isPrepopulated: !!item?.llc_name
+          });
           setSelectedLLC(null);
       }
-  }, [isOpen]);
+  }, [isOpen, item]);
 
   const fetchUserLLCs = async (userId) => {
     const { data } = await supabase.from('llcs').select('*').eq('user_id', userId);
@@ -320,16 +325,31 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
                     </p>
                   </div>
                   
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                       <div>
-                          <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Company Name</label>
-                          <input 
-                              type="text" 
-                              value={manualLLC.name}
-                              onChange={(e) => setManualLLC({ ...manualLLC, name: e.target.value })}
-                              placeholder="e.g. Acme Innovations LLC"
-                              className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-5 px-8 font-black text-sm uppercase tracking-widest text-white outline-none focus:border-white/30 transition-all placeholder:text-gray-700" 
-                          />
+                          <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">
+                            {manualLLC.isPrepopulated ? "Established Entity" : "Company Name"}
+                          </label>
+                          <div className="relative group">
+                            <input 
+                                type="text" 
+                                value={manualLLC.name}
+                                onChange={(e) => !manualLLC.isPrepopulated && setManualLLC({ ...manualLLC, name: e.target.value })}
+                                placeholder="e.g. Acme Innovations LLC"
+                                readOnly={manualLLC.isPrepopulated}
+                                className={`w-full bg-white/[0.03] border border-white/10 rounded-2xl py-5 px-8 font-black text-sm uppercase tracking-widest text-white outline-none focus:border-white/30 transition-all placeholder:text-gray-700 ${manualLLC.isPrepopulated ? 'opacity-60 cursor-not-allowed border-dashed' : ''}`} 
+                            />
+                            {manualLLC.isPrepopulated && (
+                                <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[8px] font-black uppercase tracking-widest text-[#00D084] pointer-events-none">
+                                    Authoritative Data <Check size={10} className="inline ml-1" />
+                                </div>
+                            )}
+                          </div>
+                          {manualLLC.isPrepopulated && (
+                            <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-2 px-1 italic">
+                                Using established record for {manualLLC.name}.
+                            </p>
+                          )}
                       </div>
                   </div>
 
