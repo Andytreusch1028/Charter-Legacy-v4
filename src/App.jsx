@@ -66,11 +66,6 @@ export default function App() {
     setView('dashboard');
   };
 
-  const menuItems = [
-    { id: 'founder', title: "Privacy Shield", price: "$249", plainEnglish: "We file your official setup paperwork and list our registered office to protect your home address." },
-    { id: 'sovereign', title: "Double LLC", price: "$999", plainEnglish: "The full anonymity structure — Florida + Wyoming holding company. Your name never touches the public record." }
-  ];
-
   // Routing Logic
   if (view === 'dashboard') return <DashboardZenith user={appUser} />;
   if (view === 'staff')     return <StaffConsole user={appUser} />;
@@ -107,3 +102,10 @@ export default function App() {
     </div>
   );
 }
+
+// --- Static Data ---
+const menuItems = [
+  { id: 'unselected', title: "NEW FLORIDA LLC FORMATION", price: "$399+", plainEnglish: "Select your privacy protocol to begin. Your infrastructure will be configured based on your selection." },
+  { id: 'founder', title: "Founder Shield", price: "$399", plainEnglish: "Charter Legacy filings emphasize absolute anonymity. We file your official state documents and list our registered office as your principal address to keep your name off the public grid." },
+  { id: 'sovereign', title: "Double LLC", price: "$999", plainEnglish: "The full anonymity structure — Florida + Wyoming holding company. Your name never touches the public record." }
+];

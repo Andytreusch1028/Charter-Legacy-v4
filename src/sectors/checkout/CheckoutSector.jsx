@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, ArrowRight, Lock, CheckCircle2, Fingerprint, FileCheck, 
-  Building2, Zap, Check, Shield, Anchor, Loader2, Info, CreditCard
+  Building2, Zap, Check, Shield, Anchor, Loader2, Info, CreditCard, AlertCircle, Search
 } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { supabase } from '../../lib/supabase';
+import { calculateAvailabilityScore, SUNBIZ_RULES } from '../../lib/sunbiz-validator';
 import BackgroundEffects from '../../shared/design-system/BackgroundEffects';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
@@ -77,23 +78,96 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
   const [userLLCs, setUserLLCs] = useState([]);
   const [manualLLC, setManualLLC] = useState({ name: '', sunbizId: '' });
   const [selectedLLC, setSelectedLLC] = useState(null);
+  const [availability, setAvailability] = useState(null);
+  const [isCheckingName, setIsCheckingName] = useState(false);
+
+  // Previous item ID tracking to prevent "hijacking" local selection state
+  const [lastPropId, setLastPropId] = useState(null);
 
   useEffect(() => { 
       if (isOpen) {
-          setStep(item?.id === 'unselected' ? 'selection' : 'details'); 
-          setError('');
-          setLoading(false);
-          setClientSecret('');
-          setUserLLCs([]);
-          // Frictionless: Pre-populate from provided context
-          setManualLLC({ 
-            name: item?.llc_name || '', 
-            sunbizId: '',
-            isPrepopulated: !!item?.llc_name
-          });
-          setSelectedLLC(null);
+          // Rule: Only reset if the actual prop ID has changed (new entry point)
+          // This prevents internal selection (e.g. Double LLC) from being reset
+          const isNewPackage = item?.id !== lastPropId;
+          const hasNewName = item?.llc_name && item.llc_name !== manualLLC.name;
+
+          if (isNewPackage || hasNewName) {
+            console.log(`[SYNC] Initializing for package: ${item?.id}`);
+            setStep(item?.id === 'unselected' || item?.id === 'formation' ? 'selection' : 'details'); 
+            setError('');
+            setLoading(false);
+            setClientSecret('');
+            setUserLLCs([]);
+            setAvailability(null);
+            
+            setManualLLC({ 
+              name: item?.llc_name || '', 
+              sunbizId: '',
+              isPrepopulated: !!item?.llc_name
+            });
+            setSelectedLLC(item); 
+            setLastPropId(item?.id);
+          }
+      } else {
+        // Reset tracking when closed
+        setLastPropId(null);
       }
-  }, [isOpen, item]);
+  }, [isOpen, item?.id, item?.llc_name]); 
+
+  // Real-time Sunbiz Name Availability Engine
+  useEffect(() => {
+    if (!manualLLC.name || manualLLC.isPrepopulated) {
+        setAvailability(null);
+        return;
+    }
+
+    const checkName = async () => {
+        setIsCheckingName(true);
+        // Add a suffix if one isn't present for accurate statutory check
+        let nameToCheck = manualLLC.name.toUpperCase().trim();
+        const hasSuffix = SUNBIZ_RULES.MANDATORY_SUFFIXES.some(s => nameToCheck.endsWith(s));
+        if (!hasSuffix) nameToCheck += " LLC";
+
+        try {
+            // Protocol: Real-Time Registry Bridge (Authoritative State Lookup)
+            // Rule: Connect directly to search.sunbiz.org via Edge Function
+            const { data, error } = await supabase.functions.invoke('sunbiz-lookup', {
+                body: { name: nameToCheck }
+            });
+
+            if (error) throw error;
+            if (!data) {
+                console.warn("[SUNBIZ BRIDGE] No data returned from Registry.");
+                throw new Error("Registry returned an empty response.");
+            }
+
+            if (!data.available && data.matches?.some(m => m === nameToCheck)) {
+                // AUTHORITATIVE CONFLICT: State already has this exact record
+                setAvailability({
+                    score: 0,
+                    status: 'State Conflict',
+                    message: `Official Registry Conflict: This name is already taken in the State of Florida records.`,
+                    logicExplanation: "Statutory Authority: Section 605.0112, F.S. The name you selected is an exact match for an existing entity in the Sunbiz database.",
+                    closestMatches: data.matches.slice(0, 5).map(n => ({ name: n, similarity: 100 }))
+                });
+            } else {
+                // RUN FORENSIC ENGINE: Analyze similarity against live matches
+                const localResult = calculateAvailabilityScore(nameToCheck, data.matches || [], data.status || 'SUCCESS');
+                setAvailability(localResult);
+            }
+        } catch (err) {
+            console.error("[SUNBIZ BRIDGE ERROR]", err);
+            // Fallback to local rules but mark as error to prevent false confidence
+            const fallbackResult = calculateAvailabilityScore(nameToCheck, [], 'ERROR');
+            setAvailability(fallbackResult);
+        } finally {
+            setIsCheckingName(false);
+        }
+    };
+
+    const timer = setTimeout(checkName, 500); // 500ms debounce
+    return () => clearTimeout(timer);
+  }, [manualLLC.name, manualLLC.isPrepopulated]);
 
   const fetchUserLLCs = async (userId) => {
     const { data } = await supabase.from('llcs').select('*').eq('user_id', userId);
@@ -119,8 +193,9 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
   const initializePayment = async (authenticatedUser) => {
       setLoading(true);
       try {
+          const finalPackageId = (selectedLLC && selectedLLC.id !== 'unselected') ? selectedLLC.id : item.id;
           const { data, error } = await supabase.functions.invoke('create-payment-intent', {
-              body: { packageId: item.id, userId: authenticatedUser.id }
+              body: { packageId: finalPackageId, userId: authenticatedUser.id }
           });
           if (error) throw error;
           if (data?.clientSecret) {
@@ -200,56 +275,58 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
         <BackgroundEffects />
         
         {/* Manifest Sidebar (Steve-Standard Data) */}
-        <div className="w-full md:w-[380px] bg-white/[0.02] border-r border-white/[0.05] p-8 md:p-12 relative z-10 flex flex-col justify-between overflow-y-auto">
-          <div className="space-y-12">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
-                <Anchor size={12} /> Acquisition_Manifest
+        {step !== 'selection' && (
+          <div className="w-full md:w-[380px] bg-white/[0.02] border-r border-white/[0.05] p-8 md:p-12 relative z-10 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-left-6 duration-500">
+            <div className="space-y-12">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+                  <Anchor size={12} /> Acquisition_Manifest
+                </div>
+                <h2 className="text-4xl font-black uppercase tracking-tighter leading-none text-white">
+                  {(selectedLLC || item)?.title || "NEW FLORIDA LLC FORMATION"}
+                </h2>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-white">{(selectedLLC || item)?.price || "$399+"}</span>
+                  <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Protocol Fee</span>
+                </div>
               </div>
-              <h2 className="text-4xl font-black uppercase tracking-tighter leading-none">
-                {(selectedLLC || item)?.title}
-              </h2>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-black text-white">{(selectedLLC || item)?.price}</span>
-                <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Protocol Fee</span>
+
+              <div className="space-y-6">
+                <div className="p-5 bg-white/[0.02] rounded-2xl border border-white/[0.05] space-y-3">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                      <Info size={12} /> Parameters
+                    </div>
+                    <p className="text-sm text-gray-400 font-medium leading-relaxed italic">
+                      "{(selectedLLC || item)?.plainEnglish}"
+                    </p>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    { label: 'Registered Agent', value: 'Live' },
+                    { label: 'Encryption', value: '256-Bit' },
+                    { label: 'Latency Node', value: '14ms' },
+                    { label: 'Jurisdiction', value: (selectedLLC || item)?.id === 'sovereign' ? 'FL + WY' : 'FL' }
+                  ].map((param, i) => (
+                    <div key={i} className="flex items-center justify-between py-2 border-b border-white/[0.03] last:border-0">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">{param.label}</span>
+                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">{param.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="space-y-6">
-               <div className="p-5 bg-white/[0.02] rounded-2xl border border-white/[0.05] space-y-3">
-                  <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                    <Info size={12} /> Parameters
-                  </div>
-                  <p className="text-sm text-gray-400 font-medium leading-relaxed italic">
-                    "{(selectedLLC || item)?.plainEnglish}"
-                  </p>
-               </div>
-
-               <div className="space-y-3">
-                 {[
-                   { label: 'Registered Agent', value: 'Live' },
-                   { label: 'Encryption', value: '256-Bit' },
-                   { label: 'Latency Node', value: '14ms' },
-                   { label: 'Jurisdiction', value: (selectedLLC || item)?.id === 'sovereign' ? 'FL + WY' : 'FL' }
-                 ].map((param, i) => (
-                   <div key={i} className="flex items-center justify-between py-2 border-b border-white/[0.03] last:border-0">
-                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">{param.label}</span>
-                     <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">{param.value}</span>
-                   </div>
-                 ))}
-               </div>
+            <div className="pt-8 border-t border-white/[0.05] hidden md:block">
+              <div className="flex items-center gap-3 text-gray-600">
+                <Shield size={16} />
+                <div className="text-[9px] font-bold uppercase tracking-widest leading-relaxed">
+                  Secured by <br/> <span className="text-gray-400">Zero-Knowledge Architecture</span>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="pt-8 border-t border-white/[0.05] hidden md:block">
-            <div className="flex items-center gap-3 text-gray-600">
-              <Shield size={16} />
-              <div className="text-[9px] font-bold uppercase tracking-widest leading-relaxed">
-                Secured by <br/> <span className="text-gray-400">Zero-Knowledge Architecture</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Transaction Window (Jony-Standard UI) */}
         <div className="flex-1 p-8 md:p-12 relative z-10 flex flex-col justify-center overflow-y-auto">
@@ -257,62 +334,105 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
             <X size={20} />
           </button>
 
-          <div className="max-w-md mx-auto w-full space-y-10">
+          <div className={`${step === 'selection' ? 'max-w-4xl' : 'max-w-md'} mx-auto w-full space-y-10`}>
             {step === 'selection' && (
-              <div className="space-y-10 animate-in slide-in-from-bottom-6 duration-500">
-                <div className="space-y-4">
-                  <h3 className="text-2xl font-black uppercase tracking-tighter">Select Your Shield</h3>
-                  <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                    Choose the protocol that matches your visibility requirements.
+              <div className="space-y-16 animate-in fade-in zoom-in-95 duration-700">
+                <div className="text-center space-y-6">
+                  <h3 className="text-5xl font-black uppercase tracking-tighter">Identity Shielding</h3>
+                  <p className="text-lg text-gray-500 font-medium max-w-xl mx-auto leading-relaxed">
+                    Select your architecture. These protocols determine the visibility and structural depth of your formation.
                   </p>
                 </div>
-
-                <div className="grid gap-4">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   {[
-                    { id: 'founder', title: 'Privacy Shield', price: '$249', desc: 'Standard Florida Anonymity' },
-                    { id: 'sovereign', title: 'Double LLC', price: '$999', desc: 'Full Florida + Wyoming Shield' }
+                    { 
+                      id: 'founder', 
+                      title: 'Founder Shield', 
+                      price: '$399', 
+                      desc: 'Standard Anonymity', 
+                      icon: Shield,
+                      features: ['Privacy Address', 'State Documents', 'Registered Agent', 'Digital Vault Admission']
+                    },
+                    { 
+                      id: 'sovereign', 
+                      title: 'Double LLC', 
+                      price: '$999', 
+                      desc: 'Ultimate Anonymity', 
+                      icon: Zap,
+                      features: ['Wyoming Parent LLC', 'Full Asset Shielding', 'Zero-Contact Registry', 'Family Handover Protocol']
+                    }
                   ].map((p) => (
                     <button 
                       key={p.id}
                       onClick={() => {
                         setSelectedLLC({
                           id: p.id,
-                          title: p.title,
+                          title: p.title === 'Double LLC' ? 'Double LLC Protocol' : 'Founder Shield (Standard)',
                           price: p.price,
                           plainEnglish: p.id === 'founder' 
-                            ? "We file your official setup paperwork and list our registered office to protect your home address."
-                            : "The full anonymity structure — Florida + Wyoming holding company. Your name never touches the public record."
+                            ? "Charter Legacy filings emphasize absolute anonymity. We file your official state documents and list our registered office as your principal address to keep your name off the public grid."
+                            : "The ultimate privacy architecture. We create a Florida LLC owned by a Wyoming holding company. This two-layer structure ensures your identity never touches any state registry."
                         });
                       }}
-                      className={`relative p-6 rounded-3xl border text-left transition-all group ${
+                      className={`relative p-12 rounded-[48px] border text-left transition-all duration-700 group overflow-hidden ${
                         selectedLLC?.id === p.id 
-                          ? 'bg-white border-white text-black' 
-                          : 'bg-white/[0.02] border-white/10 text-white hover:border-white/30'
+                          ? 'bg-white border-white text-black shadow-[0_40px_80px_rgba(255,255,255,0.15)] scale-[1.03]' 
+                          : 'bg-white/[0.02] border-white/5 text-white hover:border-white/20 hover:bg-white/[0.05]'
                       }`}
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <span className={`text-xs font-black uppercase tracking-widest ${selectedLLC?.id === p.id ? 'text-black/40' : 'text-gray-600'}`}>{p.title}</span>
-                        <span className="font-black text-lg">{p.price}</span>
+                      <div className="space-y-10 relative z-10">
+                        <div className="flex justify-between items-start">
+                          <div className={`p-6 rounded-[24px] ${selectedLLC?.id === p.id ? 'bg-black/5' : 'bg-white/5'}`}>
+                            <p.icon size={48} strokeWidth={selectedLLC?.id === p.id ? 2.5 : 2} />
+                          </div>
+                          <div className="text-right">
+                             <span className="block text-4xl font-black">{p.price}</span>
+                             <span className={`text-[10px] font-black uppercase tracking-widest ${selectedLLC?.id === p.id ? 'text-black/40' : 'text-gray-600'}`}>Protocol Fee</span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <h4 className="text-3xl font-black uppercase tracking-tighter leading-none">{p.title}</h4>
+                          <p className={`text-xs font-bold uppercase tracking-widest ${selectedLLC?.id === p.id ? 'text-black/40' : 'text-gray-500'}`}>
+                            {p.desc}
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-3 pt-8 border-t border-current/10">
+                           {p.features.map((f, i) => (
+                             <div key={i} className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest opacity-60">
+                               <Check size={14} strokeWidth={3} /> {f}
+                             </div>
+                           ))}
+                        </div>
                       </div>
-                      <p className={`text-[10px] font-bold uppercase tracking-tight leading-relaxed ${selectedLLC?.id === p.id ? 'text-black/60' : 'text-gray-500'}`}>
-                        {p.desc}
-                      </p>
+                      
                       {selectedLLC?.id === p.id && (
-                        <div className="absolute top-4 right-4 animate-in zoom-in duration-300">
-                          {/* Optional: Checkmark or pulse */}
+                        <div className="absolute -bottom-10 -right-10 opacity-5 scale-[2] pointer-events-none transition-all duration-1000 group-hover:scale-[2.5]">
+                           <p.icon size={200} strokeWidth={0.5} />
                         </div>
                       )}
                     </button>
                   ))}
                 </div>
 
-                <button 
-                  onClick={() => setStep('details')}
-                  disabled={!selectedLLC}
-                  className="w-full bg-white text-black py-6 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-[0_20px_50px_rgba(255,255,255,0.1)] transition-all disabled:opacity-20"
-                >
-                  Configure Protocol
-                </button>
+                <div className="flex flex-col items-center gap-8">
+                  <button 
+                    onClick={() => setStep('details')}
+                    disabled={!selectedLLC}
+                    className="group w-full max-w-md bg-white text-black py-8 rounded-[24px] font-black text-sm uppercase tracking-[0.4em] shadow-[0_20px_60px_rgba(255,255,255,0.15)] hover:scale-[1.03] active:scale-[0.98] transition-all disabled:opacity-20 flex items-center justify-center gap-6"
+                  >
+                    Initialize Mission Control <ArrowRight size={24} className="group-hover:translate-x-4 transition-transform" />
+                  </button>
+                  <div className="flex items-center gap-4 opacity-40">
+                     <div className="h-px w-12 bg-white/20"/>
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+                       Architect Selection Required
+                     </p>
+                     <div className="h-px w-12 bg-white/20"/>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -334,28 +454,131 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
                             <input 
                                 type="text" 
                                 value={manualLLC.name}
-                                onChange={(e) => !manualLLC.isPrepopulated && setManualLLC({ ...manualLLC, name: e.target.value })}
+                                onChange={(e) => setManualLLC({ ...manualLLC, name: e.target.value })}
                                 placeholder="e.g. Acme Innovations LLC"
-                                readOnly={manualLLC.isPrepopulated}
-                                className={`w-full bg-white/[0.03] border border-white/10 rounded-2xl py-5 px-8 font-black text-sm uppercase tracking-widest text-white outline-none focus:border-white/30 transition-all placeholder:text-gray-700 ${manualLLC.isPrepopulated ? 'opacity-60 cursor-not-allowed border-dashed' : ''}`} 
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-5 px-8 font-black text-sm uppercase tracking-widest text-white outline-none focus:border-white/30 transition-all placeholder:text-gray-700" 
                             />
                             {manualLLC.isPrepopulated && (
                                 <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[8px] font-black uppercase tracking-widest text-[#00D084] pointer-events-none">
                                     Authoritative Data <Check size={10} className="inline ml-1" />
                                 </div>
                             )}
+                            {!manualLLC.isPrepopulated && (availability || isCheckingName) && (
+                                <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                                    <span className={`text-[8px] font-black uppercase tracking-widest ${
+                                        isCheckingName ? 'text-gray-500' : 
+                                        availability?.score === null ? 'text-[#00D084] italic' :
+                                        (availability?.score ?? 0) >= 80 ? 'text-[#00D084]' : 'text-amber-500'
+                                    }`}>
+                                        {isCheckingName ? "Scoping Florida Registry..." : 
+                                         availability?.isEnqueued ? "AUDIT ENQUEUED" :
+                                         availability?.score === null ? "REGISTRY BUSY" :
+                                         `${availability?.score ?? 0}% Available`}
+                                    </span>
+                                    {isCheckingName ? (
+                                        <Loader2 size={10} className="animate-spin text-white/20" />
+                                    ) : (
+                                        <Shield size={10} className={availability?.score === null ? 'text-[#00D084]/50' : (availability?.score ?? 0) >= 80 ? 'text-[#00D084]' : 'text-amber-500'} />
+                                    )}
+                                </div>
+                            )}
                           </div>
-                          {manualLLC.isPrepopulated && (
+                          {manualLLC.isPrepopulated ? (
                             <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-2 px-1 italic">
                                 Using established record for {manualLLC.name}.
                             </p>
+                          ) : (
+                            <div className="mt-2 px-1 flex flex-col gap-1">
+                                <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest leading-relaxed">
+                                    {availability?.message || "Protocol: LLC, L.L.C. or Limited Liability Company suffix is mandatory."}
+                                </p>
+                            
+                                {availability && (
+                                    <div className="mt-6 space-y-6 animate-in fade-in slide-in-from-top-2 duration-700">
+                                        {/* Forensic Analysis Heading */}
+                                        <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+                                            <Search size={10} className="text-gray-500" />
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Forensic Analysis: Florida Registry</span>
+                                        </div>
+
+                                        {/* Statutory Logic Explanation */}
+                                        <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <Info size={10} className="text-[#00D084]" />
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-[#00D084]">Statutory Basis</span>
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 font-medium leading-relaxed italic">
+                                                "{availability.logicExplanation}"
+                                            </p>
+                                        </div>
+
+                                        {/* Closest Matches */}
+                                        {availability.closestMatches && availability.closestMatches.length > 0 && (
+                                            <div className="space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[8px] font-black uppercase tracking-widest text-gray-500">Closest Registry Matches</span>
+                                                    <span className="text-[7px] font-bold text-gray-600 uppercase tracking-widest">Similarity Index</span>
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    {availability.closestMatches.map((match, idx) => (
+                                                        <div 
+                                                            key={idx} 
+                                                            onClick={() => setManualLLC({ ...manualLLC, name: match.name || (typeof match === 'string' ? match : '') })}
+                                                            className="flex items-center justify-between py-2 px-4 bg-white/[0.01] rounded-lg border border-white/[0.02] hover:bg-white/[0.04] hover:border-white/10 transition-all group cursor-pointer active:scale-[0.98]"
+                                                        >
+                                                            <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 group-hover:text-white transition-colors">
+                                                                {match.name || (typeof match === 'string' ? match : 'UNKNOWN')}
+                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="h-1 w-12 bg-gray-800 rounded-full overflow-hidden">
+                                                                    <div 
+                                                                        className={`h-full transition-all duration-1000 ${match.similarity >= 90 ? 'bg-red-500' : match.similarity >= 70 ? 'bg-amber-500' : 'bg-emerald-500/50'}`} 
+                                                                        style={{ width: `${match.similarity ?? (100 - (idx * 15))}%` }}
+                                                                    />
+                                                                </div>
+                                                                <span className={`text-[7px] font-black tracking-tighter ${match.similarity >= 90 ? 'text-red-500' : match.similarity >= 70 ? 'text-amber-500' : 'text-gray-600 uppercase'}`}>
+                                                                    {match.similarity >= 90 ? 'CONFLICT' : match.similarity >= 70 ? 'MODERATE' : 'DISTINCT'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {availability.score !== null && availability.score < 80 && (
+                                            <div className="pt-2">
+                                                <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2 bg-amber-500/5 py-2 px-3 rounded-lg border border-amber-500/10">
+                                                    <AlertCircle size={10} /> Conflict detected. Refinement required for statutory approval.
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {availability.score === null && (
+                                            <div className="pt-2">
+                                                <div className="bg-[#00D084]/5 border border-[#00D084]/10 rounded-xl p-4 flex items-start gap-4">
+                                                    <div className="bg-[#00D084]/10 p-2 rounded-lg">
+                                                        <Shield size={14} className="text-[#00D084]" />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#00D084]">Elite Audit Enqueued</p>
+                                                        <p className="text-[9px] text-gray-500 font-medium leading-relaxed">
+                                                            State registry is currently under heavy load. We have enqueued your name for an **Authoritative Professional Audit**. Our team will verify this with the Secretary of State manually.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                           )}
                       </div>
                   </div>
 
                   <button 
                     onClick={handleNext} 
-                    disabled={loading || !manualLLC.name.trim()} 
+                    disabled={loading || !manualLLC.name.trim() || (!manualLLC.isPrepopulated && (availability?.score ?? 0) < 80)} 
                     className="group w-full bg-white text-black py-6 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-[0_20px_50px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-20 disabled:hover:scale-100 disabled:active:scale-100"
                   >
                     {loading ? <Loader2 className="animate-spin" /> : <>Access System <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" /></>}

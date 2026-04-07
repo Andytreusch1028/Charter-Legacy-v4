@@ -308,7 +308,11 @@ const DashboardZenith = ({ user, initialData }) => {
 
   const handleAction = (actionId) => {
       viewIntel.recordAction(actionId);
-      if (actionId === 'amend') setIsBlueprintOpen(true);
+      
+      const currentLlcName = activeLlc?.llc_name || '';
+      const currentLlcId = activeLlc?.id;
+
+      // 1. Structural Security Actions (Governance & Tax)
       if (actionId === 'governance') {
           setCheckoutItem({
               id: 'governance',
@@ -316,9 +320,10 @@ const DashboardZenith = ({ user, initialData }) => {
               price: "$199",
               plainEnglish: "A professional, attorney-drafted Operating Agreement to establish your corporate veil and governance rules.",
               llc_name: currentLlcName,
-              llc_id: currentLlc?.id
+              llc_id: currentLlcId
           });
       }
+
       if (actionId === 'tax') {
           setCheckoutItem({
               id: 'tax',
@@ -326,9 +331,59 @@ const DashboardZenith = ({ user, initialData }) => {
               price: "$99",
               plainEnglish: "Direct IRS filing for your Employer Identification Number. Essential for banking and taxes.",
               llc_name: currentLlcName,
-              llc_id: currentLlc?.id
+              llc_id: currentLlcId
           });
       }
+
+      // 2. Lifecycle Management Actions (From ActionConsole)
+      if (actionId === 'new_entity') {
+          setCheckoutItem({
+              id: 'formation',
+              title: "New Florida LLC Formation",
+              price: "$399",
+              plainEnglish: "Complete Articles of Organization filing, state correspondence, and initial compliance setup.",
+              llc_name: '', // Starts clean for a new formation
+              llc_id: null
+          });
+      }
+
+      if (actionId === 'amend') {
+          setCheckoutItem({
+              id: 'amendment',
+              title: "Articles of Amendment",
+              price: "$149",
+              plainEnglish: "Legally update your entity structure, names, or addresses with the State of Florida.",
+              llc_name: currentLlcName,
+              llc_id: currentLlcId
+          });
+      }
+
+      if (actionId === 'annual_report') {
+          setCheckoutItem({
+              id: 'maintenance',
+              title: "Annual Report Filing",
+              price: "$200",
+              plainEnglish: "State-mandated yearly update to keep your business in good standing ($150 State + $50 Service).",
+              llc_name: currentLlcName,
+              llc_id: currentLlcId
+          });
+      }
+
+      if (actionId === 'dissolve') {
+          setCheckoutItem({
+              id: 'dissolution',
+              title: "Articles of Dissolution",
+              price: "$199",
+              plainEnglish: "Legally close your business and terminate its liability with the State of Florida.",
+              llc_name: currentLlcName,
+              llc_id: currentLlcId
+          });
+      }
+
+      // 3. Status Cards
+      if (actionId === 'active') setActivePulseModal('active');
+      if (actionId === 'due') setActivePulseModal('due');
+      if (actionId === 'shield') setActivePulseModal('shield');
   };
 
   const selectEntity = (entity) => {

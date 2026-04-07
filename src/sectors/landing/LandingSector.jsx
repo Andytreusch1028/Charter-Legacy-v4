@@ -115,7 +115,7 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                         Client Login
                     </button>
                     <button 
-                        onClick={() => onStartCheckout('founder')}
+                        onClick={() => onStartCheckout('unselected')}
                         className="px-6 py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/20"
                     >
                         Start Your LLC
@@ -146,7 +146,7 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
 
                     <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-10">
                         <button 
-                            onClick={() => onStartCheckout('founder')}
+                            onClick={() => onStartCheckout('unselected')}
                             className="group flex items-center gap-6 bg-white text-black px-12 py-6 rounded-[24px] font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.15)]"
                         >
                             Start Your LLC <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
@@ -282,9 +282,9 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                     </div>
                     <div className="grid md:grid-cols-2 gap-8">
                         <GlassCard variant="glass" className="p-10 space-y-8">
-                            <h3 className="text-2xl font-black uppercase tracking-tighter">Basic Privacy</h3>
+                            <h3 className="text-2xl font-black uppercase tracking-tighter">Founder Shield</h3>
                             <div className="flex items-end gap-2 text-white">
-                                <span className="text-5xl font-black">$249</span>
+                                <span className="text-5xl font-black">$399</span>
                                 <span className="text-gray-500 font-bold mb-2">one-time</span>
                             </div>
                             <ul className="space-y-3">
