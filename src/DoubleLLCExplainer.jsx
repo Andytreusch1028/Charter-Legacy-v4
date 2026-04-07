@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Shield, Eye, EyeOff, Check, ArrowRight, Building2, Landmark, Users, Lock, ChevronRight } from 'lucide-react';
+import { X, Shield, Eye, EyeOff, Check, ArrowRight, Building2, Landmark, Users, Lock, ChevronRight, AlertTriangle, Search } from 'lucide-react';
 
 const DoubleLLCExplainer = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -109,6 +109,61 @@ const DoubleLLCExplainer = ({ isOpen, onClose }) => {
                       <h4 className="text-lg font-black text-white uppercase tracking-tight mb-2">2. Wyoming Entity</h4>
                       <p className="text-xs text-gray-400 font-medium leading-relaxed">
                          This is your "Holding Company." It owns the Florida company. Wyoming law does <span className="text-[#00D084] font-bold">NOT</span> require owner names on public filings. Your name stops here.
+                      </p>
+                   </div>
+                </div>
+
+                {/* High-Fidelity Security Advantage (Quick Why) */}
+                <div className="bg-[#121212] rounded-[32px] border border-gray-800 overflow-hidden shadow-xl">
+                   <div className="bg-white/5 px-6 py-3 border-b border-gray-800 flex items-center justify-between">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-[#00D084]">Security Benchmark: Protection Vector</p>
+                      <div className="flex gap-1.5">
+                         <div className="w-1.5 h-1.5 rounded-full bg-[#00D084]" />
+                         <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
+                         <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
+                      </div>
+                   </div>
+                   <div className="grid md:grid-cols-2">
+                      <div className="p-6 border-r border-gray-800 space-y-4">
+                         <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500">
+                               <AlertTriangle size={16} />
+                            </div>
+                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Standard LLC</span>
+                         </div>
+                         <div className="space-y-2">
+                            <div className="flex justify-between items-center text-[10px] uppercase font-bold text-gray-500 bg-white/5 p-3 rounded-xl border border-white/5">
+                               <span>Public Search</span>
+                               <span className="text-red-400">Your Full Name</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[10px] uppercase font-bold text-gray-500 bg-white/5 p-3 rounded-xl border border-white/5">
+                               <span>Google Index</span>
+                               <span className="text-red-400">Direct Linkage</span>
+                            </div>
+                         </div>
+                      </div>
+                      <div className="p-6 bg-[#00D084]/5 space-y-4">
+                         <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-[#00D084]/20 flex items-center justify-center text-[#00D084]">
+                               <Shield size={16} />
+                            </div>
+                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Shield Protocol</span>
+                         </div>
+                         <div className="space-y-2">
+                            <div className="flex justify-between items-center text-[10px] uppercase font-bold text-white bg-black/40 p-3 rounded-xl border border-[#00D084]/20">
+                               <span>Public Search</span>
+                               <span className="text-[#00D084] font-black">Anonymous</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[10px] uppercase font-bold text-white bg-black/40 p-3 rounded-xl border border-[#00D084]/20">
+                               <span>Google Index</span>
+                               <span className="text-[#00D084] font-black">DEAD-END</span>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                   <div className="p-4 bg-black/50 border-t border-gray-800 text-center">
+                      <p className="text-[10px] font-medium text-gray-400 leading-relaxed italic">
+                         "The Double LLC separates <span className="text-white font-bold">Ownership</span> from <span className="text-white font-bold">Operation</span>. In Florida, public records stop at the Wyoming holding level."
                       </p>
                    </div>
                 </div>

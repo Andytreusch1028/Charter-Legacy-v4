@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, ArrowRight, Lock, CheckCircle2, Fingerprint, FileCheck, 
-  Building2, Zap, Check, Shield, Anchor, Loader2, Info, CreditCard, AlertCircle, Search
+  Building2, Zap, Check, Shield, Anchor, Loader2, Info, CreditCard, AlertCircle, Search, Plus
 } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { supabase } from '../../lib/supabase';
 import { calculateAvailabilityScore, SUNBIZ_RULES } from '../../lib/sunbiz-validator';
 import BackgroundEffects from '../../shared/design-system/BackgroundEffects';
+import FounderShieldExplainer from '../../FounderShieldExplainer';
+import DoubleLLCExplainer from '../../DoubleLLCExplainer';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
 
@@ -115,6 +117,9 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
   }, [isOpen, item?.id, item?.llc_name]); 
 
   // Real-time Sunbiz Name Availability Engine
+  const [showFounderInfo, setShowFounderInfo] = useState(false);
+  const [showDoubleInfo, setShowDoubleInfo] = useState(false);
+
   useEffect(() => {
     if (!manualLLC.name || manualLLC.isPrepopulated) {
         setAvailability(null);
@@ -392,11 +397,23 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
                           </div>
                         </div>
                         
-                        <div className="space-y-2">
-                          <h4 className="text-3xl font-black uppercase tracking-tighter leading-none">{p.title}</h4>
-                          <p className={`text-xs font-bold uppercase tracking-widest ${selectedLLC?.id === p.id ? 'text-black/40' : 'text-gray-500'}`}>
-                            {p.desc}
-                          </p>
+                        <div className="flex justify-between items-end">
+                          <div className="space-y-2">
+                            <h4 className="text-3xl font-black uppercase tracking-tighter leading-none">{p.title}</h4>
+                            <p className={`text-xs font-bold uppercase tracking-widest ${selectedLLC?.id === p.id ? 'text-black/40' : 'text-gray-500'}`}>
+                              {p.desc}
+                            </p>
+                          </div>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (p.id === 'founder') setShowFounderInfo(true);
+                              else setShowDoubleInfo(true);
+                            }}
+                            className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${selectedLLC?.id === p.id ? 'text-black/60 hover:text-black' : 'text-gray-500 hover:text-white'} transition-colors`}
+                          >
+                            More Info <Plus size={14} />
+                          </button>
                         </div>
                         
                         <div className="space-y-3 pt-8 border-t border-current/10">
@@ -713,6 +730,15 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
           </div>
         </div>
       </div>
+      {/* Detail Explainers */}
+      <FounderShieldExplainer 
+        isOpen={showFounderInfo} 
+        onClose={() => setShowFounderInfo(false)} 
+      />
+      <DoubleLLCExplainer 
+        isOpen={showDoubleInfo} 
+        onClose={() => setShowDoubleInfo(false)} 
+      />
     </div>
   );
 };
