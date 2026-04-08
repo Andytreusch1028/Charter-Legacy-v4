@@ -64,7 +64,13 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                     </div>
                     <div className="flex flex-col">
                         <span className="font-black text-2xl tracking-tighter uppercase block leading-none text-glow-premium">Charter Legacy</span>
-                        <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] mt-1">Sovereign Architecture</span>
+                        <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.5em] mt-1.5 flex items-center gap-1.5">
+                          <span>simple</span>
+                          <div className="w-1 h-1 bg-white/[0.05] rounded-full" />
+                          <span>private</span>
+                          <div className="w-1 h-1 bg-white/[0.05] rounded-full" />
+                          <span>secure</span>
+                        </span>
                     </div>
                 </div>
                 <div className="flex items-center gap-4 md:gap-8">

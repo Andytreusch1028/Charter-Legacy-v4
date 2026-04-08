@@ -472,7 +472,16 @@ const DashboardZenith = ({ user, initialData, onLogout, entryOrigin, onNavigateL
              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-black group-hover:scale-110 transition-transform">
                <Shield size={18} />
              </div>
-             <span className="font-black uppercase tracking-tighter text-xl text-white group-hover:text-emerald-500 transition-colors">Charter Legacy</span>
+             <div className="flex flex-col">
+                <span className="font-black uppercase tracking-tighter text-xl text-white group-hover:text-emerald-500 transition-colors leading-none">Charter Legacy</span>
+                <span className="text-[7px] font-black text-white/20 uppercase tracking-[0.4em] mt-0.5 flex items-center gap-1">
+                    <span>simple</span>
+                    <div className="w-0.5 h-0.5 bg-white/10 rounded-full" />
+                    <span>private</span>
+                    <div className="w-0.5 h-0.5 bg-white/10 rounded-full" />
+                    <span>secure</span>
+                </span>
+             </div>
           </div>
           <div className="h-8 w-px bg-white/5" />
           <div className="flex items-center gap-8">
