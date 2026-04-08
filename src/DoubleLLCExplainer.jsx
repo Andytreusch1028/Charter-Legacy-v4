@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Shield, Eye, EyeOff, Check, ArrowRight, Building2, Landmark, Users, Lock, ChevronRight, AlertTriangle, Search, MapPin, BookText, Fingerprint, ShieldAlert, ShieldCheck } from 'lucide-react';
 
-const DoubleLLCExplainer = ({ isOpen, onClose }) => {
+const DoubleLLCExplainer = ({ isOpen, onClose, onSelect }) => {
   if (!isOpen) return null;
 
   return (
@@ -13,8 +13,8 @@ const DoubleLLCExplainer = ({ isOpen, onClose }) => {
       />
 
       {/* Main Modal */}
-      <div className="relative w-full max-w-5xl bg-[#0A0A0B] rounded-[48px] border border-gray-800 shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto">
-        
+      <div className="relative w-full max-w-5xl bg-[#0A0A0B] rounded-[48px] border border-emerald-500/20 shadow-[0_40px_120px_rgba(0,185,129,0.15)] overflow-hidden animate-in slide-in-from-bottom-8 zoom-in-95 duration-700 max-h-[90vh] overflow-y-auto ive-glass-premium">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] to-transparent pointer-events-none" />
         {/* Close Button */}
         <button 
           onClick={onClose}
@@ -42,8 +42,8 @@ const DoubleLLCExplainer = ({ isOpen, onClose }) => {
                         <div className="flex justify-center gap-1 text-[#00D084]">
                            {[...Array(5)].map((_,i) => <span key={i}>★</span>)}
                         </div>
-                        <h3 className="text-4xl md:text-5xl font-black text-white leading-tight max-w-4xl mx-auto italic uppercase">
-                           "Charter Legacy kept my business trouble exactly where it belongs: <span className="text-[#00D084] not-italic underline decoration-2 underline-offset-8">Away from my family's front door.</span>"
+                        <h3 className="text-4xl md:text-5xl font-black text-white leading-tight max-w-4xl mx-auto italic uppercase text-glow-premium">
+                           "Charter Legacy kept my business trouble exactly where it belongs: <span className="text-emerald-400 not-italic underline decoration-emerald-500/50 underline-offset-8">Away from my family's front door.</span>"
                         </h3>
                         <div className="pt-2">
                            <p className="text-xs font-black text-white uppercase tracking-widest">David P.</p>
@@ -56,14 +56,14 @@ const DoubleLLCExplainer = ({ isOpen, onClose }) => {
                   </div>
 
                   {/* The Matrix Container */}
-                  <div className="bg-[#121212] rounded-[32px] border border-gray-800 overflow-hidden shadow-2xl">
+                  <div className="ive-glass-premium rounded-[32px] border border-white/10 overflow-hidden shadow-2xl relative animate-shine">
                      {/* Column Headers */}
-                     <div className="grid grid-cols-2 bg-white/5 border-b border-gray-800">
-                        <div className="p-6 text-center border-r border-gray-800">
-                           <span className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Formation Core</span>
+                     <div className="grid grid-cols-2 bg-white/5 border-b border-white/10">
+                        <div className="p-6 text-center border-r border-white/10">
+                           <span className="text-xs font-black uppercase tracking-[0.2em] text-white/30">Formation Core</span>
                         </div>
-                        <div className="p-6 text-center bg-[#00D084]/10">
-                           <span className="text-xs font-black uppercase tracking-[0.2em] text-[#00D084]">Formation Elite</span>
+                        <div className="p-6 text-center bg-emerald-500/10">
+                           <span className="text-xs font-black uppercase tracking-[0.2em] text-emerald-400">Formation Elite</span>
                         </div>
                      </div>
 
@@ -191,8 +191,11 @@ const DoubleLLCExplainer = ({ isOpen, onClose }) => {
                      
                      <div className="flex flex-col sm:flex-row items-center gap-6">
                         <button 
-                           onClick={onClose}
-                           className="group relative px-10 py-5 bg-[#00D084] rounded-2xl overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(0,208,132,0.3)]"
+                           onClick={() => {
+                              if (onSelect) onSelect('sovereign');
+                              onClose();
+                           }}
+                           className="group relative px-10 py-5 bg-emerald-500 rounded-2xl overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-[0_20px_40px_rgba(16,185,129,0.3)]"
                         >
                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                            <div className="relative flex items-center gap-3">

@@ -93,11 +93,14 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
           const isNewPackage = item?.id !== lastPropId;
           const hasNewName = item?.llc_name && item.llc_name !== manualLLC.name;
 
-          if (isNewPackage || hasNewName) {
-            console.log(`[SYNC] Initializing for package: ${item?.id}`);
-            setStep(item?.id === 'unselected' || item?.id === 'formation' ? 'selection' : 'details'); 
-            setError('');
-            setLoading(false);
+            if (isNewPackage || hasNewName) {
+              console.log(`[SYNC] Initializing for package: ${item?.id}`);
+              // If the package is 'formation' (general entry) or 'unselected', show selection.
+              // If the user upgraded from an explainer, they've already made their choice, so go to details.
+              const startAtSelection = item?.id === 'unselected' || item?.id === 'formation';
+              setStep(startAtSelection ? 'selection' : 'details'); 
+              setError('');
+              setLoading(false);
             setClientSecret('');
             setUserLLCs([]);
             setAvailability(null);
@@ -348,7 +351,6 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
                     Select your architecture. These protocols determine the visibility and structural depth of your formation.
                   </p>
                 </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   {[
                     { 
@@ -379,6 +381,7 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
                             ? "Charter Legacy filings emphasize absolute anonymity. We file your official state documents and list our registered office as your principal address to keep your name off the public grid."
                             : "The ultimate privacy architecture. We create a Florida LLC owned by a Wyoming holding company. This two-layer structure ensures your identity never touches any state registry."
                         });
+                        setStep('details');
                       }}
                       className={`relative p-12 rounded-[48px] border text-left transition-all duration-700 group overflow-hidden ${
                         selectedLLC?.id === p.id 

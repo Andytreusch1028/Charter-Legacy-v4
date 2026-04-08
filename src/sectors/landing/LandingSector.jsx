@@ -18,66 +18,26 @@ import {
 } from 'lucide-react';
 import { GlassCard } from '../../shared/design-system/UIPrimitives';
 import FilingLedger from './FilingLedger';
+import DoubleLLCExplainerModal from '../../DoubleLLCExplainer';
+import FounderShieldExplainer from '../../FounderShieldExplainer';
 
-// ═══════════════════════════════════════════
-//   DOUBLE LLC EXPLAINER MODAL
-// ═══════════════════════════════════════════
-const DoubleLLCExplainer = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
-    return (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-            <div className="w-full max-w-2xl bg-[#0A0A0B] border border-white/10 rounded-[32px] overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-300">
-                <button onClick={onClose} className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
-                    <Shield size={24} className="rotate-180" />
-                </button>
-                
-                <div className="p-8 md:p-12 space-y-8">
-                    <div className="space-y-4">
-                        <h3 className="text-3xl font-black uppercase tracking-tighter">Identity Shielding</h3>
-                        <p className="text-gray-400 font-medium leading-relaxed">
-                            Normally, Florida requires your real name on public records. Our structure uses a private Wyoming company to own your Florida LLC, keeping your identity completely off the grid.
-                        </p>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Step 1</span>
-                            <h4 className="text-sm font-bold">Florida LLC</h4>
-                            <p className="text-xs text-gray-500 leading-relaxed">We setup your business in Florida for local operations.</p>
-                        </div>
-                        <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Step 2</span>
-                            <h4 className="text-sm font-bold">Wyoming Parent</h4>
-                            <p className="text-xs text-gray-500 leading-relaxed">We setup a Wyoming company to hold and protect the Florida one.</p>
-                        </div>
-                    </div>
-
-                    <button 
-                        onClick={onClose}
-                        className="w-full py-4 bg-white text-black rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all"
-                    >
-                        I Understand
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 // ═══════════════════════════════════════════
 //   BACKGROUND EFFECTS
 // ═══════════════════════════════════════════
 const BackgroundEffects = () => (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-[-10%] right-[-5%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[50%] h-[50%] bg-white/[0.015] rounded-full blur-[100px]" />
+        <div className="absolute top-[-20%] right-[-10%] w-[70%] h-[70%] bg-white/[0.03] rounded-full blur-[150px] animate-mesh-drift" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px] animate-mesh-drift [animation-delay:2s]" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay pointer-events-none" />
     </div>
 );
 
 const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
     const [heroTypewriter, setHeroTypewriter] = useState('Private.');
     const [showDoubleLLC, setShowDoubleLLC] = useState(false);
-    const [showPrivacy, setShowPrivacy] = useState(false);
+    const [showFounderShield, setShowFounderShield] = useState(false);
 
     // Typewriter effect for simple, direct value props
     React.useEffect(() => {
@@ -93,17 +53,18 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
     return (
         <div className="relative min-h-screen bg-neutral-dark text-white selection:bg-white/10 selection:text-white overflow-x-hidden pt-24">
             <BackgroundEffects />
-            <DoubleLLCExplainer isOpen={showDoubleLLC} onClose={() => setShowDoubleLLC(false)} />
+            <DoubleLLCExplainerModal isOpen={showDoubleLLC} onClose={() => setShowDoubleLLC(false)} onSelect={onStartCheckout} />
+            <FounderShieldExplainer isOpen={showFounderShield} onClose={() => setShowFounderShield(false)} onSelect={onStartCheckout} />
 
             {/* NAVIGATION */}
-            <nav className="fixed top-0 left-0 right-0 z-50 h-24 flex items-center justify-between px-6 md:px-12 bg-[#050506]/80 backdrop-blur-xl border-b border-white/[0.03]">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-black shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                        <Shield size={22} />
+            <nav className="fixed top-0 left-0 right-0 z-50 h-24 flex items-center justify-between px-6 md:px-12 ive-glass border-b border-white/[0.05] shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-4 group cursor-pointer">
+                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-black shadow-[0_0_30px_rgba(255,255,255,0.2)] group-hover:scale-105 transition-all duration-500">
+                        <Shield size={24} strokeWidth={2.5} />
                     </div>
-                    <div>
-                        <span className="font-black text-xl tracking-tighter uppercase block leading-none">Charter Legacy</span>
-                        <span className="text-[8px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-1 ml-0.5">Business Dashboard v4.5</span>
+                    <div className="flex flex-col">
+                        <span className="font-black text-2xl tracking-tighter uppercase block leading-none text-glow-premium">Charter Legacy</span>
+                        <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] mt-1">Sovereign Architecture</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-4 md:gap-8">
@@ -133,15 +94,15 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                         <span className="animate-pulse text-emerald-500/80">LIVE_SETUP_ACTIVE</span>
                     </div>
                     
-                    <h1 className="text-[clamp(3.5rem,15vw,10.5rem)] font-black uppercase tracking-tighter leading-[0.8]">
+                    <h1 className="text-[clamp(3.5rem,12vw,10rem)] font-black uppercase tracking-tighter leading-[0.8] animate-in fade-in slide-in-from-bottom-8 duration-1000">
                         Florida LLC <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-100 via-gray-400 to-gray-200">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-white/80 to-white/40 drop-shadow-2xl">
                             {heroTypewriter}
                         </span>
                     </h1>
                     
-                    <p className="text-xl md:text-2xl text-gray-500 font-medium max-w-2xl mx-auto italic leading-relaxed">
-                        The simple way to structure your business for total privacy. Complete protection across Florida and Wyoming.
+                    <p className="text-xl md:text-2xl text-white/40 font-medium max-w-2xl mx-auto italic leading-relaxed animate-in fade-in duration-1000 delay-300">
+                        "Charter Legacy kept my business trouble exactly where it belongs: <span className="text-white/60 not-italic uppercase tracking-tighter">Away from my family's front door.</span>"
                     </p>
 
                     <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-10">
@@ -166,19 +127,19 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
             </section>
 
             {/* FEATURES MATRIX */}
-            <section className="px-6 md:px-12 pb-32 grid md:grid-cols-3 gap-6 md:gap-8 max-w-7xl mx-auto">
+            <section className="px-6 md:px-12 pb-32 grid md:grid-cols-3 gap-6 md:gap-8 max-w-7xl mx-auto relative z-10">
                 {[
                     { title: 'Business Office', desc: 'A professional Florida address for state records. We receive your legal mail so you don\'t have to.', icon: Globe },
                     { title: 'Secure Vault', desc: 'Private encryption protects your documents. Only you hold the access keys.', icon: Lock },
                     { title: 'Same-Day Setup', desc: 'We submit your paperwork immediately to the Florida Division of Corporations.', icon: Shield }
                 ].map((f, i) => (
-                    <GlassCard key={i} variant="glass" className="p-8 md:p-10 space-y-6">
-                        <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-black transition-all">
-                            <f.icon size={24} strokeWidth={1.5} />
+                    <GlassCard key={i} variant="premium" className="p-8 md:p-10 space-y-6 group animate-shine">
+                        <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-white/50 group-hover:bg-white group-hover:text-black transition-all duration-700 shadow-inner">
+                            <f.icon size={28} strokeWidth={1.5} />
                         </div>
-                        <div className="space-y-2">
-                            <h3 className="text-xl font-black uppercase tracking-tighter">{f.title}</h3>
-                            <p className="text-sm text-gray-500 font-medium leading-relaxed">{f.desc}</p>
+                        <div className="space-y-3">
+                            <h3 className="text-2xl font-black uppercase tracking-tighter text-glow-premium">{f.title}</h3>
+                            <p className="text-sm text-white/40 font-medium leading-relaxed">{f.desc}</p>
                         </div>
                     </GlassCard>
                 ))}
@@ -280,35 +241,59 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                         <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">Simple Pricing</h2>
                         <p className="text-gray-500 text-base">All plans include state filing, professional address service, and vault access.</p>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <GlassCard variant="glass" className="p-10 space-y-8">
-                            <h3 className="text-2xl font-black uppercase tracking-tighter">Formation Core</h3>
-                            <div className="flex items-end gap-2 text-white">
-                                <span className="text-5xl font-black">$399</span>
-                                <span className="text-gray-500 font-bold mb-2">one-time</span>
+                    <div className="grid md:grid-cols-2 gap-10">
+                        <GlassCard variant="premium" className="p-12 space-y-10 border-white/5">
+                            <div className="space-y-4">
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Standard Tier</span>
+                                <h3 className="text-3xl font-black uppercase tracking-tighter">Formation Core</h3>
                             </div>
-                            <ul className="space-y-3">
+                            <div className="flex items-end gap-2 text-white">
+                                <span className="text-6xl font-black tracking-tighter">$399</span>
+                                <span className="text-white/20 font-bold mb-2 uppercase text-[10px] tracking-widest">Protocol Fee</span>
+                            </div>
+                            <ul className="space-y-4">
                                 {['Florida LLC Setup', 'Business Address (1 Yr)', 'Operating Agreement', 'Tax ID (EIN) Aid', 'Private Vault'].map(i => (
-                                    <li key={i} className="flex gap-3 text-sm text-gray-400 font-medium"><Check size={14} className="text-white mt-1"/> {i}</li>
+                                    <li key={i} className="flex gap-4 text-sm text-white/40 font-medium"><Check size={16} className="text-emerald-500 mt-0.5"/> {i}</li>
                                 ))}
                             </ul>
-                            <button onClick={() => onStartCheckout('founder')} className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white hover:text-black transition-all">Get Started</button>
+                            
+                            <div className="flex flex-col gap-4 pt-4">
+                                <button onClick={() => onStartCheckout('founder')} className="w-full py-5 bg-white/5 border border-white/10 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-700">Initialize Formation</button>
+                                <button 
+                                    onClick={() => setShowFounderShield(true)}
+                                    className="flex items-center justify-center gap-2 text-[10px] font-black text-white/20 hover:text-white uppercase tracking-[0.3em] transition-colors"
+                                >
+                                    More Information <ChevronRight size={14} />
+                                </button>
+                            </div>
                         </GlassCard>
 
                         <div className="relative group">
-                            <div className="absolute -inset-[1px] bg-gradient-to-b from-white/20 to-transparent rounded-[33px] transition-all group-hover:from-white/40" />
-                            <GlassCard variant="glass" className="p-10 space-y-8 relative">
-                                <h3 className="text-2xl font-black uppercase tracking-tighter">Formation Elite</h3>
-                                <div className="flex items-end gap-2 text-white">
-                                    <span className="text-5xl font-black">$999</span>
-                                    <span className="text-gray-500 font-bold mb-2">one-time</span>
+                            <div className="absolute -inset-[2px] bg-gradient-to-b from-emerald-500/20 to-transparent rounded-[34px] blur-sm transition-all group-hover:from-emerald-500/40" />
+                            <GlassCard variant="premium" className="p-12 space-y-10 relative border-emerald-500/20 bg-emerald-500/[0.02]">
+                                <div className="space-y-4">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500/50">Elite Tier</span>
+                                    <h3 className="text-3xl font-black uppercase tracking-tighter text-emerald-400">Formation Elite</h3>
                                 </div>
-                                <ul className="space-y-3">
+                                <div className="flex items-end gap-2 text-white">
+                                    <span className="text-6xl font-black tracking-tighter text-glow-premium">$999</span>
+                                    <span className="text-white/20 font-bold mb-2 uppercase text-[10px] tracking-widest">Sovereign Fee</span>
+                                </div>
+                                <ul className="space-y-4">
                                     {['Everything in Basic', 'Wyoming Parent Company', 'Total Name Privacy', 'Advanced Agreements', 'Family Handover Plan'].map(i => (
-                                        <li key={i} className="flex gap-3 text-sm text-gray-400 font-medium"><Check size={14} className="text-white mt-1"/> {i}</li>
+                                        <li key={i} className="flex gap-4 text-sm text-white/60 font-medium"><Check size={16} className="text-emerald-500 mt-0.5"/> {i}</li>
                                     ))}
                                 </ul>
-                                <button onClick={() => onStartCheckout('sovereign')} className="w-full py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-white/10">Protect My Identity</button>
+
+                                <div className="flex flex-col gap-4 pt-4">
+                                    <button onClick={() => onStartCheckout('sovereign')} className="w-full py-5 bg-emerald-500 text-black rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_20px_40px_rgba(16,185,129,0.2)] hover:scale-[1.02] active:scale-95 transition-all duration-700">Protect My Identity</button>
+                                    <button 
+                                        onClick={() => setShowDoubleLLC(true)}
+                                        className="flex items-center justify-center gap-2 text-[10px] font-black text-emerald-500/30 hover:text-emerald-400 uppercase tracking-[0.3em] transition-colors"
+                                    >
+                                        More Information <ChevronRight size={14} />
+                                    </button>
+                                </div>
                             </GlassCard>
                         </div>
                     </div>

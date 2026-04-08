@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Shield, Eye, EyeOff, Check, ArrowRight, Building2, Landmark, Users, Lock, ChevronRight, Globe, FileKey, MapPin } from 'lucide-react';
 
-const FounderShieldExplainer = ({ isOpen, onClose }) => {
+const FounderShieldExplainer = ({ isOpen, onClose, onSelect }) => {
   if (!isOpen) return null;
 
   return (
@@ -13,7 +13,7 @@ const FounderShieldExplainer = ({ isOpen, onClose }) => {
       />
 
       {/* Main Modal */}
-      <div className="relative w-full max-w-5xl bg-[#0A0A0B] rounded-[48px] border border-gray-800 shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-5xl bg-[#0A0A0B] rounded-[48px] border border-white/10 shadow-[0_40px_120px_rgba(0,0,0,0.8)] overflow-hidden animate-in slide-in-from-bottom-8 zoom-in-95 duration-700 max-h-[90vh] overflow-y-auto ive-glass-premium">
         
         {/* Close Button */}
         <button 
@@ -26,8 +26,9 @@ const FounderShieldExplainer = ({ isOpen, onClose }) => {
         <div className="grid lg:grid-cols-5 min-h-[600px]">
           
           {/* Left Panel: The Problem */}
-          <div className="lg:col-span-2 bg-[#121212] p-10 md:p-14 border-r border-gray-800 flex flex-col justify-between">
-             <div className="space-y-8">
+          <div className="lg:col-span-2 bg-white/[0.02] p-10 md:p-14 border-r border-white/5 flex flex-col justify-between relative overflow-hidden">
+             <div className="absolute inset-0 bg-gradient-to-b from-red-500/[0.03] to-transparent pointer-events-none" />
+             <div className="space-y-8 relative z-10">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/10 text-red-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-red-500/20">
                    <EyeOff size={12} /> The Exposure Risk
                 </div>
@@ -113,18 +114,18 @@ const FounderShieldExplainer = ({ isOpen, onClose }) => {
                    </div>
                 </div>
 
-                <div className="bg-[#1A1A1A] rounded-3xl p-8 border border-gray-800 flex items-center gap-6 relative overflow-hidden">
+                 <div className="ive-glass-premium rounded-3xl p-8 border border-white/10 flex items-center gap-6 relative overflow-hidden group animate-shine">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full blur-[80px] opacity-10" />
                     <div className="flex-1 space-y-4 relative z-10">
                        <div className="flex gap-1 text-white">
                           {[...Array(5)].map((_,i) => <span key={i}>★</span>)}
                        </div>
-                       <p className="text-lg md:text-xl font-medium text-white italic leading-relaxed">
+                       <p className="text-lg md:text-xl font-medium text-white italic leading-relaxed text-glow-premium">
                           "Formation Core gave me the clean, professional corporate front I needed to build my brand, while keeping business junk and solicitors far away from my private mailbox."
                        </p>
                        <div>
                           <p className="text-xs font-black text-white uppercase tracking-widest">Michael T.</p>
-                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Consultant • Orlando, FL</p>
+                          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Consultant • Orlando, FL</p>
                        </div>
                     </div>
                 </div>
@@ -150,12 +151,18 @@ const FounderShieldExplainer = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer / CTA */}
-        <div className="bg-[#050505] p-6 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6">
-           <p className="text-[10px] text-gray-600 font-medium max-w-xl">
-              <span className="font-bold text-gray-500 uppercase">UPL Disclosure:</span> This is a corporate setup service for asset protection and privacy. Charter Legacy provides the filing but does not provide legal or tax advice.
+        <div className="bg-black/40 backdrop-blur-md p-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
+           <p className="text-[10px] text-white/20 font-medium max-w-xl">
+              <span className="font-bold text-white/40 uppercase">UPL Disclosure:</span> This is a corporate setup service for asset protection and privacy. Charter Legacy provides the filing but does not provide legal or tax advice.
            </p>
-           <button onClick={onClose} className="px-8 py-3 bg-white text-black rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2">
-              Confirm Choice <Check size={14} />
+           <button 
+              onClick={() => {
+                if (onSelect) onSelect('founder');
+                onClose();
+              }} 
+              className="px-10 py-4 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
+            >
+              Confirm Choice <Check size={14} className="inline-block ml-2 mb-0.5" />
            </button>
         </div>
       </div>

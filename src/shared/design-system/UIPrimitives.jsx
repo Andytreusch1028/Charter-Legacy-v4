@@ -14,7 +14,8 @@ export const GlassCard = ({ children, className = '', onClick, variant = 'glass'
     const variants = {
         glass: 'bg-white/[0.03] backdrop-blur-3xl border-white/10 hover:border-white/20 hover:bg-white/[0.06] hover:shadow-[0_20px_80px_rgba(0,0,0,0.4)] ive-inner-glow', // The Neural Spark
         solid: 'bg-[#111112] border-white/5 shadow-2xl hover:shadow-[0_0_40px_rgba(255,255,255,0.02)] transition-all duration-500', // Midnight Card
-        zenith: 'bg-white/5 backdrop-blur-3xl border-white/10 ive-inner-glow' // The Semi-Opaque Frost
+        zenith: 'bg-white/5 backdrop-blur-3xl border-white/10 ive-inner-glow', // The Semi-Opaque Frost
+        premium: 'ive-glass-premium hover:shadow-[0_40px_100px_rgba(0,0,0,0.6)]' // The Jony Standard
     };
 
     const variantStyles = variants[variant] || variants.glass;
