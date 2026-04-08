@@ -214,7 +214,7 @@ const PrimeIntelligenceHub = ({ llc, compliance, onAction }) => {
   );
 };
 
-const DashboardZenith = ({ user, initialData }) => {
+const DashboardZenith = ({ user, initialData, onLogout, entryOrigin }) => {
   const [loading, setLoading] = useState(true);
   const [activeLlc, setActiveLlc] = useState(initialData || null);
   const [companies, setCompanies] = useState([]);
@@ -257,7 +257,7 @@ const DashboardZenith = ({ user, initialData }) => {
             setCompanies(data);
             if (!activeLlc) {
                 setActiveLlc(data[0]);
-                if (data[0]?.llc_name?.includes('Pending') || data[0]?.llc_status === 'Setting Up') {
+                if ((data[0]?.llc_name?.includes('Pending') || data[0]?.llc_status === 'Setting Up') && entryOrigin !== 'footer') {
                     setShowDesignation(true);
                 }
             }
@@ -488,7 +488,10 @@ const DashboardZenith = ({ user, initialData }) => {
           <button className="p-3 text-white/30 hover:text-white transition-colors">
             <Settings size={20} />
           </button>
-          <button className="px-5 py-2.5 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/90 active:scale-95 transition-all">
+          <button 
+            onClick={onLogout}
+            className="px-5 py-2.5 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/90 active:scale-95 transition-all"
+          >
             Secure Logout
           </button>
         </div>

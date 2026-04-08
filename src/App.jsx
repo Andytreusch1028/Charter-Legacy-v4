@@ -60,6 +60,12 @@ export default function App() {
     setActivePackage(selectedPackage);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setAppUser(null);
+    setView('landing');
+  };
+
   const handleCheckoutSuccess = (user) => {
     setAppUser(user);
     setActivePackage(null);
@@ -67,8 +73,8 @@ export default function App() {
   };
 
   // Routing Logic
-  if (view === 'dashboard') return <DashboardZenith user={appUser} />;
-  if (view === 'staff')     return <StaffConsole user={appUser} />;
+  if (view === 'dashboard') return <DashboardZenith user={appUser} onLogout={handleLogout} entryOrigin={view === 'dashboard' ? 'footer' : 'direct'} />;
+  if (view === 'staff')     return <StaffConsole user={appUser} onLogout={handleLogout} />;
   if (view === 'ra' && appUser) return <RegisteredAgentConsole />;
   if (view === 'mobile-recorder') return <MobileRecorder sessionId={window.mobileSessionId} onExit={() => setView('landing')} />;
 
@@ -80,7 +86,14 @@ export default function App() {
 
       <LandingSector 
         onStartCheckout={handleStartCheckout}
-        onEnterConsole={() => appUser ? setView('dashboard') : setIsLoginOpen(true)}
+        onEnterConsole={() => {
+          setActivePackage(null);
+          if (appUser) {
+            setView('dashboard');
+          } else {
+            setIsLoginOpen(true);
+          }
+        }}
       />
 
       <CheckoutSector 
