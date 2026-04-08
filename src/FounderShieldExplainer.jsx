@@ -88,7 +88,7 @@ const FounderShieldExplainer = ({ isOpen, onClose }) => {
                 </div>
 
                 <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">
-                   High Fidelity <br/><span className="text-white opacity-40 italic">Address Privacy.</span>
+                   High Fidelity <br/><span className="text-white opacity-40 italic">Corporate Identity.</span>
                 </h2>
 
                 <div className="grid md:grid-cols-2 gap-6">
@@ -98,7 +98,7 @@ const FounderShieldExplainer = ({ isOpen, onClose }) => {
                       </div>
                       <h4 className="text-lg font-black text-white uppercase tracking-tight mb-2">1. Business Office</h4>
                       <p className="text-xs text-gray-400 font-medium leading-relaxed">
-                         A professional Florida address for state records. We receive your legal mail so you don't have to. Your home remains <span className="text-white font-bold">private.</span>
+                         A professional Florida address for state records. We receive your legal mail so you don't have to. Your personal <span className="text-white font-bold">mailbox remains clear.</span>
                       </p>
                    </div>
 
@@ -120,7 +120,7 @@ const FounderShieldExplainer = ({ isOpen, onClose }) => {
                           {[...Array(5)].map((_,i) => <span key={i}>★</span>)}
                        </div>
                        <p className="text-lg md:text-xl font-medium text-white italic leading-relaxed">
-                          "I started my business to build my family's legacy, not expose my front door. Founder Shield gave me the professional front I needed without sacrificing my home privacy."
+                          "Founder Shield gave me the clean, professional corporate front I needed to build my brand, while keeping business junk and solicitors far away from my private mailbox."
                        </p>
                        <div>
                           <p className="text-xs font-black text-white uppercase tracking-widest">Michael T.</p>
@@ -136,7 +136,7 @@ const FounderShieldExplainer = ({ isOpen, onClose }) => {
                    </div>
                    <div className="space-y-1">
                       <p className="text-2xl font-black text-white">100%</p>
-                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Office Privacy</p>
+                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Office Legitimacy</p>
                    </div>
                    <div className="space-y-1">
                       <p className="text-2xl font-black text-white">24h</p>

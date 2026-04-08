@@ -410,9 +410,18 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
                               if (p.id === 'founder') setShowFounderInfo(true);
                               else setShowDoubleInfo(true);
                             }}
-                            className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${selectedLLC?.id === p.id ? 'text-black/60 hover:text-black' : 'text-gray-500 hover:text-white'} transition-colors`}
+                            className={`px-5 py-2.5 rounded-full border transition-all duration-500 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transform hover:scale-[1.1] active:scale-[0.9] ${
+                              p.id === 'sovereign'
+                                ? selectedLLC?.id === p.id
+                                  ? 'bg-[#00D084]/20 border-[#00D084]/40 text-[#008A58] shadow-[0_0_30px_rgba(0,208,132,0.3)]'
+                                  : 'bg-[#00D084]/20 border-[#00D084]/40 text-[#00D084] shadow-[0_0_20px_rgba(0,208,132,0.2)] hover:bg-[#00D084] hover:text-black hover:shadow-[0_0_40px_rgba(0,208,132,0.4)]'
+                                : selectedLLC?.id === p.id
+                                  ? 'bg-black/10 border-black/20 text-black/60 hover:bg-black hover:text-white'
+                                  : 'bg-white/10 border-white/20 text-white/60 hover:bg-white hover:text-black'
+                            }`}
                           >
-                            More Info <Plus size={14} />
+                            <span>More Information</span>
+                            {p.id === 'sovereign' ? <Zap size={12} fill="currentColor" /> : <Plus size={12} />}
                           </button>
                         </div>
                         

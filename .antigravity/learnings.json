@@ -210,6 +210,14 @@
           "pattern": "Use `step === 'selection'` to conditionally hide the 'Acquisition Manifest' sidebar and scale the main content to full-width (centered). This creates a high-stakes, authoritative first choice.",
           "impact": "High - Significantly increases visual focus and brand authority at the flow's most critical decision point.",
           "reuse_guidance": "Apply to any multi-step flow where the initial choice is high-stakes and requires maximum visual focus from the user. Ensure the sidebar restores on subsequent steps."
+        },
+        {
+          "id": "learning-038",
+          "date": "2026-04-07",
+          "success": "Security Benchmark Protection Vector Pattern",
+          "pattern": "Use high-contrast 'Standard vs. Shield' comparison grids with status markers (red vs. green) and authoritative iconography to quickly communicate protocol safety.",
+          "impact": "High - Crystal-clear education for complex privacy structures.",
+          "reuse_guidance": "Use this grid pattern for any high-value upsell that involves security, privacy, or statutory complexity."
         }
       ]
     },
@@ -300,6 +308,22 @@
           "correction": "Wrapped state initialization in an existence check `if (!selectedLLC)` to preserve manual user selections.",
           "impact": "High - Restored user sovereignty over protocol choice across configuration steps.",
           "prevention_rule": "MANDATORY: Always check for existing state before initializing defaults in `useEffect` hooks that manage data across multi-step flow transitions."
+        },
+        {
+          "id": "learning-036",
+          "date": "2026-04-07",
+          "mistake": "Nested buttons ('More Information') in interactive protocol cards triggering parent selection state.",
+          "correction": "Implemented `e.stopPropagation()` on all nested interactive triggers.",
+          "impact": "High - Prevents accidental selection during informational review.",
+          "prevention_rule": "INTERACTIVE NESTING: Always use `e.stopPropagation()` on nested buttons/links within selectable grid cards to prevent parent state hijacking."
+        },
+        {
+          "id": "learning-037",
+          "date": "2026-04-07",
+          "mistake": "Accidental deletion of 'Plus' and 'AlertTriangle' imports during multi-chunk refactor, causing runtime crashes.",
+          "correction": "Restored imports and verified icon presence in the TOP block.",
+          "impact": "Critical - Runtime failure in checkout flow.",
+          "prevention_rule": "MANDATORY ICON SCAN: Before finalizing any JSX refactor, grep for all `<Icon />` components used in the JSX and verify they are explicitly imported from 'lucide-react' at the top."
         }
       ]
     }
@@ -338,7 +362,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 35,
-    "last_updated": "2026-04-07T16:40:00Z"
+    "total_learnings": 38,
+    "last_updated": "2026-04-07T18:15:00Z"
   }
 }
