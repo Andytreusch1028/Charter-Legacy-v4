@@ -250,12 +250,12 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                     </div>
                     <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">Advanced Identity Protection</h2>
                     <p className="text-gray-500 text-base font-medium max-w-2xl mx-auto">
-                        Florida usually requires your personal name on public records. Our "Double LLC" structure keeps your identity private by using a Wyoming company to hold your Florida business.
+                        Florida usually requires your personal name on public records. Our "Formation Elite" structure keeps your identity private by using a Wyoming company to hold your Florida business.
                     </p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                     <GlassCard variant="glass" className="p-8 space-y-6">
-                        <h3 className="text-2xl font-black uppercase tracking-tighter">Standard LLC</h3>
+                        <h3 className="text-2xl font-black uppercase tracking-tighter">Formation Core</h3>
                         <div className="space-y-2 font-mono text-xs p-4 bg-black/40 rounded-xl border border-white/5">
                             <div className="flex justify-between text-gray-500"><span>Business:</span><span>Your Business LLC</span></div>
                             <div className="flex justify-between text-gray-500"><span>Owner Name:</span><span className="text-red-400 font-bold">❌ PUBLICLY VISIBLE</span></div>
@@ -263,7 +263,7 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                         <p className="text-sm text-gray-400">Most services hide your address but your real name still appears on state records for anyone to find.</p>
                     </GlassCard>
                     <GlassCard variant="glass" className="p-8 space-y-6">
-                        <h3 className="text-2xl font-black uppercase tracking-tighter">Double LLC</h3>
+                        <h3 className="text-2xl font-black uppercase tracking-tighter">Formation Elite</h3>
                         <div className="space-y-2 font-mono text-xs p-4 bg-black/40 rounded-xl border border-white/5">
                             <div className="flex justify-between text-gray-500"><span>Business:</span><span>Your Business LLC</span></div>
                             <div className="flex justify-between text-gray-500"><span>Owner Name:</span><span className="text-emerald-400 font-bold">✅ COMPLETELY PRIVATE</span></div>
@@ -282,7 +282,7 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                     </div>
                     <div className="grid md:grid-cols-2 gap-8">
                         <GlassCard variant="glass" className="p-10 space-y-8">
-                            <h3 className="text-2xl font-black uppercase tracking-tighter">Founder Shield</h3>
+                            <h3 className="text-2xl font-black uppercase tracking-tighter">Formation Core</h3>
                             <div className="flex items-end gap-2 text-white">
                                 <span className="text-5xl font-black">$399</span>
                                 <span className="text-gray-500 font-bold mb-2">one-time</span>
@@ -298,7 +298,7 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                         <div className="relative group">
                             <div className="absolute -inset-[1px] bg-gradient-to-b from-white/20 to-transparent rounded-[33px] transition-all group-hover:from-white/40" />
                             <GlassCard variant="glass" className="p-10 space-y-8 relative">
-                                <h3 className="text-2xl font-black uppercase tracking-tighter">Double LLC</h3>
+                                <h3 className="text-2xl font-black uppercase tracking-tighter">Formation Elite</h3>
                                 <div className="flex items-end gap-2 text-white">
                                     <span className="text-5xl font-black">$999</span>
                                     <span className="text-gray-500 font-bold mb-2">one-time</span>
@@ -329,7 +329,7 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-600">Explore</h4>
                         <ul className="space-y-2 text-sm text-gray-500 font-medium">
                             <li className="hover:text-white transition-colors cursor-pointer">Pricing</li>
-                            <li className="hover:text-white transition-colors cursor-pointer">Double LLC</li>
+                            <li className="hover:text-white transition-colors cursor-pointer">Formation Elite</li>
                             <li className="hover:text-white transition-colors cursor-pointer">Privacy Guide</li>
                         </ul>
                     </div>

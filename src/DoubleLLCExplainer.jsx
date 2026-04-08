@@ -51,7 +51,7 @@ const DoubleLLCExplainer = ({ isOpen, onClose }) => {
                         </div>
                      </div>
                      <p className="text-lg md:text-xl font-bold text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                        The <span className="text-white">Standard LLC</span> protects your mail, but the <span className="text-[#00D084]">Double LLC</span> protects your Home.
+                        The <span className="text-white">Formation Core</span> protects your mail, but the <span className="text-[#00D084]">Formation Elite</span> protects your Home.
                      </p>
                   </div>
 
@@ -60,10 +60,10 @@ const DoubleLLCExplainer = ({ isOpen, onClose }) => {
                      {/* Column Headers */}
                      <div className="grid grid-cols-2 bg-white/5 border-b border-gray-800">
                         <div className="p-6 text-center border-r border-gray-800">
-                           <span className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Standard LLC</span>
+                           <span className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Formation Core</span>
                         </div>
                         <div className="p-6 text-center bg-[#00D084]/10">
-                           <span className="text-xs font-black uppercase tracking-[0.2em] text-[#00D084]">Double LLC</span>
+                           <span className="text-xs font-black uppercase tracking-[0.2em] text-[#00D084]">Formation Elite</span>
                         </div>
                      </div>
 
@@ -196,7 +196,7 @@ const DoubleLLCExplainer = ({ isOpen, onClose }) => {
                         >
                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                            <div className="relative flex items-center gap-3">
-                              <span className="text-sm font-black text-black uppercase tracking-widest">Upgrade to Double LLC</span>
+                              <span className="text-sm font-black text-black uppercase tracking-widest">Upgrade to Formation Elite</span>
                               <Shield size={18} className="text-black" />
                            </div>
                         </button>
@@ -205,7 +205,7 @@ const DoubleLLCExplainer = ({ isOpen, onClose }) => {
                            onClick={onClose}
                            className="text-xs font-black text-gray-500 uppercase tracking-widest hover:text-white transition-colors"
                         >
-                           Keep Standard LLC
+                           Keep Formation Core
                         </button>
                      </div>
                   </div>

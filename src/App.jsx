@@ -106,6 +106,6 @@ export default function App() {
 // --- Static Data ---
 const menuItems = [
   { id: 'unselected', title: "NEW FLORIDA LLC FORMATION", price: "$399+", plainEnglish: "Select your privacy protocol to begin. Your infrastructure will be configured based on your selection." },
-  { id: 'founder', title: "Founder Shield", price: "$399", plainEnglish: "Charter Legacy filings emphasize absolute anonymity. We file your official state documents and list our registered office as your principal address to keep your name off the public grid." },
-  { id: 'sovereign', title: "Double LLC", price: "$999", plainEnglish: "The full anonymity structure — Florida + Wyoming holding company. Your name never touches the public record." }
+  { id: 'founder', title: "Formation Core", price: "$399", plainEnglish: "Charter Legacy filings emphasize absolute anonymity. We file your official state documents and list our registered office as your principal address to keep your name off the public grid." },
+  { id: 'sovereign', title: "Formation Elite", price: "$999", plainEnglish: "The full anonymity structure — Florida + Wyoming holding company. Your name never touches the public record." }
 ];

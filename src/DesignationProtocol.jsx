@@ -888,7 +888,7 @@ const DesignationProtocol = ({ user, llc, onSuccess, onComplete, onClose }) => {
                                 <div className="absolute right-0 top-0 opacity-10 p-4"><Shield size={120} /></div>
                                 <div className="relative z-10">
                                     <div className="inline-flex items-center gap-2 text-emerald-400 text-xs font-black uppercase tracking-widest mb-4">
-                                        The Double LLC Solution
+                                        The Formation Elite Solution
                                     </div>
                                     <h3 className="text-2xl font-black text-white mb-2">Anonymous Wyoming Manager</h3>
                                     <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-md">

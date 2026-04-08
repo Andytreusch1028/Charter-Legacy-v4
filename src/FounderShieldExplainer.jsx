@@ -63,7 +63,7 @@ const FounderShieldExplainer = ({ isOpen, onClose }) => {
              </div>
 
              <div className="mt-12 pt-12 border-t border-gray-800">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">Without Founder Shield:</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">Without Formation Core:</p>
                 <ul className="space-y-3">
                    {['Home Address on Google', 'Commercial Scrapers Pick-Up', 'Physical Junk Mail Increase', 'Family Privacy Exposure'].map((risk, i) => (
                       <li key={i} className="flex items-center gap-3 text-xs font-bold text-gray-400">
@@ -83,7 +83,7 @@ const FounderShieldExplainer = ({ isOpen, onClose }) => {
              <div className="relative z-10 space-y-10">
                 <div className="flex items-center justify-between">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 text-white rounded-full text-[9px] font-black uppercase tracking-widest border border-white/20">
-                       <Shield size={12} /> The Founder Shield Protocol
+                       <Shield size={12} /> The Formation Core Protocol
                     </div>
                 </div>
 
@@ -120,7 +120,7 @@ const FounderShieldExplainer = ({ isOpen, onClose }) => {
                           {[...Array(5)].map((_,i) => <span key={i}>★</span>)}
                        </div>
                        <p className="text-lg md:text-xl font-medium text-white italic leading-relaxed">
-                          "Founder Shield gave me the clean, professional corporate front I needed to build my brand, while keeping business junk and solicitors far away from my private mailbox."
+                          "Formation Core gave me the clean, professional corporate front I needed to build my brand, while keeping business junk and solicitors far away from my private mailbox."
                        </p>
                        <div>
                           <p className="text-xs font-black text-white uppercase tracking-widest">Michael T.</p>

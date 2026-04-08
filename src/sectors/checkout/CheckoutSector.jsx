@@ -89,7 +89,7 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
   useEffect(() => { 
       if (isOpen) {
           // Rule: Only reset if the actual prop ID has changed (new entry point)
-          // This prevents internal selection (e.g. Double LLC) from being reset
+          // This prevents internal selection (e.g. Formation Elite) from being reset
           const isNewPackage = item?.id !== lastPropId;
           const hasNewName = item?.llc_name && item.llc_name !== manualLLC.name;
 
@@ -353,7 +353,7 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
                   {[
                     { 
                       id: 'founder', 
-                      title: 'Founder Shield', 
+                      title: 'Formation Core', 
                       price: '$399', 
                       desc: 'Standard Anonymity', 
                       icon: Shield,
@@ -361,7 +361,7 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
                     },
                     { 
                       id: 'sovereign', 
-                      title: 'Double LLC', 
+                      title: 'Formation Elite', 
                       price: '$999', 
                       desc: 'Ultimate Anonymity', 
                       icon: Zap,
@@ -373,7 +373,7 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
                       onClick={() => {
                         setSelectedLLC({
                           id: p.id,
-                          title: p.title === 'Double LLC' ? 'Double LLC Protocol' : 'Founder Shield (Standard)',
+                          title: p.title === 'Formation Elite' ? 'Formation Elite Protocol' : 'Formation Core',
                           price: p.price,
                           plainEnglish: p.id === 'founder' 
                             ? "Charter Legacy filings emphasize absolute anonymity. We file your official state documents and list our registered office as your principal address to keep your name off the public grid."
