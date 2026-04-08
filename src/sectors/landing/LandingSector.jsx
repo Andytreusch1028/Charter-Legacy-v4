@@ -258,7 +258,7 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                                 <span className="text-white/20 font-bold mb-2 uppercase text-[10px] tracking-widest">Protocol Fee</span>
                             </div>
                             <ul className="space-y-4">
-                                {['Florida LLC Setup', 'Business Address (1 Yr)', 'Operating Agreement', 'Tax ID (EIN) Aid', 'Private Vault'].map(i => (
+                                {['Florida LLC Setup', 'Business Address (1 Yr)', 'Registered Agent (1 Yr Free)', 'Operating Agreement', 'Tax ID (EIN) Aid', 'Private Vault'].map(i => (
                                     <li key={i} className="flex gap-4 text-sm text-white/40 font-medium"><Check size={16} className="text-emerald-500 mt-0.5"/> {i}</li>
                                 ))}
                             </ul>
@@ -267,9 +267,10 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                                 <button onClick={() => onStartCheckout('founder')} className="w-full py-5 bg-white/5 border border-white/10 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-700">Initialize Formation</button>
                                 <button 
                                     onClick={() => setShowFounderShield(true)}
-                                    className="flex items-center justify-center gap-2 text-[10px] font-black text-white/20 hover:text-white uppercase tracking-[0.3em] transition-colors"
+                                    className="flex items-center justify-center gap-2 py-3.5 bg-white/[0.03] border border-white/5 rounded-xl text-[10px] font-black text-white/40 hover:text-white hover:bg-white/5 hover:border-white/20 uppercase tracking-[0.3em] transition-all group/info"
                                 >
-                                    More Information <ChevronRight size={14} />
+                                    <span>Detailed Explainer</span>
+                                    <ChevronRight size={14} className="group-hover/info:translate-x-1 transition-transform" />
                                 </button>
                             </div>
                         </GlassCard>
@@ -286,7 +287,7 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                                     <span className="text-white/20 font-bold mb-2 uppercase text-[10px] tracking-widest">Sovereign Fee</span>
                                 </div>
                                 <ul className="space-y-4">
-                                    {['Everything in Basic', 'Wyoming Parent Company', 'Total Name Privacy', 'Advanced Agreements', 'Family Handover Plan'].map(i => (
+                                    {['Everything in Basic', 'Registered Agent (1 Yr Free)', 'Wyoming Parent Company', 'Total Name Privacy', 'Advanced Agreements', 'Family Handover Plan'].map(i => (
                                         <li key={i} className="flex gap-4 text-sm text-white/60 font-medium"><Check size={16} className="text-emerald-500 mt-0.5"/> {i}</li>
                                     ))}
                                 </ul>
@@ -295,9 +296,10 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                                     <button onClick={() => onStartCheckout('sovereign')} className="w-full py-5 bg-emerald-500 text-black rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_20px_40px_rgba(16,185,129,0.2)] hover:scale-[1.02] active:scale-95 transition-all duration-700">Protect My Identity</button>
                                     <button 
                                         onClick={() => setShowDoubleLLC(true)}
-                                        className="flex items-center justify-center gap-2 text-[10px] font-black text-emerald-500/30 hover:text-emerald-400 uppercase tracking-[0.3em] transition-colors"
+                                        className="flex items-center justify-center gap-2 py-3.5 bg-emerald-500/5 border border-emerald-500/10 rounded-xl text-[10px] font-black text-emerald-500/40 hover:text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/30 uppercase tracking-[0.3em] transition-all group/info"
                                     >
-                                        More Information <ChevronRight size={14} />
+                                        <span>Compare Protocols</span>
+                                        <ChevronRight size={14} className="group-hover/info:translate-x-1 transition-transform" />
                                     </button>
                                 </div>
                             </GlassCard>
