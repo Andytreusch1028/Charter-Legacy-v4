@@ -214,7 +214,7 @@ const PrimeIntelligenceHub = ({ llc, compliance, onAction }) => {
   );
 };
 
-const DashboardZenith = ({ user, initialData, onLogout, entryOrigin }) => {
+const DashboardZenith = ({ user, initialData, onLogout, entryOrigin, onNavigateLanding }) => {
   const [loading, setLoading] = useState(true);
   const [activeLlc, setActiveLlc] = useState(initialData || null);
   const [companies, setCompanies] = useState([]);
@@ -465,11 +465,14 @@ const DashboardZenith = ({ user, initialData, onLogout, entryOrigin }) => {
       {/* 1. NAVIGATION */}
       <nav className="h-20 bg-[#0D0D0E]/80 backdrop-blur-xl border-b border-white/5 px-8 flex items-center justify-between sticky top-0 z-[100]">
         <div className="flex items-center gap-10">
-          <div className="flex items-center gap-3">
-             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-black">
+          <div 
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={onNavigateLanding}
+          >
+             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-black group-hover:scale-110 transition-transform">
                <Shield size={18} />
              </div>
-             <span className="font-black uppercase tracking-tighter text-xl text-white">Charter Legacy</span>
+             <span className="font-black uppercase tracking-tighter text-xl text-white group-hover:text-emerald-500 transition-colors">Charter Legacy</span>
           </div>
           <div className="h-8 w-px bg-white/5" />
           <div className="flex items-center gap-8">
