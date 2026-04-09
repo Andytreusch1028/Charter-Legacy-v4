@@ -259,7 +259,7 @@ const CheckoutSector = ({ item, isOpen, onClose, onSuccess }) => {
     const finalItem = selectedItem || item; // Fallback
 
     const productId = finalItem?.id || (item?.id !== 'unselected' ? item?.id : 'founder');
-    const productMap = { 'founder': 'founders_shield', 'sovereign': 'double_llc_protocol', 'will': 'legacy_will' };
+    const productMap = { 'founder': 'founders_shield', 'sovereign': 'sovereign', 'will': 'legacy_will' };
     
     await supabase.from('llcs').insert([{ 
         user_id: user.id, 

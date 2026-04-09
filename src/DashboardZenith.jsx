@@ -7,7 +7,7 @@ import {
 import { supabase } from './lib/supabase';
 
 import FoundersBlueprint from './FoundersBlueprint';
-import SuccessionSuite from './SuccessionSuite';
+import SuccessionProtocolDashboard from './components/Succession/SuccessionProtocolDashboard';
 import DesignationProtocol from './DesignationProtocol';
 import StatusRing from './components/StatusRing';
 import ActionConsole from './components/ActionConsole';
@@ -263,9 +263,9 @@ const DashboardZenith = ({ user, initialData, onLogout, entryOrigin, onNavigateL
             }
         } else {
             const demoCompanies = [
-                { id: 1, llc_name: 'Charter Legacy Demo LLC', llc_status: 'Active', created_at: new Date().toISOString() },
-                { id: 2, llc_name: 'Wyoming Holdings LLC', llc_status: 'Active', created_at: new Date().toISOString() },
-                { id: 3, llc_name: 'Heritage Property LLC', llc_status: 'Action Required', created_at: new Date().toISOString() }
+                { id: '00000000-0000-0000-0000-000000000001', llc_name: 'Charter Legacy Demo LLC', llc_status: 'Active', created_at: new Date().toISOString() },
+                { id: '00000000-0000-0000-0000-000000000002', llc_name: 'Wyoming Holdings LLC', llc_status: 'Active', created_at: new Date().toISOString() },
+                { id: '00000000-0000-0000-0000-000000000003', llc_name: 'Heritage Property LLC', llc_status: 'Action Required', created_at: new Date().toISOString() }
             ];
             setCompanies(demoCompanies);
             if (!activeLlc) setActiveLlc(demoCompanies[0]);
@@ -655,11 +655,15 @@ const DashboardZenith = ({ user, initialData, onLogout, entryOrigin, onNavigateL
       {/* DASHBOARD MODALS */}
       {isBlueprintOpen && <FoundersBlueprint llc={currentLlc} onClose={() => setIsBlueprintOpen(false)} />}
       {isSuccessionOpen && (
-        <SuccessionSuite 
-            llc={currentLlc} 
-            onClose={() => setIsSuccessionOpen(false)} 
-            logAction={logAction}
-        />
+        <div className="fixed inset-0 z-[500] bg-black/80 backdrop-blur-2xl flex items-center justify-center p-4 md:p-12 overflow-y-auto">
+          <div className="w-full max-w-6xl animate-in zoom-in-95 duration-500">
+            <SuccessionProtocolDashboard 
+                llc={currentLlc} 
+                onClose={() => setIsSuccessionOpen(false)} 
+                logAction={logAction}
+            />
+          </div>
+        </div>
       )}
       {showDesignation && (
         <div className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-xl flex items-center justify-center p-6">

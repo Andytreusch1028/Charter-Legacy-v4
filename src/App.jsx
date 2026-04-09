@@ -12,6 +12,9 @@ import StaffConsole from './StaffConsole';
 import RegisteredAgentConsole from './RegisteredAgentConsole';
 import MobileRecorder from './MobileRecorder';
 
+// Public Pages (no auth required)
+import VaultAccessPortal from './pages/VaultAccessPortal';
+
 // Modals
 import LoginModal from './LoginModal';
 
@@ -43,6 +46,8 @@ export default function App() {
         setView('ra');
     } else if (path === '/dashboard') {
         setView('dashboard');
+    } else if (path === '/vault-access') {
+        setView('vault-access');
     } else if (path.startsWith('/mobile-recorder/')) {
         setView('mobile-recorder');
         window.mobileSessionId = path.split('/').pop();
@@ -73,6 +78,7 @@ export default function App() {
   };
 
   // Routing Logic
+  if (view === 'vault-access') return <VaultAccessPortal />;
   if (view === 'dashboard') return <DashboardZenith user={appUser} onLogout={handleLogout} entryOrigin={view === 'dashboard' ? 'footer' : 'direct'} onNavigateLanding={() => setView('landing')} />;
   if (view === 'staff')     return <StaffConsole user={appUser} onLogout={handleLogout} />;
   if (view === 'ra' && appUser) return <RegisteredAgentConsole />;
