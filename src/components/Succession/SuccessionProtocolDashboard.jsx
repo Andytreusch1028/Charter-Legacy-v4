@@ -27,6 +27,7 @@ const SuccessionProtocolDashboard = ({ llc, onClose, logAction }) => {
     const [isSealed, setIsSealed] = useState(!!llc?.succession_protocol_active);
     // UPL Consent Gate — must be checked before sealing
     const [uplConsented, setUplConsented] = useState(false);
+    const [heirError, setHeirError] = useState(''); // inline error for add-heir form
 
     const handleCheckIn = () => {
         setCheckedIn(true);
@@ -110,13 +111,23 @@ const SuccessionProtocolDashboard = ({ llc, onClose, logAction }) => {
     };
 
     const handleAddHeir = async () => {
-        if (!newHeir.name || !newHeir.email) return;
+        setHeirError('');
+        if (!newHeir.name.trim() || !newHeir.email.trim()) {
+            setHeirError('Name and email are required.');
+            return;
+        }
 
-        // Fix 4: Validate total equity does not exceed 100%
-        const currentTotal = heirs.reduce((sum, h) => sum + (h.equity_percentage || 0), 0);
+        // Supabase returns numeric columns as strings — always coerce to Number()
+        const currentTotal = heirs.reduce((sum, h) => sum + Number(h.equity_percentage || 0), 0);
         const incoming = parseFloat(newHeir.equity);
+
+        if (incoming <= 0) {
+            setHeirError('Equity must be greater than 0%.');
+            return;
+        }
         if (currentTotal + incoming > 100) {
-            alert(`Equity overflow: ${currentTotal}% already allocated. Cannot add ${incoming}% more.`);
+            const remaining = 100 - currentTotal;
+            setHeirError(`Only ${remaining.toFixed(0)}% remaining. Reduce the equity allocation to ${remaining.toFixed(0)}% or less.`);
             return;
         }
         
@@ -124,10 +135,11 @@ const SuccessionProtocolDashboard = ({ llc, onClose, logAction }) => {
             .from('succession_heirs')
             .insert({
                 llc_id: llc.id,
-                heir_name: newHeir.name,
-                heir_email: newHeir.email,
+                heir_name: newHeir.name.trim(),
+                heir_email: newHeir.email.trim(),
                 heir_role: newHeir.role,
-                equity_percentage: incoming
+                equity_percentage: incoming,
+                is_sealed: false,
             })
             .select()
             .single();
@@ -135,10 +147,13 @@ const SuccessionProtocolDashboard = ({ llc, onClose, logAction }) => {
         if (!error && data) {
             setHeirs([...heirs, data]);
             setNewHeir({ name: '', email: '', role: 'Beneficiary', equity: '50' });
+            setHeirError('');
             if (logAction) logAction('ADD_HEIR', 'SUCCESS', { heir: data.heir_name });
         } else if (error) {
             console.error('[AddHeir] DB error:', error.message);
-            alert(`Could not add heir: ${error.message}`);
+            setHeirError(`Could not add successor: ${error.message}`);
+        } else {
+            setHeirError('Successor was not saved. Please try again.');
         }
     };
 
@@ -387,19 +402,52 @@ const SuccessionProtocolDashboard = ({ llc, onClose, logAction }) => {
                                 <div className={`${s.inputGroup} flex-1`}>
                                     <div className="flex justify-between items-center mb-1">
                                         <label className="text-[8px] font-black uppercase tracking-widest text-white/40 ml-1">Equity Allocation</label>
-                                        <span className="text-[10px] font-black text-[#50FFD1]">{newHeir.equity}%</span>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-[8px] text-white/20 font-black uppercase tracking-widest">
+                                                {(100 - heirs.reduce((s, h) => s + Number(h.equity_percentage || 0), 0)).toFixed(0)}% remaining
+                                            </span>
+                                            <span className="text-[10px] font-black text-[#50FFD1]">{newHeir.equity}%</span>
+                                        </div>
                                     </div>
                                     <input 
-                                        type="range" min="0" max="100" 
+                                        type="range" min="1"
+                                        max={Math.max(1, 100 - heirs.reduce((s, h) => s + Number(h.equity_percentage || 0), 0))}
                                         className="w-full h-1 bg-white/5 rounded-lg appearance-none cursor-pointer accent-[#50FFD1]"
                                         value={newHeir.equity}
-                                        onChange={(e) => setNewHeir({...newHeir, equity: e.target.value})}
+                                        onChange={(e) => { setNewHeir({...newHeir, equity: e.target.value}); setHeirError(''); }}
                                     />
+                                </div>
+                                {/* Role selector */}
+                                <div className={s.inputGroup} style={{ width: 120, flexShrink: 0 }}>
+                                    <label className="text-[8px] font-black uppercase tracking-widest text-white/40 ml-1 block mb-1">Role</label>
+                                    <select
+                                        value={newHeir.role}
+                                        onChange={(e) => setNewHeir({...newHeir, role: e.target.value})}
+                                        className={s.inputField}
+                                        style={{ paddingTop: 10, paddingBottom: 10 }}
+                                    >
+                                        <option value="Beneficiary">Beneficiary</option>
+                                        <option value="Co-Manager">Co-Manager</option>
+                                        <option value="Trustee">Trustee</option>
+                                        <option value="Executor">Executor</option>
+                                    </select>
                                 </div>
                                 <button onClick={handleAddHeir} className={s.accentButton}>
                                     <Plus size={16} strokeWidth={3} />
                                 </button>
                             </div>
+                            {/* Inline error */}
+                            {heirError && (
+                                <div style={{
+                                    background: 'rgba(255,80,80,0.06)',
+                                    border: '1px solid rgba(255,80,80,0.2)',
+                                    borderRadius: 10, padding: '8px 12px', marginTop: 10,
+                                }}>
+                                    <p style={{ color: 'rgba(255,130,130,0.9)', fontSize: 10, margin: 0, fontWeight: 700 }}>
+                                        {heirError}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
