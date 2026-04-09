@@ -263,6 +263,12 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                                 ))}
                             </ul>
                             
+                            <div className="pt-2">
+                                <span className="text-[10px] text-white/20 font-medium leading-relaxed italic">
+                                    Florida RA & Address renews for $249/yr to maintain privacy.
+                                </span>
+                            </div>
+                            
                             <div className="flex flex-col gap-4 pt-4">
                                 <button onClick={() => onStartCheckout('founder')} className="w-full py-5 bg-white/5 border border-white/10 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-700">Initialize Formation</button>
                                 <button 
@@ -287,10 +293,26 @@ const LandingSector = ({ onEnterConsole, onStartCheckout }) => {
                                     <span className="text-white/20 font-bold mb-2 uppercase text-[10px] tracking-widest">Sovereign Fee</span>
                                 </div>
                                 <ul className="space-y-4">
-                                    {['Everything in Basic', 'Registered Agent (1 Yr Free)', 'Wyoming Parent Company', 'Total Name Privacy', 'Advanced Agreements', 'Family Handover Plan'].map(i => (
+                                    {[
+                                        'Florida LLC Setup',
+                                        'Florida Business Address (1 Yr)',
+                                        'Florida Registered Agent (1 Yr Free)', 
+                                        'Wyoming Registered Agent (1 Yr Free)', 
+                                        'Wyoming Parent Company', 
+                                        'Total Name Privacy', 
+                                        'Operating Agreement',
+                                        'Tax ID (EIN) Aid',
+                                        'Private Vault'
+                                    ].map(i => (
                                         <li key={i} className="flex gap-4 text-sm text-white/60 font-medium"><Check size={16} className="text-emerald-500 mt-0.5"/> {i}</li>
                                     ))}
                                 </ul>
+
+                                <div className="pt-2">
+                                    <span className="text-[10px] text-emerald-500/30 font-medium leading-relaxed italic">
+                                        Dual-State RA & Address renews for $349/yr to maintain anonymity.
+                                    </span>
+                                </div>
 
                                 <div className="flex flex-col gap-4 pt-4">
                                     <button onClick={() => onStartCheckout('sovereign')} className="w-full py-5 bg-emerald-500 text-black rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_20px_40px_rgba(16,185,129,0.2)] hover:scale-[1.02] active:scale-95 transition-all duration-700">Protect My Identity</button>
