@@ -14,6 +14,7 @@ import MobileRecorder from './MobileRecorder';
 
 // Public Pages (no auth required)
 import VaultAccessPortal from './pages/VaultAccessPortal';
+import SuccessorEntryPortal from '../Successor Entry Portal.jsx';
 
 // Modals
 import LoginModal from './LoginModal';
@@ -48,6 +49,8 @@ export default function App() {
         setView('dashboard');
     } else if (path === '/vault-access') {
         setView('vault-access');
+    } else if (path === '/successor') {
+       setView('successor');
     } else if (path.startsWith('/mobile-recorder/')) {
         setView('mobile-recorder');
         window.mobileSessionId = path.split('/').pop();
@@ -79,6 +82,7 @@ export default function App() {
 
   // Routing Logic
   if (view === 'vault-access') return <VaultAccessPortal />;
+  if (view === 'successor')    return <SuccessorEntryPortal />;
   if (view === 'dashboard') return <DashboardZenith user={appUser} onLogout={handleLogout} entryOrigin={view === 'dashboard' ? 'footer' : 'direct'} onNavigateLanding={() => setView('landing')} />;
   if (view === 'staff')     return <StaffConsole user={appUser} onLogout={handleLogout} />;
   if (view === 'ra' && appUser) return <RegisteredAgentConsole />;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Shield, Users, Lock, Clock, GitBranch, 
-    Check, ArrowRight, Plus, Trash2, 
+    Check, ArrowRight, Plus, Trash2, AlertTriangle, XOctagon,
     Info, Activity, Calendar, Zap, MousePointerClick, RefreshCw
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -10,6 +10,7 @@ import s from './SuccessionProtocolDashboard.module.css';
 
 const SuccessionProtocolDashboard = ({ llc, onClose, logAction }) => {
     const [heirs, setHeirs] = useState([]);
+    const [activeEvents, setActiveEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sealing, setSealing] = useState(false);
     const [threshold, setThreshold] = useState(llc?.inactivity_threshold_days || 90);
@@ -28,6 +29,17 @@ const SuccessionProtocolDashboard = ({ llc, onClose, logAction }) => {
     // UPL Consent Gate — must be checked before sealing
     const [uplConsented, setUplConsented] = useState(false);
     const [heirError, setHeirError] = useState(''); // inline error for add-heir form
+
+    const handleVetoEvent = async (eventId) => {
+        if (!window.confirm('VETO PROTOCOL: Are you sure you want to kill this session? This will lock out the successor and flag the vault for 48 hours.')) return;
+        try {
+            await supabase.from('succession_events').update({ status: 'VETOED' }).eq('id', eventId);
+            if (logAction) logAction('SUCCESSION_VETO_ACTIVATED', 'SUCCESS', { event_id: eventId });
+            await fetchSuccessionData();
+        } catch(e) {
+            console.error('Veto failed:', e);
+        }
+    };
 
     const handleCheckIn = () => {
         setCheckedIn(true);
@@ -54,6 +66,13 @@ const SuccessionProtocolDashboard = ({ llc, onClose, logAction }) => {
                 .eq('llc_id', llc.id)
                 .order('created_at', { ascending: false });
 
+            const { data: eventsData, error: eventsError } = await supabase
+                .from('succession_events')
+                .select('*')
+                .eq('llc_id', llc.id)
+                .eq('status', 'PENDING_BUFFER')
+                .order('created_at', { ascending: false });
+
             // Fix 5: Dynamically resolve parent LLC name
             if (llc.parent_llc_id) {
                 const { data: parent } = await supabase
@@ -66,6 +85,7 @@ const SuccessionProtocolDashboard = ({ llc, onClose, logAction }) => {
 
             if (heirsData) setHeirs(heirsData);
             if (logs) setAuditLogs(logs);
+            if (!eventsError && eventsData) setActiveEvents(eventsData);
         } catch (err) {
             console.error("Fetch error:", err);
         } finally {
@@ -310,6 +330,43 @@ const SuccessionProtocolDashboard = ({ llc, onClose, logAction }) => {
                     </button>
                 </div>
             </div>
+
+            {/* Root Veto Alert Section */}
+            {activeEvents.length > 0 && (
+                <div style={{
+                    background: 'rgba(255,50,50,0.1)', border: '1px solid rgba(255,50,50,0.3)',
+                    borderRadius: 24, padding: 24, marginBottom: 24, position: 'relative', overflow: 'hidden',
+                    boxShadow: '0 0 60px rgba(255,50,50,0.1)'
+                }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: '#FF3232' }} />
+                    <div className="flex justify-between items-center relative z-10">
+                        <div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <AlertTriangle size={18} color="#FF3232" className="animate-pulse" />
+                                <span className="text-[12px] font-black uppercase tracking-widest text-[#FF3232]">Action Required: Attempted Access</span>
+                            </div>
+                            <p className="text-white/70 text-sm mt-2 max-w-xl">
+                                A successor ({activeEvents[0].triggered_by}) triggered the protocol on {new Date(activeEvents[0].created_at).toLocaleDateString()}.
+                                The 10-day veto buffer expires on <strong className="text-white">{new Date(activeEvents[0].buffer_end_date).toLocaleString()}</strong>.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => handleVetoEvent(activeEvents[0].id)}
+                            style={{
+                                background: '#FF3232', color: '#FFF', border: 'none', borderRadius: 16,
+                                padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 12,
+                                fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', fontSize: 13,
+                                boxShadow: '0 10px 30px rgba(255,50,50,0.3)', cursor: 'pointer', transition: 'all 0.2s',
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        >
+                            <XOctagon size={20} />
+                            Execute Root Veto
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Entity Visualization */}
             <div className={s.glassCard}>

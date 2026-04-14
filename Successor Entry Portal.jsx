@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Key, 
   Shield, 
@@ -10,8 +10,11 @@ import {
   AlertCircle,
   Mail,
   Lock,
-  UserCheck
+  UserCheck,
+  FileText,
+  Upload
 } from 'lucide-react';
+import { supabase } from './src/lib/supabase';
 
 /**
  * SUCCESSOR ENTRY PORTAL v1.0
@@ -25,12 +28,109 @@ import {
 export default function App() {
   const [step, setStep] = useState('landing'); // 'landing', 'key-entry', 'initiating', 'buffer-active'
   const [keyValue, setKeyValue] = useState('');
+  const [activeEvent, setActiveEvent] = useState(null);
+  const [timeLeft, setTimeLeft] = useState({ days: 10, hours: 0, minutes: 0, seconds: 0 });
 
-  const handleKeyTurn = () => {
+  useEffect(() => {
+    if (step === 'buffer-active' && activeEvent?.buffer_end_date) {
+      const interval = setInterval(() => {
+        const end = new Date(activeEvent.buffer_end_date).getTime();
+        const now = new Date().getTime();
+        const diff = end - now;
+
+        if (diff <= 0) {
+          clearInterval(interval);
+          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        } else {
+          setTimeLeft({
+            days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+            minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+            seconds: Math.floor((diff % (1000 * 60)) / 1000)
+          });
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [step, activeEvent]);
+
+  const handleKeyTurn = async () => {
     setStep('initiating');
-    setTimeout(() => {
+    
+    try {
+      // 1. Fetch an LLC to bind the event to for protocol logic
+      const { data: llcs } = await supabase.from('llcs').select('id').limit(1);
+      const targetLlcId = llcs && llcs.length > 0 ? llcs[0].id : null;
+      
+      if (!targetLlcId) throw new Error('Vault node unreachable. Cannot initiate sequence.');
+
+      // 2. Set the 10-day buffer end date
+      const bufferEnd = new Date();
+      bufferEnd.setDate(bufferEnd.getDate() + 10);
+
+      // 3. Record event to database
+      const { data: newEvent } = await supabase.from('succession_events').insert({
+          llc_id: targetLlcId,
+          triggered_by: 'SUCCESSOR PORTAL',
+          trigger_type: 'KEY_ENTRY',
+          status: 'PENDING_BUFFER',
+          buffer_end_date: bufferEnd.toISOString()
+      }).select().single();
+      
+      setActiveEvent(newEvent);
+
+      // 4. Trigger Sentinel (Edge Function)
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-succession-alert`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({ llcId: targetLlcId, keyUsed: keyValue, eventType: 'SUCCESSOR_KEY_TURNED' })
+      });
+
       setStep('buffer-active');
-    }, 2500);
+    } catch (e) {
+      console.error(e);
+      alert('Verification Failed: ' + e.message);
+      setStep('key-entry');
+    }
+  };
+
+  const handleDeLandOverride = async () => {
+    setStep('initiating');
+    
+    try {
+      const { data: llcs } = await supabase.from('llcs').select('id').limit(1);
+      const targetLlcId = llcs && llcs.length > 0 ? llcs[0].id : null;
+      if (!targetLlcId) throw new Error('Vault node unreachable.');
+
+      // 15 day buffer for extremis path
+      const bufferEnd = new Date();
+      bufferEnd.setDate(bufferEnd.getDate() + 15);
+
+      const { data: newEvent } = await supabase.from('succession_events').insert({
+          llc_id: targetLlcId,
+          triggered_by: 'DELAND NODE OVERRIDE',
+          trigger_type: 'DELAND_OVERRIDE',
+          status: 'PENDING_BUFFER',
+          buffer_end_date: bufferEnd.toISOString()
+      }).select().single();
+      
+      setActiveEvent(newEvent);
+
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-succession-alert`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+          body: JSON.stringify({ llcId: targetLlcId, keyUsed: 'IN_EXTREMIS_OVERRIDE', eventType: 'DELAND_OVERRIDE_INITIATED' })
+      });
+
+      setStep('buffer-active');
+    } catch (e) {
+        console.error(e);
+        alert('Override Failed: ' + e.message);
+        setStep('deland-override');
+    }
   };
 
   return (
@@ -107,13 +207,64 @@ export default function App() {
                </div>
              </div>
 
-             <button 
-                disabled={keyValue.length < 8}
-                onClick={handleKeyTurn}
-                className="w-full bg-black text-white py-6 rounded-3xl font-black text-lg uppercase tracking-widest shadow-xl active:scale-[0.98] transition-all disabled:bg-gray-100 disabled:text-gray-300"
-              >
-                Verify & Initiate
-             </button>
+             <div className="space-y-4">
+                 <button 
+                    disabled={keyValue.length < 8}
+                    onClick={handleKeyTurn}
+                    className="w-full bg-black text-white py-6 rounded-3xl font-black text-lg uppercase tracking-widest shadow-xl active:scale-[0.98] transition-all disabled:bg-gray-100 disabled:text-gray-300"
+                  >
+                    Verify & Initiate
+                 </button>
+
+                 <button 
+                    onClick={() => setStep('deland-override')}
+                    className="w-full bg-white text-gray-400 border border-gray-200 py-4 rounded-3xl font-bold text-xs uppercase tracking-widest hover:bg-gray-50 active:scale-[0.98] transition-all"
+                  >
+                    Lost Key? Initialize DeLand Node Override
+                 </button>
+             </div>
+          </div>
+        )}
+
+        {/* STEP 2b: DELAND OVERRIDE (IN EXTREMIS) */}
+        {step === 'deland-override' && (
+          <div className="bg-white p-10 rounded-[56px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] border border-gray-100 space-y-8 animate-in slide-in-from-bottom-8 duration-500">
+             <div className="space-y-2 text-center">
+                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest font-mono">Sequence 09 // In Extremis</p>
+                <h3 className="text-3xl font-black uppercase tracking-tight">DeLand Node<br/>Override.</h3>
+             </div>
+             
+             <div className="space-y-4 text-center">
+                <p className="text-xs text-gray-400 font-medium leading-relaxed px-2">
+                  If the Succession Key was lost or the founder is incapacitated, you must provide legal proof to bypass the standard protocol. 
+                  This initiates an extended <strong>15-Day Veto Buffer</strong>.
+                </p>
+
+                <div className="p-8 border-2 border-dashed border-gray-200 rounded-[32px] bg-gray-50 group hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer flex flex-col items-center justify-center space-y-3">
+                   <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
+                      <Upload size={24} />
+                   </div>
+                   <div>
+                      <p className="text-xs font-black uppercase tracking-widest text-gray-600 group-hover:text-blue-600">Upload Evidence</p>
+                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">Death Cert. / POA / Letters</p>
+                   </div>
+                </div>
+             </div>
+
+             <div className="flex gap-4">
+                 <button 
+                    onClick={() => setStep('key-entry')}
+                    className="flex-1 bg-gray-100 text-gray-500 py-4 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 active:scale-[0.98] transition-all"
+                  >
+                    Cancel
+                 </button>
+                 <button 
+                    onClick={handleDeLandOverride}
+                    className="flex-1 bg-red-500 text-white py-4 rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/20 hover:bg-red-600 active:scale-[0.98] transition-all"
+                  >
+                    Submit Proof
+                 </button>
+             </div>
           </div>
         )}
 
@@ -146,7 +297,9 @@ export default function App() {
 
                    <div className="space-y-4">
                       <div className="flex justify-between items-end">
-                        <p className="text-6xl font-black tracking-tighter tabular-nums leading-none">10:00:00</p>
+                        <p className="text-6xl font-black tracking-tighter tabular-nums leading-none">
+                            {String(timeLeft.days).padStart(2, '0')}:{String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}
+                        </p>
                         <p className="text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] pb-1">Days Remaining</p>
                       </div>
                       <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">

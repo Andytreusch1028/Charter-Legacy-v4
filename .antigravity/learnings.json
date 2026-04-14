@@ -324,6 +324,22 @@
           "correction": "Restored imports and verified icon presence in the TOP block.",
           "impact": "Critical - Runtime failure in checkout flow.",
           "prevention_rule": "MANDATORY ICON SCAN: Before finalizing any JSX refactor, grep for all `<Icon />` components used in the JSX and verify they are explicitly imported from 'lucide-react' at the top."
+        },
+        {
+          "id": "learning-039",
+          "date": "2026-04-13",
+          "success": "Mathematical UI Lockouts via Postgres RLS",
+          "pattern": "Instead of relying on frontend JS to hide premium or locked content (like Succession Vault documents), physically tie the visibility to Row Level Security policies tracking an exact `buffer_end_date` in the database.",
+          "impact": "Critical - Eliminates client-side state manipulation vectors.",
+          "reuse_guidance": "Use this pattern (RLS timers) for ANY time-locked protocol, ensuring full mathematical security against bypass."
+        },
+        {
+          "id": "learning-040",
+          "date": "2026-04-13",
+          "success": "Statutory Fallback Workflows (In Extremis)",
+          "pattern": "Provide an overt 'DeLand Override' document-upload workflow for Edge Cases (like Lost Keys) instead of a simple 'Contact Support' button, extending lockout buffers mathematically to give founders time to react.",
+          "impact": "High - Reduces support tickets while drastically increasing perceived administrative legitimacy.",
+          "reuse_guidance": "Always build an 'In Extremis' bypass for critical node failures that collects evidence (PDF uploads) and extends security buffers."
         }
       ]
     }
@@ -362,7 +378,7 @@
     "pending_review": []
   },
   "meta": {
-    "total_learnings": 38,
-    "last_updated": "2026-04-07T18:15:00Z"
+    "total_learnings": 40,
+    "last_updated": "2026-04-13T22:08:00Z"
   }
 }
